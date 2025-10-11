@@ -7,17 +7,15 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-// NOTE: this is a hack to get around not having enums yet
-type Output = struct #pub {
-	def TOKENS              : UI32 = 0;
-	def AST                 : UI32 = 1;
-	def BUILD_SYMBOL_PROCS  : UI32 = 2;
-	def SEMANTIC_ANALYSIS   : UI32 = 3;
-	def PIR                 : UI32 = 4;
-	def LLVMIR              : UI32 = 5;
-	def ASSEMBLY            : UI32 = 6;
-	def OBJECT              : UI32 = 7;
-	def RUN                 : UI32 = 8;
-	def CONSOLE_EXECUTABLE  : UI32 = 9;
-	def WINDOWED_EXECUTABLE : UI32 = 10;
+type Output = enum(UI32) #pub {
+	TOKENS              = 0,
+	AST                 = 1,
+	SEMANTIC_ANALYSIS   = 2,
+	PIR                 = 3,
+	LLVMIR              = 4,
+	ASSEMBLY            = 5,
+	OBJECT              = 6,
+	RUN                 = 7,
+	CONSOLE_EXECUTABLE  = 8,
+	WINDOWED_EXECUTABLE = 9,
 }

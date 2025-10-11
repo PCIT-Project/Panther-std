@@ -1,6 +1,13 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.4.0"></a>
+## v0.0.4.0
+- Moved `build.Output` to an actual enum
+- Removed `build.Output.BUILD_SYMBOL_PROCS`
+
+
+<!---------------------------------->
 <a name="v0.0.3.0"></a>
 ## v0.0.3.0
 - Added more output targets
