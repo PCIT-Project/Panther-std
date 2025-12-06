@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.5.0"></a>
+## v0.0.5.0
+- Added compiler-rt for iterators
+
+
+<!---------------------------------->
 <a name="v0.0.4.0"></a>
 ## v0.0.4.0
 - Moved `build.Output` to an actual enum
