@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.7.0"></a>
+## v0.0.7.0
+- Updated compiler-rt iterators to reflect updates to [PCIT-CPP v0.0.202.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.202.0)
+
+
+<!---------------------------------->
 <a name="v0.0.6.0"></a>
 ## v0.0.6.0
 - Updated compiler-rt iterators to reflect updates to [PCIT-CPP v0.0.199.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.199.0)
