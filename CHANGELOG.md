@@ -1,6 +1,17 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.8.0"></a>
+## v0.0.8.0
+- Added `bit` module
+	- Added `bit.bitCast()`
+- Added `types` module
+	- Added `bit.numBytes()`
+	- Added `bit.numBits()`
+- Updated compiler-rt iterators to reflect updates to [PCIT-CPP v0.0.203.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.203.0)
+
+
+<!---------------------------------->
 <a name="v0.0.7.0"></a>
 ## v0.0.7.0
 - Updated compiler-rt iterators to reflect updates to [PCIT-CPP v0.0.202.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.202.0)

@@ -7,8 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-def bit #pub   = @import("bit.pthr");
-def build #pub = @import("building.pthr");
-def math #pub  = @import("math.pthr");
-def types #pub = @import("types.pthr");
+func bitCast = <{To: Type}> (from: $From) #pub -> To {
+	return @bitCast<{From, To}>(from);
+}
 

@@ -7,8 +7,10 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-def bit #pub   = @import("bit.pthr");
-def build #pub = @import("building.pthr");
-def math #pub  = @import("math.pthr");
-def types #pub = @import("types.pthr");
+func numBytes = <{T: Type, INCLUDE_PADDING: Bool = true}> () #pub -> USize {
+	return @numBytes<{T, INCLUDE_PADDING}>();
+}
 
+func numBits = <{T: Type, INCLUDE_PADDING: Bool = true}> () #pub -> USize {
+	return @numBits<{T, INCLUDE_PADDING}>();
+}
