@@ -7,7 +7,13 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-func bitCast = <{To: Type}> (from: $From) #pub -> To {
+
+// func is_unsafe_bit_cast = <{From: Type, To: Type}> () -> Bool {
+// 	return false;
+// }
+
+
+func bitCast = <{To: Type}> (from: $From) #pub #unsafe/*(is_unsafe_bit_cast<{From, To}>())*/ -> To {
 	return @bitCast<{From, To}>(from);
 }
 

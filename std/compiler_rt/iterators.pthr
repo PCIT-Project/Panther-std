@@ -14,14 +14,18 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
 	}
 
 	func next = (this mut) -> Void {
-		const new_address: USize = @bitCast<{ELEM_TYPE*, USize}>(this.current) + @numBytes<{ELEM_TYPE, true}>();
-		this.current = @bitCast<{USize, ELEM_TYPE*}>(new_address);
+		unsafe{
+			const new_address: USize = @bitCast<{ELEM_TYPE*, USize}>(this.current) + @numBytes<{ELEM_TYPE, true}>();
+			this.current = @bitCast<{USize, ELEM_TYPE*}>(new_address);
+		}
 	}
 
 	func get = (this) -> ELEM_TYPE* { return copy this.current; }
 
 	func atEnd = (this) -> Bool {
-		return @bitCast<{ELEM_TYPE*, USize}>(this.current) > @bitCast<{ELEM_TYPE*, USize}>(this.last);
+		unsafe{
+			return @bitCast<{ELEM_TYPE*, USize}>(this.current) > @bitCast<{ELEM_TYPE*, USize}>(this.last);
+		}
 	}
 
 
@@ -52,14 +56,18 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
 	}
 
 	func next = (this mut) -> Void {
-		const new_address: USize = @bitCast<{ELEM_TYPE*mut, USize}>(this.current) + @numBytes<{ELEM_TYPE, true}>();
-		this.current = @bitCast<{USize, ELEM_TYPE*mut}>(new_address);
+		unsafe{
+			const new_address: USize = @bitCast<{ELEM_TYPE*mut, USize}>(this.current) + @numBytes<{ELEM_TYPE, true}>();
+			this.current = @bitCast<{USize, ELEM_TYPE*mut}>(new_address);
+		}
 	}
 
 	func get = (this) -> ELEM_TYPE*mut { return copy this.current; }
 
 	func atEnd = (this) -> Bool {
-		return @bitCast<{ELEM_TYPE*mut, USize}>(this.current) > @bitCast<{ELEM_TYPE*mut, USize}>(this.last);
+		unsafe{
+			return @bitCast<{ELEM_TYPE*mut, USize}>(this.current) > @bitCast<{ELEM_TYPE*mut, USize}>(this.last);
+		}
 	}
 
 
