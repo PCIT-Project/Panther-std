@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.10.0"></a>
+## v0.0.10.0
+- Added checking of types in `bit.bitCast` to see if it should be unsafe
+
+
+<!---------------------------------->
 <a name="v0.0.9.0"></a>
 ## v0.0.9.0
 - Added `#unsafe` to `bit.bitCast`

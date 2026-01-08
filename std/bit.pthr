@@ -7,13 +7,23 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
+func is_unsafe_bit_cast = <{From: Type, To: Type}> () -> Bool {
+	const from_type_id: TypeID = @getTypeID<{From}>();
+	const to_type_id: TypeID = @getTypeID<{To}>();
 
-// func is_unsafe_bit_cast = <{From: Type, To: Type}> () -> Bool {
-// 	return false;
-// }
+	if(from_type_id == @getTypeID<{Byte}>()){ return false; }
+	if(to_type_id == @getTypeID<{Byte}>()){ return false; }
+
+	// TODO(FUTURE): better checking of pointer types when have access to needed intrinsics
+	if(from_type_id == @getTypeID<{Byte*}>() || from_type_id == @getTypeID<{Byte*mut}>()){ return false; }
+	if(to_type_id == @getTypeID<{Byte*}>() || to_type_id == @getTypeID<{Byte*mut}>()){ return false; }
+
+	return true;
+}
 
 
-func bitCast = <{To: Type}> (from: $From) #pub #unsafe/*(is_unsafe_bit_cast<{From, To}>())*/ -> To {
+
+func bitCast = <{To: Type}> (from: $From) #pub #unsafe(is_unsafe_bit_cast<{From, To}>()) -> To {
 	return @bitCast<{From, To}>(from);
 }
 
