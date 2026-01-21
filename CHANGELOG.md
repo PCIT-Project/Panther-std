@@ -1,6 +1,13 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.12.0"></a>
+## v0.0.12.0
+- Added `ArrayRefIter` and `MutArrayRefIter`
+- Updated compiler-rt iterators to reflect fixes in [PCIT-CPP v0.0.199.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.199.0)
+
+
+<!---------------------------------->
 <a name="v0.0.11.0"></a>
 ## v0.0.11.0
 - Made `bit.bitCast` always unsafe

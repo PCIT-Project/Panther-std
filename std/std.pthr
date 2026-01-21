@@ -12,3 +12,14 @@ def build #pub = @import("building.pthr");
 def math #pub  = @import("math.pthr");
 def types #pub = @import("types.pthr");
 
+
+//////////////////////////////////////////////////////////////////////
+// containers
+
+///////////////////////////////////
+// iterators
+
+def iterators = @import("containers/iterators.pthr");
+
+type ArrayRefIter #pub = alias iterators.ArrayRefIter;
+type MutArrayRefIter #pub = alias iterators.MutArrayRefIter;

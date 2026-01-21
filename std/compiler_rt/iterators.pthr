@@ -1,116 +1,45 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+def std = @import("std");
+
 
 
 //////////////////////////////////////////////////////////////////////
-// array ref iter
-
-
-type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
-	type ELEM_TYPE = alias type(@arrayRefElementTypeID<{ARRAY_REF_TYPE}>());
-
-	func new = (arr_ref_ptr: ARRAY_REF_TYPE) -> (output: This) {
-		output.current = arr_ref_ptr.data();
-		output.last = arr_ref_ptr[arr_ref_ptr.size() - 1];
-		return...;
-	}
-
-	func next = (this mut) -> Void {
-		unsafe{
-			const new_address: USize = @bitCast<{ELEM_TYPE*, USize}>(this.current) + @numBytes<{ELEM_TYPE, true}>();
-			this.current = @bitCast<{USize, ELEM_TYPE*}>(new_address);
-		}
-	}
-
-	func get = (this) -> ELEM_TYPE* { return copy this.current; }
-
-	func atEnd = (this) -> Bool {
-		unsafe{
-			return @bitCast<{ELEM_TYPE*, USize}>(this.current) > @bitCast<{ELEM_TYPE*, USize}>(this.last);
-		}
-	}
-
-
-	impl @pthr.IIterator {
-		next  = next,
-		get   = get,
-		atEnd = atEnd,
-	}
-
-	impl @pthr.IIteratorRT {
-		next  = next,
-		get   = get,
-		atEnd = atEnd,
-	}
-
-	var current: ELEM_TYPE*;
-	var last: ELEM_TYPE*;
-}
-
-
-type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
-	type ELEM_TYPE = alias type(@arrayRefElementTypeID<{ARRAY_REF_TYPE}>());
-
-	func new = (arr_ref_ptr: ARRAY_REF_TYPE) -> (output: This) {
-		output.current = arr_ref_ptr.data();
-		output.last = arr_ref_ptr[arr_ref_ptr.size() - 1];
-		return...;
-	}
-
-	func next = (this mut) -> Void {
-		unsafe{
-			const new_address: USize = @bitCast<{ELEM_TYPE*mut, USize}>(this.current) + @numBytes<{ELEM_TYPE, true}>();
-			this.current = @bitCast<{USize, ELEM_TYPE*mut}>(new_address);
-		}
-	}
-
-	func get = (this) -> ELEM_TYPE*mut { return copy this.current; }
-
-	func atEnd = (this) -> Bool {
-		unsafe{
-			return @bitCast<{ELEM_TYPE*mut, USize}>(this.current) > @bitCast<{ELEM_TYPE*mut, USize}>(this.last);
-		}
-	}
-
-
-	impl @pthr.IMutIterator {
-		next  = next,
-		get   = get,
-		atEnd = atEnd,
-	}
-
-	impl @pthr.IMutIteratorRT {
-		next  = next,
-		get   = get,
-		atEnd = atEnd,
-	}
-
-	var current: ELEM_TYPE*mut;
-	var last: ELEM_TYPE*mut;
-}
-
+// array reference
 
 
 impl [$$:*] #builtin("arrayRef.IIterableRef") {
-	createIterator = (this) -> impl(ArrayRefIter<{This}>:@pthr.IIterator) {
-		return new impl(ArrayRefIter<{This}>:@pthr.IIterator)(this);
+	createIterator = (this) -> impl(std.ArrayRefIter<{This}>:@pthr.IIterator) {
+		return new impl(std.ArrayRefIter<{This}>:@pthr.IIterator)(this);
 	},
 }
 
 impl [$$:*] #builtin("arrayRef.IIterableRefRT") {
-	createIterator = (this) -> impl(ArrayRefIter<{This}>:@pthr.IIterator) {
-		return new impl(ArrayRefIter<{This}>:@pthr.IIterator)(this);
+	createIterator = (this) -> impl(std.ArrayRefIter<{This}>:@pthr.IIteratorRT) {
+		return new impl(std.ArrayRefIter<{This}>:@pthr.IIteratorRT)(this);
 	},
 }
 
 
+//////////////////////////////////////////////////////////////////////
+// mutable array reference
+
 impl [$$:*mut] #builtin("arrayMutRef.IIterableMutRef") {
-	createIterator = (this) -> impl(MutArrayRefIter<{This}>:@pthr.IMutIterator) {
-		return new impl(MutArrayRefIter<{This}>:@pthr.IMutIterator)(this);
+	createIterator = (this) -> impl(std.MutArrayRefIter<{This}>:@pthr.IMutIterator) {
+		return new impl(std.MutArrayRefIter<{This}>:@pthr.IMutIterator)(this);
 	},
 }
 
 impl [$$:*mut] #builtin("arrayMutRef.IIterableMutRefRT") {
-	createIterator = (this) -> impl(MutArrayRefIter<{This}>:@pthr.IMutIterator) {
-		return new impl(MutArrayRefIter<{This}>:@pthr.IMutIterator)(this);
+	createIterator = (this) -> impl(std.MutArrayRefIter<{This}>:@pthr.IMutIteratorRT) {
+		return new impl(std.MutArrayRefIter<{This}>:@pthr.IMutIteratorRT)(this);
 	},
 }
 
@@ -122,15 +51,15 @@ impl [$$:*mut] #builtin("arrayMutRef.IIterableMutRefRT") {
 
 
 impl [$$:$$] #builtin("array.IIterable") {
-	createIterator = (this) -> impl(ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIterator) {
-		return new impl(ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIterator)(
+	createIterator = (this) -> impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIterator) {
+		return new impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIterator)(
 			this as [type(@arrayElementTypeID<{This}>()):*]
 		);
 	},
 
 	createIterator = (this mut)
-	-> impl(MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIterator) {
-		return new impl(MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIterator)(
+	-> impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIterator) {
+		return new impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIterator)(
 			this as [type(@arrayElementTypeID<{This}>()):*mut]
 		);
 	},
@@ -138,15 +67,15 @@ impl [$$:$$] #builtin("array.IIterable") {
 
 
 impl [$$:$$] #builtin("array.IIterableRT") {
-	createIterator = (this) -> impl(ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIterator) {
-		return new impl(ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIterator)(
+	createIterator = (this) -> impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIteratorRT) {
+		return new impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIteratorRT)(
 			this as [type(@arrayElementTypeID<{This}>()):*]
 		);
 	},
 
 	createIterator = (this mut)
-	-> impl(MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIterator) {
-		return new impl(MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIterator)(
+	-> impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIteratorRT) {
+		return new impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIteratorRT)(
 			this as [type(@arrayElementTypeID<{This}>()):*mut]
 		);
 	},
