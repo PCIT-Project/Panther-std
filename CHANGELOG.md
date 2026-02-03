@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.13.0"></a>
+## v0.0.13.0
+- Added alias for `bit.bitCast`
+
+
+<!---------------------------------->
 <a name="v0.0.12.0"></a>
 ## v0.0.12.0
 - Added `ArrayRefIter` and `MutArrayRefIter`
