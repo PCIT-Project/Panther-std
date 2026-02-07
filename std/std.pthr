@@ -12,7 +12,7 @@
 
 def bit #pub = @import("bit.pthr");
 
-func bitCast #pub = alias bit.bitCast;
+func bitCast = alias #pub bit.bitCast;
 
 
 
@@ -45,5 +45,5 @@ def types #pub = @import("types.pthr");
 
 def iterators = @import("containers/iterators.pthr");
 
-type ArrayRefIter #pub = alias iterators.ArrayRefIter;
-type MutArrayRefIter #pub = alias iterators.MutArrayRefIter;
+type ArrayRefIter = alias #pub iterators.ArrayRefIter;
+type MutArrayRefIter = alias #pub iterators.MutArrayRefIter;
