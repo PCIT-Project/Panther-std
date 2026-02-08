@@ -15,15 +15,15 @@ def std = @import("std");
 // array reference
 
 
-impl [$$:*] #builtin("arrayRef.IIterableRef") {
-	createIterator = (this) -> impl(std.ArrayRefIter<{This}>:@pthr.IIterator) {
-		return new impl(std.ArrayRefIter<{This}>:@pthr.IIterator)(this);
+impl [$$:*] #builtin("arrayRef.IterableRef") {
+	createIterator = (this) -> impl(std.ArrayRefIter<{This}>:@pthr.Iterator) {
+		return new impl(std.ArrayRefIter<{This}>:@pthr.Iterator)(this);
 	},
 }
 
-impl [$$:*] #builtin("arrayRef.IIterableRefRT") {
-	createIterator = (this) -> impl(std.ArrayRefIter<{This}>:@pthr.IIteratorRT) {
-		return new impl(std.ArrayRefIter<{This}>:@pthr.IIteratorRT)(this);
+impl [$$:*] #builtin("arrayRef.IterableRefRT") {
+	createIterator = (this) -> impl(std.ArrayRefIter<{This}>:@pthr.IteratorRT) {
+		return new impl(std.ArrayRefIter<{This}>:@pthr.IteratorRT)(this);
 	},
 }
 
@@ -31,15 +31,15 @@ impl [$$:*] #builtin("arrayRef.IIterableRefRT") {
 //////////////////////////////////////////////////////////////////////
 // mutable array reference
 
-impl [$$:*mut] #builtin("arrayMutRef.IIterableMutRef") {
-	createIterator = (this) -> impl(std.MutArrayRefIter<{This}>:@pthr.IMutIterator) {
-		return new impl(std.MutArrayRefIter<{This}>:@pthr.IMutIterator)(this);
+impl [$$:*mut] #builtin("arrayMutRef.IterableMutRef") {
+	createIterator = (this) -> impl(std.MutArrayRefIter<{This}>:@pthr.MutIterator) {
+		return new impl(std.MutArrayRefIter<{This}>:@pthr.MutIterator)(this);
 	},
 }
 
-impl [$$:*mut] #builtin("arrayMutRef.IIterableMutRefRT") {
-	createIterator = (this) -> impl(std.MutArrayRefIter<{This}>:@pthr.IMutIteratorRT) {
-		return new impl(std.MutArrayRefIter<{This}>:@pthr.IMutIteratorRT)(this);
+impl [$$:*mut] #builtin("arrayMutRef.IterableMutRefRT") {
+	createIterator = (this) -> impl(std.MutArrayRefIter<{This}>:@pthr.MutIteratorRT) {
+		return new impl(std.MutArrayRefIter<{This}>:@pthr.MutIteratorRT)(this);
 	},
 }
 
@@ -50,32 +50,32 @@ impl [$$:*mut] #builtin("arrayMutRef.IIterableMutRefRT") {
 // array iter
 
 
-impl [$$:$$] #builtin("array.IIterable") {
-	createIterator = (this) -> impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIterator) {
-		return new impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIterator)(
+impl [$$:$$] #builtin("array.Iterable") {
+	createIterator = (this) -> impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.Iterator) {
+		return new impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.Iterator)(
 			this as [type(@arrayElementTypeID<{This}>()):*]
 		);
 	},
 
 	createIterator = (this mut)
-	-> impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIterator) {
-		return new impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIterator)(
+	-> impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.MutIterator) {
+		return new impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.MutIterator)(
 			this as [type(@arrayElementTypeID<{This}>()):*mut]
 		);
 	},
 }
 
 
-impl [$$:$$] #builtin("array.IIterableRT") {
-	createIterator = (this) -> impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIteratorRT) {
-		return new impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IIteratorRT)(
+impl [$$:$$] #builtin("array.IterableRT") {
+	createIterator = (this) -> impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IteratorRT) {
+		return new impl(std.ArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*]}>:@pthr.IteratorRT)(
 			this as [type(@arrayElementTypeID<{This}>()):*]
 		);
 	},
 
 	createIterator = (this mut)
-	-> impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIteratorRT) {
-		return new impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.IMutIteratorRT)(
+	-> impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.MutIteratorRT) {
+		return new impl(std.MutArrayRefIter<{[type(@arrayElementTypeID<{This}>()):*mut]}>:@pthr.MutIteratorRT)(
 			this as [type(@arrayElementTypeID<{This}>()):*mut]
 		);
 	},

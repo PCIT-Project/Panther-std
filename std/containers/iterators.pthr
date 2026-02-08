@@ -36,13 +36,13 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 	}
 
 
-	impl @pthr.IIterator {
+	impl @pthr.Iterator {
 		next  = next,
 		get   = get,
 		atEnd = atEnd,
 	}
 
-	impl @pthr.IIteratorRT {
+	impl @pthr.IteratorRT {
 		next  = next,
 		get   = get,
 		atEnd = atEnd,
@@ -79,13 +79,13 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 	}
 
 
-	impl @pthr.IMutIterator {
+	impl @pthr.MutIterator {
 		next  = next,
 		get   = get,
 		atEnd = atEnd,
 	}
 
-	impl @pthr.IMutIteratorRT {
+	impl @pthr.MutIteratorRT {
 		next  = next,
 		get   = get,
 		atEnd = atEnd,
