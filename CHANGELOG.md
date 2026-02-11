@@ -1,6 +1,37 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.16.0"></a>
+## v0.0.16.0
+- Added `mem` module
+	- Added `mem.copyBuffer`
+	- Added `mem.moveBuffer`
+- Added to `types module`
+	- Added `types.isDefaultInitializable()`
+	- Added `types.isTriviallyDefaultInitializable()`
+	- Added `types.isComptimeDefaultInitializable()`
+	- Added `types.isNoErrorDefaultInitializable()`
+	- Added `types.isSafeDefaultInitializable()`
+	- Added `types.isTriviallyDeletable()`
+	- Added `types.isComptimeDeletable()`
+	- Added `types.isCopyable()`
+	- Added `types.isTriviallyCopyable()`
+	- Added `types.isComptimeCopyable()`
+	- Added `types.isNoErrorCopyable()`
+	- Added `types.isSafeCopyable()`
+	- Added `types.isMovable()`
+	- Added `types.isTriviallyMovable()`
+	- Added `types.isComptimeMovable()`
+	- Added `types.isNoErrorMovable()`
+	- Added `types.isSafeMovable()`
+	- Added `types.isComparable()`
+	- Added `types.isTriviallyComparable()`
+	- Added `types.isComptimeComparable()`
+	- Added `types.isNoErrorComparable()`
+	- Added `types.isSafeComparable()`
+
+
+<!---------------------------------->
 <a name="v0.0.15.0"></a>
 ## v0.0.15.0
 - Updated compiler-rt iterators and container iterators to reflect updates to [PCIT-CPP v0.0.231.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.231.0)

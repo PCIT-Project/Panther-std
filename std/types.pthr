@@ -14,3 +14,31 @@ func numBytes = <{T: Type, INCLUDE_PADDING: Bool = true}> () #pub -> USize {
 func numBits = <{T: Type, INCLUDE_PADDING: Bool = true}> () #pub -> USize {
 	return @numBits<{T, INCLUDE_PADDING}>();
 }
+
+
+func isDefaultInitializable          = <{T: Type}> () #pub -> Bool { return @isDefaultInitializable<{T}>();          }
+func isTriviallyDefaultInitializable = <{T: Type}> () #pub -> Bool { return @isTriviallyDefaultInitializable<{T}>(); }
+func isComptimeDefaultInitializable  = <{T: Type}> () #pub -> Bool { return @isComptimeDefaultInitializable<{T}>();  }
+func isNoErrorDefaultInitializable   = <{T: Type}> () #pub -> Bool { return @isNoErrorDefaultInitializable<{T}>();   }
+func isSafeDefaultInitializable      = <{T: Type}> () #pub -> Bool { return @isSafeDefaultInitializable<{T}>();      }
+
+func isTriviallyDeletable            = <{T: Type}> () #pub -> Bool { return @isTriviallyDeletable<{T}>();            }
+func isComptimeDeletable             = <{T: Type}> () #pub -> Bool { return @isComptimeDeletable<{T}>();             }
+
+func isCopyable                      = <{T: Type}> () #pub -> Bool { return @isCopyable<{T}>();                      }
+func isTriviallyCopyable             = <{T: Type}> () #pub -> Bool { return @isTriviallyCopyable<{T}>();             }
+func isComptimeCopyable              = <{T: Type}> () #pub -> Bool { return @isComptimeCopyable<{T}>();              }
+func isNoErrorCopyable               = <{T: Type}> () #pub -> Bool { return @isNoErrorCopyable<{T}>();               }
+func isSafeCopyable                  = <{T: Type}> () #pub -> Bool { return @isSafeCopyable<{T}>();                  }
+
+func isMovable                       = <{T: Type}> () #pub -> Bool { return @isMovable<{T}>();                       }
+func isTriviallyMovable              = <{T: Type}> () #pub -> Bool { return @isTriviallyMovable<{T}>();              }
+func isComptimeMovable               = <{T: Type}> () #pub -> Bool { return @isComptimeMovable<{T}>();               }
+func isNoErrorMovable                = <{T: Type}> () #pub -> Bool { return @isNoErrorMovable<{T}>();                }
+func isSafeMovable                   = <{T: Type}> () #pub -> Bool { return @isSafeMovable<{T}>();                   }
+func isComparable                    = <{T: Type}> () #pub -> Bool { return @isComparable<{T}>();                    }
+
+func isTriviallyComparable           = <{T: Type}> () #pub -> Bool { return @isTriviallyComparable<{T}>();           }
+func isComptimeComparable            = <{T: Type}> () #pub -> Bool { return @isComptimeComparable<{T}>();            }
+func isNoErrorComparable             = <{T: Type}> () #pub -> Bool { return @isNoErrorComparable<{T}>();             }
+func isSafeComparable                = <{T: Type}> () #pub -> Bool { return @isSafeComparable<{T}>();                }

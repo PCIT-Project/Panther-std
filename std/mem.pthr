@@ -1,0 +1,77 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+def std = @import("std");
+
+
+func mem_copy = (dst: [Byte:*mut], src: [Byte:*]) -> Void {
+	// TODO(FUTURE): assert dst.size() == src.size
+	// TODO(PERF): better than just naive approach
+
+	for(dst, src) [_; dst_value: Byte mut, src_value: Byte] {
+		dst_value = copy src_value;
+	}
+}
+
+
+
+
+func copyBuffer = (dst: [$T:*mut], src: [T:*])
+	#pub #rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>() == false)
+-> Void {
+	@comptimeAssert(
+		std.types.isNoErrorCopyable<{T}>(),
+		"std.mem.copyBuffer requires that buffer element must be no-error copyable"
+	);
+	// TODO(FUTURE): assert dst.size() == src.size
+
+	when(std.types.isTriviallyCopyable<{T}>()){
+		const buffer_size: USize = dst.size() * std.types.numBytes<{T}>();
+
+		unsafe{
+			const dst_buffer = new [Byte:*mut](std.bitCast<{Byte*mut}>(dst.data()), copy buffer_size);
+			const src_buffer = new [Byte:*](std.bitCast<{Byte*}>(src.data()), copy buffer_size);
+			mem_copy(dst_buffer, src_buffer);
+		}
+
+	}else{
+		for(dst, src) [_; dst_value: T mut, src_value: T] {
+			dst_value = copy src_value;
+		}
+	}
+}
+
+
+
+
+
+
+func moveBuffer = (dst: [$T:*mut], src: [T:*])
+	#pub #rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+-> Void {
+	@comptimeAssert(
+		std.types.isNoErrorMovable<{T}>(),
+		"std.mem.moveBuffer requires that buffer element must be no-error movable"
+	);
+	// TODO(FUTURE): assert dst.size() == src.size
+
+	when(std.types.isTriviallyMovable<{T}>()){
+		const buffer_size: USize = dst.size() * std.types.numBytes<{T}>();
+
+		unsafe{
+			const dst_buffer = new [Byte:*mut](std.bitCast<{Byte*mut}>(dst.data()), copy buffer_size);
+			const src_buffer = new [Byte:*](std.bitCast<{Byte*}>(src.data()), copy buffer_size);
+			mem_copy(dst_buffer, src_buffer);
+		}
+
+	}else{
+		for(dst, src) [_; dst_value: T mut, src_value: T] {
+			dst_value = move src_value;
+		}
+	}
+}
