@@ -21,13 +21,17 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 	}
 
 	func next = (this mut) -> Void {
+		std.assert(this.atEnd() == false, "Already at end");
 		unsafe{
 			const new_address: USize = std.bit.bitCast<{USize}>(this.current) + @numBytes<{ELEM_TYPE, true}>();
 			this.current = std.bit.bitCast<{ELEM_TYPE*}>(new_address);
 		}
 	}
 
-	func get = (this) -> ELEM_TYPE* { return copy this.current; }
+	func get = (this) -> ELEM_TYPE* {
+		std.assert(this.atEnd() == false, "Already at end");
+		return copy this.current;
+	}
 
 	func atEnd = (this) -> Bool {
 		unsafe{
@@ -64,13 +68,18 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 	}
 
 	func next = (this mut) -> Void {
+		std.assert(this.atEnd() == false, "Already at end");
+
 		unsafe{
 			const new_address: USize = std.bit.bitCast<{USize}>(this.current) + @numBytes<{ELEM_TYPE, true}>();
 			this.current = std.bit.bitCast<{ELEM_TYPE*mut}>(new_address);
 		}
 	}
 
-	func get = (this) -> ELEM_TYPE*mut { return copy this.current; }
+	func get = (this) -> ELEM_TYPE*mut {
+		std.assert(this.atEnd() == false, "Already at end");
+		return copy this.current;
+	}
 
 	func atEnd = (this) -> Bool {
 		unsafe{

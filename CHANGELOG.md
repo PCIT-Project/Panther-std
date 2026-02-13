@@ -1,6 +1,16 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.17.0"></a>
+## v0.0.17.0
+- Added asserts module
+	- `assert`
+- Added compiler-rt for panic
+- Added asserts to `ArrayRefIter` and `MutArrayRefIter`
+- Added asserts to `mem.copyBuffer` and `mem.moveBuffer`
+
+
+<!---------------------------------->
 <a name="v0.0.16.0"></a>
 ## v0.0.16.0
 - Added `mem` module

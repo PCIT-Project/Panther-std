@@ -1,0 +1,22 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+func assert = (cond: Bool, message: [Char:*]) #pub -> Void {
+	if(cond == false){
+		@panic(message);
+	}
+}
+
+
+func assert = (cond: Bool) #pub -> Void {
+	if(cond == false){
+		@panic("Failed assert");
+	}
+}
+
