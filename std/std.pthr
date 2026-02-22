@@ -56,10 +56,10 @@ def types #pub = @import("types.pthr");
 //////////////////////////////////////////////////////////////////////
 // containers
 
-///////////////////////////////////
-// iterators
-
 def iterators = @import("containers/iterators.pthr");
-
 type ArrayRefIter = alias #pub iterators.ArrayRefIter;
 type MutArrayRefIter = alias #pub iterators.MutArrayRefIter;
+
+
+type ManualLifetime = alias #pub @import("containers/ManualLifetime.pthr").ManualLifetime;
+

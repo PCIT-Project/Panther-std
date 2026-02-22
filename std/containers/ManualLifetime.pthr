@@ -1,0 +1,19 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+def std = @import("std");
+
+
+type ManualLifetime = struct <{T: Type}> #pub {
+	func get = (this) #unsafe -> T* { return std.bitCast<{T*}>(this.data.data()); }
+	func get = (this mut) #unsafe -> T*mut { return std.bitCast<{T*mut}>(this.data.data()); }
+	func getUninit = (this mut) #unsafe -> T*! { return std.bitCast<{T*!}>(this.data.data()); }
+	
+	var data: [Byte:std.types.numBytes<{T}>()] #priv;
+}
