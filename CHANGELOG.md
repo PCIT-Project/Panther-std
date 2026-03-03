@@ -1,6 +1,11 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.19.0"></a>
+## v0.0.19.0
+- Updated `ManualLifetime` to reflect updates to [PCIT-CPP v0.0.248.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.248.0)
+
+<!---------------------------------->
 <a name="v0.0.18.0"></a>
 ## v0.0.18.0
 - Added `ManualLifetime`
