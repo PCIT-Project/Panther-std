@@ -1,0 +1,78 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+def std = @import("std");
+
+
+
+func incrementPointer = (ptr: $T*, num_elems: ISize = 1) #pub #unsafe -> T* {
+	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
+	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
+	return std.bitCast<{T*}>(ptr_num);
+}
+func incrementPointer = (ptr: $T*?, num_elems: ISize = 1) #pub #unsafe -> T*? {
+	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
+	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
+	return std.bitCast<{T*?}>(ptr_num);
+}
+func incrementPointer = (ptr: $T*mut, num_elems: ISize = 1) #pub #unsafe -> T*mut {
+	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
+	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
+	return std.bitCast<{T*mut}>(ptr_num);
+}
+func incrementPointer = (ptr: $T*mut?, num_elems: ISize = 1) #pub #unsafe -> T*mut? {
+	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
+	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
+	return std.bitCast<{T*mut?}>(ptr_num);
+}
+
+
+func decrementPointer = (ptr: $T*, num_elems: ISize = 1) #pub #unsafe -> T* {
+	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
+	ptr_num -= std.types.numBytes<{T}>() as ISize * num_elems;
+	return std.bitCast<{T*}>(ptr_num);
+}
+func decrementPointer = (ptr: $T*?, num_elems: ISize = 1) #pub #unsafe -> T*? {
+	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
+	ptr_num -= std.types.numBytes<{T}>() as ISize * num_elems;
+	return std.bitCast<{T*?}>(ptr_num);
+}
+func decrementPointer = (ptr: $T*mut, num_elems: ISize = 1) #pub #unsafe -> T*mut {
+	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
+	ptr_num -= std.types.numBytes<{T}>() as ISize * num_elems;
+	return std.bitCast<{T*mut}>(ptr_num);
+}
+func decrementPointer = (ptr: $T*mut?, num_elems: ISize = 1) #pub #unsafe -> T*mut? {
+	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
+	ptr_num -= std.types.numBytes<{T}>() as ISize * num_elems;
+	return std.bitCast<{T*mut?}>(ptr_num);
+}
+
+
+
+func pointerDistance = (first: $T*, last: T*) #pub -> ISize {
+	unsafe{
+		return (std.bitCast<{ISize}>(last) - std.bitCast<{ISize}>(first)) / std.types.numBytes<{T}>() as ISize;
+	}
+}
+func pointerDistance = (first: $T*?, last: T*?) #pub -> ISize {
+	unsafe{
+		return (std.bitCast<{ISize}>(last) - std.bitCast<{ISize}>(first)) / std.types.numBytes<{T}>() as ISize;
+	}
+}
+func pointerDistance = (first: $T*mut, last: T*mut) #pub -> ISize {
+	unsafe{
+		return (std.bitCast<{ISize}>(last) - std.bitCast<{ISize}>(first)) / std.types.numBytes<{T}>() as ISize;
+	}
+}
+func pointerDistance = (first: $T*mut?, last: T*mut?) #pub -> ISize {
+	unsafe{
+		return (std.bitCast<{ISize}>(last) - std.bitCast<{ISize}>(first)) / std.types.numBytes<{T}>() as ISize;
+	}
+}

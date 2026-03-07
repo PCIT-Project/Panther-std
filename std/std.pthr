@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
+
 //////////////////////////////////////////////////////////////////////
 // asserts
 
@@ -43,6 +44,16 @@ def math #pub = @import("math.pthr");
 // mem
 
 def mem #pub = @import("mem.pthr");
+
+
+//////////////////////////////////////////////////////////////////////
+// ptrMath
+
+def ptrMath #pub = @import("ptrMath.pthr");
+
+func incrementPointer = alias #pub ptrMath.incrementPointer;
+func decrementPointer = alias #pub ptrMath.decrementPointer;
+func pointerDistance = alias #pub ptrMath.pointerDistance;
 
 
 
