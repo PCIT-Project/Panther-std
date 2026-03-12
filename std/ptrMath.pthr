@@ -11,48 +11,27 @@ def std = @import("std");
 
 
 
-func incrementPointer = (ptr: $T*, num_elems: ISize = 1) #pub #unsafe -> T* {
+func advancePointer = (ptr: $T*, num_elems: ISize = 1) #pub #unsafe -> T* {
 	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
 	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
 	return std.bitCast<{T*}>(ptr_num);
 }
-func incrementPointer = (ptr: $T*?, num_elems: ISize = 1) #pub #unsafe -> T*? {
+func advancePointer = (ptr: $T*?, num_elems: ISize = 1) #pub #unsafe -> T*? {
 	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
 	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
 	return std.bitCast<{T*?}>(ptr_num);
 }
-func incrementPointer = (ptr: $T*mut, num_elems: ISize = 1) #pub #unsafe -> T*mut {
+func advancePointer = (ptr: $T*mut, num_elems: ISize = 1) #pub #unsafe -> T*mut {
 	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
 	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
 	return std.bitCast<{T*mut}>(ptr_num);
 }
-func incrementPointer = (ptr: $T*mut?, num_elems: ISize = 1) #pub #unsafe -> T*mut? {
+func advancePointer = (ptr: $T*mut?, num_elems: ISize = 1) #pub #unsafe -> T*mut? {
 	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
 	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
 	return std.bitCast<{T*mut?}>(ptr_num);
 }
 
-
-func decrementPointer = (ptr: $T*, num_elems: ISize = 1) #pub #unsafe -> T* {
-	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
-	ptr_num -= std.types.numBytes<{T}>() as ISize * num_elems;
-	return std.bitCast<{T*}>(ptr_num);
-}
-func decrementPointer = (ptr: $T*?, num_elems: ISize = 1) #pub #unsafe -> T*? {
-	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
-	ptr_num -= std.types.numBytes<{T}>() as ISize * num_elems;
-	return std.bitCast<{T*?}>(ptr_num);
-}
-func decrementPointer = (ptr: $T*mut, num_elems: ISize = 1) #pub #unsafe -> T*mut {
-	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
-	ptr_num -= std.types.numBytes<{T}>() as ISize * num_elems;
-	return std.bitCast<{T*mut}>(ptr_num);
-}
-func decrementPointer = (ptr: $T*mut?, num_elems: ISize = 1) #pub #unsafe -> T*mut? {
-	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
-	ptr_num -= std.types.numBytes<{T}>() as ISize * num_elems;
-	return std.bitCast<{T*mut?}>(ptr_num);
-}
 
 
 

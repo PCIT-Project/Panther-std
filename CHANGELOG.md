@@ -1,5 +1,14 @@
 # Change Log
 
+<!---------------------------------->
+<a name="v0.0.21.0"></a>
+## v0.0.21.0
+- Added `__chkstk` to compiler_rt
+- Renamed `incrementPointer` to `advancePointer`
+- Removed `decrementPointer`
+
+
+<!---------------------------------->
 <a name="v0.0.20.0"></a>
 ## v0.0.20.0
 - Added `ptrMath` module

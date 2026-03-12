@@ -51,8 +51,7 @@ def mem #pub = @import("mem.pthr");
 
 def ptrMath #pub = @import("ptrMath.pthr");
 
-func incrementPointer = alias #pub ptrMath.incrementPointer;
-func decrementPointer = alias #pub ptrMath.decrementPointer;
+func advancePointer = alias #pub ptrMath.advancePointer;
 func pointerDistance = alias #pub ptrMath.pointerDistance;
 
 
