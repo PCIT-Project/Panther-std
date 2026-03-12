@@ -16,22 +16,12 @@ func advancePointer = (ptr: $T*, num_elems: ISize = 1) #pub #unsafe -> T* {
 	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
 	return std.bitCast<{T*}>(ptr_num);
 }
-func advancePointer = (ptr: $T*?, num_elems: ISize = 1) #pub #unsafe -> T*? {
-	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
-	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
-	return std.bitCast<{T*?}>(ptr_num);
-}
+
 func advancePointer = (ptr: $T*mut, num_elems: ISize = 1) #pub #unsafe -> T*mut {
 	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
 	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
 	return std.bitCast<{T*mut}>(ptr_num);
 }
-func advancePointer = (ptr: $T*mut?, num_elems: ISize = 1) #pub #unsafe -> T*mut? {
-	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
-	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
-	return std.bitCast<{T*mut?}>(ptr_num);
-}
-
 
 
 
@@ -40,17 +30,7 @@ func pointerDistance = (first: $T*, last: T*) #pub -> ISize {
 		return (std.bitCast<{ISize}>(last) - std.bitCast<{ISize}>(first)) / std.types.numBytes<{T}>() as ISize;
 	}
 }
-func pointerDistance = (first: $T*?, last: T*?) #pub -> ISize {
-	unsafe{
-		return (std.bitCast<{ISize}>(last) - std.bitCast<{ISize}>(first)) / std.types.numBytes<{T}>() as ISize;
-	}
-}
 func pointerDistance = (first: $T*mut, last: T*mut) #pub -> ISize {
-	unsafe{
-		return (std.bitCast<{ISize}>(last) - std.bitCast<{ISize}>(first)) / std.types.numBytes<{T}>() as ISize;
-	}
-}
-func pointerDistance = (first: $T*mut?, last: T*mut?) #pub -> ISize {
 	unsafe{
 		return (std.bitCast<{ISize}>(last) - std.bitCast<{ISize}>(first)) / std.types.numBytes<{T}>() as ISize;
 	}

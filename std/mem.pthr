@@ -10,7 +10,6 @@ def std = @import("std");
 
 
 func mem_copy = (dst: [Byte:*mut], src: [Byte:*]) -> Void {
-	// TODO(FUTURE): assert dst.size() == src.size
 	// TODO(PERF): better than just naive approach
 
 	for(dst, src) [_; dst_value: Byte mut, src_value: Byte] {
@@ -51,7 +50,7 @@ func copyBuffer = (dst: [$T:*mut], src: [T:*])
 
 
 
-func moveBuffer = (dst: [$T:*mut], src: [T:*])
+func moveBuffer = (dst: [$T:*mut], src: [T:*mut])
 	#pub #rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
 -> Void {
 	@comptimeAssert(
@@ -70,8 +69,14 @@ func moveBuffer = (dst: [$T:*mut], src: [T:*])
 		}
 
 	}else{
-		for(dst, src) [_; dst_value: T mut, src_value: T] {
-			dst_value = move src_value;
+		for(dst, src) [_; dst_value: T mut, src_value: T mut] {
+			when(std.types.isSafeMovable<{T}>()){
+				unsafe{
+					dst_value = move src_value;
+				}
+			}else{
+				dst_value = move src_value;
+			}
 		}
 	}
 }

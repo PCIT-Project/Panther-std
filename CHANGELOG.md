@@ -1,6 +1,13 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.22.0"></a>
+## v0.0.22.0
+- Removed optional pointer overloads of `advancePointer` and `pointerDistance`
+- Fixed `mem.moveBuffer` not having parameter `src` be a mut array reference
+
+
+<!---------------------------------->
 <a name="v0.0.21.0"></a>
 ## v0.0.21.0
 - Added `__chkstk` to compiler_rt
