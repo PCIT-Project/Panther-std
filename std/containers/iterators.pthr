@@ -21,14 +21,14 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 	}
 
 	func next = (this mut) -> Void {
-		std.assert(this.atEnd() == false, "Already at end");
+		std.debug.assert(this.atEnd() == false, "Already at end");
 		unsafe{
 			this.current = std.advancePointer(this.current);
 		}
 	}
 
 	func get = (this) -> ELEM_TYPE* {
-		std.assert(this.atEnd() == false, "Already at end");
+		std.debug.assert(this.atEnd() == false, "Already at end");
 		return copy this.current;
 	}
 
@@ -67,7 +67,7 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 	}
 
 	func next = (this mut) -> Void {
-		std.assert(this.atEnd() == false, "Already at end");
+		std.debug.assert(this.atEnd() == false, "Already at end");
 
 		unsafe{
 			this.current = std.advancePointer(this.current);
@@ -75,7 +75,7 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 	}
 
 	func get = (this) -> ELEM_TYPE*mut {
-		std.assert(this.atEnd() == false, "Already at end");
+		std.debug.assert(this.atEnd() == false, "Already at end");
 		return copy this.current;
 	}
 

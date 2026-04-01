@@ -1,6 +1,13 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.23.0"></a>
+## v0.0.23.0
+- Renamed `asserts` module to `debug`
+	- `std.assert` now must be `std.debug.assert`
+
+
+<!---------------------------------->
 <a name="v0.0.22.0"></a>
 ## v0.0.22.0
 - Removed optional pointer overloads of `advancePointer` and `pointerDistance`
