@@ -1,6 +1,17 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.24.0"></a>
+## v0.0.24.0
+- Added to `types module`
+	- Added `types.isIntegral()`
+	- Added `types.isUnsignedIntegral()`
+	- Added `types.isSignedIntegral()`
+	- Added `types.isFloatingPoint()`
+	- Added `types.isPointer()`
+
+
+<!---------------------------------->
 <a name="v0.0.23.0"></a>
 ## v0.0.23.0
 - Renamed `asserts` module to `debug`

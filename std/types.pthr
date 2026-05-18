@@ -42,3 +42,9 @@ func isTriviallyComparable           = <{T: Type}> () #pub -> Bool { return @isT
 func isComptimeComparable            = <{T: Type}> () #pub -> Bool { return @isComptimeComparable<{T}>();            }
 func isNoErrorComparable             = <{T: Type}> () #pub -> Bool { return @isNoErrorComparable<{T}>();             }
 func isSafeComparable                = <{T: Type}> () #pub -> Bool { return @isSafeComparable<{T}>();                }
+
+func isIntegral                      = <{T: Type}> () #pub -> Bool { return @isIntegral<{T}>();                      }
+func isUnsignedIntegral              = <{T: Type}> () #pub -> Bool { return @isUnsignedIntegral<{T}>();              }
+func isSignedIntegral                = <{T: Type}> () #pub -> Bool { return @isSignedIntegral<{T}>();                }
+func isFloatingPoint                 = <{T: Type}> () #pub -> Bool { return @isFloatingPoint<{T}>();                 }
+func isPointer                       = <{T: Type}> () #pub -> Bool { return @isPointer<{T}>();                       }
