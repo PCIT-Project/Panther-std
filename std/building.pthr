@@ -6,16 +6,3 @@
 //                                                                                //
 ////////////////////////////////////////////////////////////////////////////////////
 
-
-type Output = enum(UI32) #pub {
-	TOKENS              = 0,
-	AST                 = 1,
-	SEMANTIC_ANALYSIS   = 2,
-	PIR                 = 3,
-	LLVMIR              = 4,
-	ASSEMBLY            = 5,
-	OBJECT              = 6,
-	RUN                 = 7,
-	CONSOLE_EXECUTABLE  = 8,
-	WINDOWED_EXECUTABLE = 9,
-}
