@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.25.1"></a>
+## v0.0.25.1
+- Fixed alignment of `ManualLifetime`
+
+
+<!---------------------------------->
 <a name="v0.0.25.0"></a>
 ## v0.0.25.0
 - Removed `build.Output`

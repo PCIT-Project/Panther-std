@@ -10,7 +10,7 @@
 def std = @import("std");
 
 
-type ManualLifetime = struct <{T: Type}> #pub {
+type ManualLifetime = struct <{T: Type}> #pub #align(@numAlignBytes<{T}>()) {
 	func get = (this) #unsafe -> T* { return std.bitCast<{T*}>(this.data.data()); }
 	func get = (this mut) #unsafe -> T*mut { return std.bitCast<{T*mut}>(this.data.data()); }
 	func getUninit = (this mut) #unsafe -> T*uninit { return std.bitCast<{T*uninit}>(this.data.data()); }
