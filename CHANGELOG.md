@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.25.2"></a>
+## v0.0.25.2
+- Fixed `__chkstk` having the wrong calling convention
+
+
+<!---------------------------------->
 <a name="v0.0.25.1"></a>
 ## v0.0.25.1
 - Fixed alignment of `ManualLifetime`

@@ -7,6 +7,6 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-func __chkstk = () #export -> Void {
+func __chkstk = () #export #callConv(@pthr.CallingConvention.C) -> Void {
 	// TODO(FUTURE): actually implement
 }
