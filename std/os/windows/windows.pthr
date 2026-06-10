@@ -1,0 +1,65 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+def std = @import("std");
+
+def native #pub = @import("./native.pthr");
+
+
+//////////////////////////////////////////////////////////////////////
+// types
+
+type Handle = alias #pub #distinct RawPtr;
+
+
+//////////////////////////////////////////////////////////////////////
+// enums
+
+type StdHandle = enum(UI32) #pub {
+	INPUT  = native.STD_INPUT_HANDLE,
+	OUTPUT = native.STD_OUTPUT_HANDLE,
+	ERROR  = native.STD_ERROR_HANDLE,
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// functions
+
+func getLastError = () #pub #rt -> UI32 { return native.GetLastError(); }
+
+
+func getStdHandle = (std_handle: StdHandle) #pub #rt -> Handle {
+	return native.GetStdHandle(std_handle as native.DWORD) as Handle;
+}
+
+
+func outputDebugStringA = (string: [Char:*;'\0']) #pub #rt -> Void {
+	native.OutputDebugStringA(string.data());
+}
+
+
+func writeConsoleA = (handle: Handle, buffer: [Char:*]) #pub #rt -> Void {
+	_ = native.WriteConsoleA(
+		handle as RawPtr, buffer.data(), buffer.size() as UI32, null, null
+	);
+}
+
+
+
+func writeFile = (handle: Handle, buffer: [Char:*]) #pub #rt -> Void {
+	_ = native.WriteFile(
+		handle as RawPtr, buffer.data() as RawPtr, buffer.size() as UI32, null, null
+	);
+}
+
+func writeFile = (handle: Handle, buffer: [Byte:*]) #pub #rt -> Void {
+	_ = native.WriteFile(
+		handle as RawPtr, buffer.data() as RawPtr, buffer.size() as UI32, null, null
+	);
+}

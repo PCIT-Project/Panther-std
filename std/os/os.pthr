@@ -9,22 +9,8 @@
 
 def std = @import("std");
 
+when(@config.platform == std.Platform.WINDOWS){
+	
+	def windows #pub = @import("./windows/windows.pthr");
 
-var inPanicHandler: Bool #pub = false;
-
-func panic = (message: [Char:*]) #noReturn #builtin("panic") #rtDiff -> Void {
-	when(@isComptime() == false){
-		inPanicHandler = true;
-	}
-
-	when(@config.includeDebugInfo){
-		std.debug.print(message);
-		@breakpoint();
-		when(@isComptime() == false){
-			inPanicHandler = false;
-		}
-
-	}else{
-		@abort();
-	}
 }

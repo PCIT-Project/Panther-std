@@ -1,6 +1,30 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.26.0"></a>
+## v0.0.26.0
+- Added `os` module
+- Added `os.windows` module
+	- `Handle`
+	- `StdHandle`
+	- `getLastError`
+	- `getStdHandle`
+	- `outputDebugStringA`
+	- `writeConsoleA`
+	- `writeFile`
+- Added `inPanicHandler`
+- Added builtins
+	- Added CallingConvention
+	- Added Language
+	- Added Architecture
+	- Added Platform
+	- Added Mode
+	- Added OptMode
+	- Added iteration types such as `Iterable` and `MutIteratorRT`
+- Made `debug.assert` be a no-op when not including debug info
+
+
+<!---------------------------------->
 <a name="v0.0.25.2"></a>
 ## v0.0.25.2
 - Fixed `__chkstk` having the wrong calling convention

@@ -7,16 +7,47 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
+def std = @import("std");
+
 func assert = (cond: Bool, message: [Char:*]) #pub -> Void {
-	if(cond == false){
-		@panic(message);
+	when(@config.includeDebugInfo){
+		if(cond == false){
+			@panic(message);
+		}
 	}
 }
 
 
 func assert = (cond: Bool) #pub -> Void {
-	if(cond == false){
-		@panic("Failed assert");
+	when(@config.includeDebugInfo){
+		if(cond == false){
+			@panic("Failed assert");
+		}
 	}
 }
 
+
+
+
+func print = (str: [Char:*]) #pub #rtDiff -> Void {
+	when(@isComptime()){
+		// TODO(FEATURE): make work at comptime
+		unreachable; // "Comptime printing is unimplemented"
+
+	}else{
+		when(@config.platform == std.Platform.WINDOWS){
+			if(std.inPanicHandler() == false){
+				const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
+
+				const buffer_ptr: Byte* = {->expr:Byte*
+					unsafe{ return->expr std.bitCast<{Byte*}>(str.data()); }
+				};
+
+				std.os.windows.writeConsoleA(stdout, str);
+			}
+
+		}else{
+			@comptimeError("Unsupported platform");
+		}
+	}
+}

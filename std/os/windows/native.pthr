@@ -1,0 +1,96 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+def std = @import("std");
+
+
+//////////////////////////////////////////////////////////////////////
+// types
+
+//////////////////
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types
+
+type DWORD     = alias #pub UI32;
+type HANDLE    = alias #pub RawPtr;
+type LPCSTR    = alias #pub Char*; // null terminated string
+type LPDWORD   = alias #pub DWORD*mut;
+type LPVOID    = alias #pub RawPtr;
+type LPCVOID   = alias #pub RawPtr;
+type PVOID     = alias #pub RawPtr;
+type ULONG_PTR = alias #pub USize;
+
+
+//////////////////
+// https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-overlapped
+
+type OVERLAPPED = struct #pub #ordered {
+	var Internal       : ULONG_PTR;
+	var InternalHigh   : ULONG_PTR;
+	var DUMMYUNIONNAME : _DUMMYUNIONNAME;
+	var hEvent         : HANDLE;
+
+	type _DUMMYUNIONNAME = union {
+		type _DUMMYSTRUCTNAME = struct {
+			var Offset     : DWORD;
+			var OffsetHigh : DWORD;
+		}
+
+		DUMMYSTRUCTNAME: _DUMMYSTRUCTNAME,
+		Pointer: PVOID,
+	}
+}
+
+type LPOVERLAPPED = alias #pub OVERLAPPED*mut;
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+// vars
+
+func handle_id_from_spec = (spec: I32) -> UI32 {
+	unsafe{ return std.bitCast<{UI32}>(spec); }
+}
+
+def STD_INPUT_HANDLE  : DWORD #pub = handle_id_from_spec(-10);
+def STD_OUTPUT_HANDLE : DWORD #pub = handle_id_from_spec(-11);
+def STD_ERROR_HANDLE  : DWORD #pub = handle_id_from_spec(-12);
+
+
+
+//////////////////////////////////////////////////////////////////////
+// funcs
+
+func GetLastError = () #pub #callConv(@pthr.CallingConvention.WIN_API) -> DWORD = extern(@pthr.Language.C);
+
+func GetStdHandle = 
+	(nStdHandle: DWORD) #pub #callConv(@pthr.CallingConvention.WIN_API) -> HANDLE = extern(@pthr.Language.C);
+
+func OutputDebugStringA =
+	(lpOutputString: LPCSTR) #pub #callConv(@pthr.CallingConvention.WIN_API) -> Void = extern(@pthr.Language.C);
+
+func WriteConsoleA = (
+	hConsoleOutput         : HANDLE,
+	lpBuffer               : Char*,
+	nNumberOfCharsToWrite  : DWORD,
+	lpNumberOfCharsWritten : LPDWORD?,
+	lpReserved             : LPVOID,  // must be null
+) #pub #callConv(@pthr.CallingConvention.WIN_API) -> Bool32 = extern(@pthr.Language.C);
+
+
+func WriteFile = (
+	hFile                  : HANDLE,
+	lpBuffer               : LPCVOID,
+	nNumberOfBytesToWrite  : DWORD,
+	lpNumberOfBytesWritten : LPDWORD?,
+	lpOverlapped           : LPOVERLAPPED?,
+) #pub #callConv(@pthr.CallingConvention.WIN_API) -> Bool32 = extern(@pthr.Language.C);
+
+
+
