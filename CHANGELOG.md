@@ -1,6 +1,16 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.27.0"></a>
+## v0.0.27.0
+- Added `types.isRuntimeDefaultInitializable`
+- Added `types.isRuntimeDeletable`
+- Added `types.isRuntimeCopyable`
+- Added `types.isRuntimeMovable`
+- Added `types.isRuntimeComparable`
+
+
+<!---------------------------------->
 <a name="v0.0.26.0"></a>
 ## v0.0.26.0
 - Added `os` module

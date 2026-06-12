@@ -9,8 +9,9 @@
 
 def std = @import("std");
 
-when(@config.platform == std.Platform.WINDOWS){
-	
-	def windows #pub = @import("./windows/windows.pthr");
 
+when switch(@config.platform){
+	case(std.Platform.WINDOWS){
+		def windows #pub = @import("./windows/windows.pthr");
+	}
 }
