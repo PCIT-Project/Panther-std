@@ -89,6 +89,7 @@ type Language          = alias #pub @pthr.Language;
 type Architecture      = alias #pub @pthr.Architecture;
 type Platform          = alias #pub @pthr.Platform;
 type Mode              = alias #pub @pthr.Mode;
+type WindowsSubsystem  = alias #pub @pthr.WindowsSubsystem;
 type OptMode           = alias #pub @pthr.OptMode;
 
 

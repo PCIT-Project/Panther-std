@@ -18,7 +18,7 @@ func panic = (message: [Char:*]) #noReturn #builtin("panic") #rtDiff -> Void {
 	}
 
 	when(@config.includeDebugInfo){
-		std.debug.print(message);
+		std.debug.println(message);
 		@breakpoint();
 		when(@isComptime() == false){
 			inPanicHandler = false;

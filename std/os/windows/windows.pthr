@@ -31,11 +31,40 @@ type StdHandle = enum(UI32) #pub {
 //////////////////////////////////////////////////////////////////////
 // functions
 
-func getLastError = () #pub #rt -> UI32 { return native.GetLastError(); }
+
+func exitProcess = (exit_code: CUInt) #pub #rt #noReturn -> Void {
+	native.ExitProcess(exit_code);
+}
+
+
+func getLastError = () #pub #rt -> UI32 {
+	return native.GetLastError();
+}
 
 
 func getStdHandle = (std_handle: StdHandle) #pub #rt -> Handle {
 	return native.GetStdHandle(std_handle as native.DWORD) as Handle;
+}
+
+func getProcessHeap = () #pub #rt -> Handle {
+	return native.GetProcessHeap() as Handle;
+}
+
+// TODO(NOW): flags
+func heapAlloc = <{T: Type}> (heap: Handle, flags: UI32) #pub #rt -> T*mut {
+	const raw_ptr: RawPtr = native.HeapAlloc(heap as native.HANDLE, flags, std.types.numBytes<{T}>());
+	unsafe{ return std.bitCast<{T*mut}>(raw_ptr); }
+}
+
+func heapAlloc = <{T: Type}> (heap: Handle, flags: UI32, num_elems: USize) #pub #rt -> [T:*mut] {
+	const raw_ptr: RawPtr = native.HeapAlloc(heap as native.HANDLE, flags, std.types.numBytes<{T}>() * num_elems);
+	unsafe{ return new [T:*mut](std.bitCast<{T*mut}>(raw_ptr), copy num_elems); }
+}
+
+
+// TODO(NOW): flags
+func heapFree = (heap: Handle, flags: UI32, mem: $$*) #pub #rt -> Void {
+	native.HeapFree(heap as native.HANDLE, flags, mem as RawPtr);
 }
 
 
@@ -46,7 +75,7 @@ func outputDebugStringA = (string: [Char:*;'\0']) #pub #rt -> Void {
 
 func writeConsoleA = (handle: Handle, buffer: [Char:*]) #pub #rt -> Void {
 	_ = native.WriteConsoleA(
-		handle as RawPtr, buffer.data(), buffer.size() as UI32, null, null
+		handle as native.HANDLE, buffer.data(), buffer.size() as UI32, null, null
 	);
 }
 
@@ -54,12 +83,12 @@ func writeConsoleA = (handle: Handle, buffer: [Char:*]) #pub #rt -> Void {
 
 func writeFile = (handle: Handle, buffer: [Char:*]) #pub #rt -> Void {
 	_ = native.WriteFile(
-		handle as RawPtr, buffer.data() as RawPtr, buffer.size() as UI32, null, null
+		handle as native.HANDLE, buffer.data() as RawPtr, buffer.size() as UI32, null, null
 	);
 }
 
 func writeFile = (handle: Handle, buffer: [Byte:*]) #pub #rt -> Void {
 	_ = native.WriteFile(
-		handle as RawPtr, buffer.data() as RawPtr, buffer.size() as UI32, null, null
+		handle as native.HANDLE, buffer.data() as RawPtr, buffer.size() as UI32, null, null
 	);
 }

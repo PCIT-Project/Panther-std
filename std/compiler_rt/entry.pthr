@@ -1,0 +1,66 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+def std = @import("std");
+
+
+when(@config.mode != std.Mode.COMPILE && @config.mode != std.Mode.COMPILE_RUN){
+	// no entry needed
+
+}else when(@options.linkingWithLibC){
+	
+	when(
+		@config.platform == std.Platform.WINDOWS
+		&& @config.windowsSubsystem != null
+		&& @config.windowsSubsystem.?.* == std.WindowsSubsystem.WINDOWS
+	){
+		func WinMain = (
+			hInstance     : std.os.windows.native.HINSTANCE,
+			hPrevInstance : std.os.windows.native.HINSTANCE,
+			lpCmdLine     : std.os.windows.native.LPCSTR,
+			nShowCmd      : CInt
+		) #rt #export #callConv(std.CallingConvention.C) -> CInt {
+			return @entry() as CInt;
+		}
+		
+	}else{
+		func main = (argc: CInt, argv: Char**) #rt #export #callConv(std.CallingConvention.C) -> CInt {
+			return @entry() as CInt;
+		}
+	}
+
+}else{
+
+	when switch(@config.platform){
+		case(std.Platform.WINDOWS){
+			when(@config.windowsSubsystem == null){
+				func mainCRTStartup = () #rt #export #callConv(std.CallingConvention.C) -> CInt {
+					return @entry() as CInt;
+				}
+
+			}else{
+				when switch(@config.windowsSubsystem.?.*){
+					case(std.WindowsSubsystem.CONSOLE){
+						func mainCRTStartup = () #rt #export #callConv(std.CallingConvention.C) -> CInt {
+							return @entry() as CInt;
+						}
+					}
+
+					case(std.WindowsSubsystem.WINDOWS){
+						func WinMainCRTStartup = () #rt #export #callConv(std.CallingConvention.C) -> CInt {
+							std.os.windows.exitProcess(@entry() as CUInt);
+						}
+					}
+				}
+			}
+		}
+	}
+
+}
+

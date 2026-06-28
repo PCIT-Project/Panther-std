@@ -1,6 +1,19 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.28.0"></a>
+## v0.0.28.0
+- Added entry to compiler-rt
+- Added `debug.println`
+- Added to `os.windows`
+	- `exitProcess`
+	- `getProcessHeap`
+	- `heapAlloc`
+	- `heapFree`
+- Fixed `debug.print` not working when in panic handler
+
+
+<!---------------------------------->
 <a name="v0.0.27.0"></a>
 ## v0.0.27.0
 - Added `types.isRuntimeDefaultInitializable`
