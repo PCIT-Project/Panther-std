@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.29.0"></a>
+## v0.0.29.0
+- Added comptime printing to `debug.print` and `debug.println`
+
+
+<!---------------------------------->
 <a name="v0.0.28.0"></a>
 ## v0.0.28.0
 - Added entry to compiler-rt

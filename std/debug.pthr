@@ -31,26 +31,22 @@ func assert = (cond: Bool) #pub -> Void {
 
 func print = (str: [Char:*]) #pub #rtDiff -> Void {
 	when(@isComptime()){
-		// TODO(FEATURE): make work at comptime
-		unreachable; // "Comptime printing is unimplemented"
+		@comptimePrint(str);
 
 	}else{
 		when(@config.platform == std.Platform.WINDOWS){
-			// if(std.inPanicHandler() == false){
-				const heap_handle: std.os.windows.Handle = std.os.windows.getProcessHeap();
+			const heap_handle: std.os.windows.Handle = std.os.windows.getProcessHeap();
 
-				const alloc_buffer: [Char:*mut] = std.os.windows.heapAlloc<{Char}>(heap_handle, 0, str.size() + 1);
-				defer{ std.os.windows.heapFree(heap_handle, 0, alloc_buffer.data()); }
+			const alloc_buffer: [Char:*mut] = std.os.windows.heapAlloc<{Char}>(heap_handle, 0, str.size() + 1);
+			defer{ std.os.windows.heapFree(heap_handle, 0, alloc_buffer.data()); }
 
-				std.mem.copyBuffer(new [Char:*mut](alloc_buffer.data(), str.size()), str);
-				alloc_buffer[str.size()].* = '\0';
+			std.mem.copyBuffer(new [Char:*mut](alloc_buffer.data(), str.size()), str);
+			alloc_buffer[str.size()].* = '\0';
 
-				const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
+			const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
 
-				std.os.windows.writeConsoleA(stdout, str);
-
-				std.os.windows.outputDebugStringA(new [Char:*mut;'\0'](alloc_buffer.data(), str.size()));
-			// }
+			std.os.windows.writeFile(stdout, str);
+			std.os.windows.outputDebugStringA(new [Char:*mut;'\0'](alloc_buffer.data(), str.size()));
 
 		}else{
 			@comptimeError("Unsupported platform");
@@ -61,28 +57,25 @@ func print = (str: [Char:*]) #pub #rtDiff -> Void {
 
 func println = (str: [Char:*]) #pub #rtDiff -> Void {
 	when(@isComptime()){
-		// TODO(FEATURE): make work at comptime
-		unreachable; // "Comptime printing is unimplemented"
+		@comptimePrintln(str);
 
 	}else{
 		when(@config.platform == std.Platform.WINDOWS){
-			// if(std.inPanicHandler() == false){
-				const heap_handle: std.os.windows.Handle = std.os.windows.getProcessHeap();
+			const heap_handle: std.os.windows.Handle = std.os.windows.getProcessHeap();
 
-				const alloc_buffer: [Char:*mut] = std.os.windows.heapAlloc<{Char}>(heap_handle, 0, str.size() + 2);
-				defer{ std.os.windows.heapFree(heap_handle, 0, alloc_buffer.data()); }
+			const alloc_buffer: [Char:*mut] = std.os.windows.heapAlloc<{Char}>(heap_handle, 0, str.size() + 2);
+			defer{ std.os.windows.heapFree(heap_handle, 0, alloc_buffer.data()); }
 
-				std.mem.copyBuffer(new [Char:*mut](alloc_buffer.data(), str.size()), str);
-				alloc_buffer[str.size()].* = '\n';
-				alloc_buffer[str.size() + 1].* = '\0';
+			std.mem.copyBuffer(new [Char:*mut](alloc_buffer.data(), str.size()), str);
+			alloc_buffer[str.size()].* = '\n';
+			alloc_buffer[str.size() + 1].* = '\0';
 
-				const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
+			const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
 
-				const created_str = new [Char:*mut;'\0'](alloc_buffer.data(), str.size() + 1);
+			const created_str = new [Char:*mut;'\0'](alloc_buffer.data(), str.size() + 1);
 
-				std.os.windows.writeConsoleA(stdout, created_str);
-				std.os.windows.outputDebugStringA(created_str);
-			// }
+			std.os.windows.writeFile(stdout, created_str);
+			std.os.windows.outputDebugStringA(created_str);
 
 		}else{
 			@comptimeError("Unsupported platform");
