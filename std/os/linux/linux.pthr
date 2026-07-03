@@ -9,13 +9,25 @@
 
 def std = @import("std");
 
+def native #pub = @import("./native.pthr");
 
-when switch(@config.platform){
-	case(std.Platform.WINDOWS){
-		def windows #pub = @import("./windows/windows.pthr");
-	}
 
-	case(std.Platform.LINUX){
-		def linux #pub = @import("./linux/linux.pthr");
+type FileDescriptor = alias #pub /*#distinct*/ CInt;
+
+def STDIN  #pub = 0 as FileDescriptor;
+def STDOUT #pub = 1 as FileDescriptor;
+def STDERR #pub = 2 as FileDescriptor;
+
+
+
+func exit = (exit_code: CInt) #pub #rt #noReturn -> Void {
+	_ = native.syscall(native.SyscallCode.EXIT, exit_code as UI64);
+}
+
+func write = (fd: FileDescriptor, str: [Char:*]) #pub #rt -> ISize {
+	unsafe{
+		return native.syscall(
+			native.SyscallCode.WRITE, fd as CInt as UI64, std.bitCast<{UI64}>(str.data()), str.size() as UI64
+		) as ISize;
 	}
 }

@@ -54,10 +54,32 @@ when(@config.mode != std.Mode.COMPILE && @config.mode != std.Mode.COMPILE_RUN){
 
 					case(std.WindowsSubsystem.WINDOWS){
 						func WinMainCRTStartup = () #rt #export #callConv(std.CallingConvention.C) -> CInt {
-							std.os.windows.exitProcess(@entry() as CUInt);
+							std.os.windows.exitProcess(@entry() as CInt);
 						}
 					}
 				}
+			}
+		}
+
+		case(std.Platform.LINUX){
+			func main = (argc: CInt, argv: Char**) #rt #export #callConv(std.CallingConvention.C) -> CInt {
+				return @entry() as CInt;
+			}
+
+			func exit = (exit_code: CInt) #rt #export #noReturn #callConv(std.CallingConvention.C) -> Void {
+				std.os.linux.exit(exit_code);
+			}
+
+			func _start = () #naked #export #callConv(std.CallingConvention.C) -> Void {
+				asm () #sideEffect -> Void {"
+					xor ebp, ebp
+					mov rdi, qword ptr [rsp]
+					lea rsi, [rsp + 8]
+					and rsp, -16
+					call main
+					mov rdi, rax
+					call exit
+				"};
 			}
 		}
 	}

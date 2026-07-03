@@ -48,6 +48,9 @@ func print = (str: [Char:*]) #pub #rtDiff -> Void {
 			std.os.windows.writeFile(stdout, str);
 			std.os.windows.outputDebugStringA(new [Char:*mut;'\0'](alloc_buffer.data(), str.size()));
 
+		}else when(@config.platform == std.Platform.LINUX){
+			_ = std.os.linux.write(std.os.linux.STDOUT, str);
+
 		}else{
 			@comptimeError("Unsupported platform");
 		}
@@ -76,6 +79,12 @@ func println = (str: [Char:*]) #pub #rtDiff -> Void {
 
 			std.os.windows.writeFile(stdout, created_str);
 			std.os.windows.outputDebugStringA(created_str);
+
+		}else when(@config.platform == std.Platform.LINUX){
+			_ = std.os.linux.write(std.os.linux.STDOUT, str);
+
+			const newline: Char = '\n';
+			_ = std.os.linux.write(std.os.linux.STDOUT, new [Char:*](&newline, 1));
 
 		}else{
 			@comptimeError("Unsupported platform");

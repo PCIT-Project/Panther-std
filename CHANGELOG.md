@@ -1,6 +1,14 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.30.0"></a>
+## v0.0.30.0
+- Added `os.linux`
+	- `exit`
+	- `write`
+
+
+<!---------------------------------->
 <a name="v0.0.29.0"></a>
 ## v0.0.29.0
 - Added comptime printing to `debug.print` and `debug.println`
