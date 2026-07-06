@@ -13,9 +13,11 @@ def std = @import("std");
 when switch(@config.platform){
 	case(std.Platform.WINDOWS){
 		def windows #pub = @import("./windows/windows.pthr");
+		def linux #pub = delete("Current target platform is Windows");
 	}
 
 	case(std.Platform.LINUX){
+		def windows #pub = delete("Current target platform is Linux");
 		def linux #pub = @import("./linux/linux.pthr");
 	}
 }

@@ -1,6 +1,14 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.31.0"></a>
+## v0.0.31.0
+- Added `os.windows.HeapAllocFlags`
+- Added `os.windows.HeapFreeFlags`
+- Added delete messages for os modules
+
+
+<!---------------------------------->
 <a name="v0.0.30.0"></a>
 ## v0.0.30.0
 - Added `os.linux`

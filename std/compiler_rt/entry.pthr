@@ -72,12 +72,12 @@ when(@config.mode != std.Mode.COMPILE && @config.mode != std.Mode.COMPILE_RUN){
 
 			func _start = () #naked #export #callConv(std.CallingConvention.C) -> Void {
 				asm () #sideEffect -> Void {"
-					xor ebp, ebp
-					mov rdi, qword ptr [rsp]
-					lea rsi, [rsp + 8]
-					and rsp, -16
+					xor ebp, ebp             # set frame pointer to 0
+					mov rdi, qword ptr [rsp] # argv
+					lea rsi, [rsp + 8]       # argc
+					and rsp, -16             # make sure stack is aligned
 					call main
-					mov rdi, rax
+					mov rdi, rax             # pass result of main to exit
 					call exit
 				"};
 			}

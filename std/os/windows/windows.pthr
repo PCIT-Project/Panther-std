@@ -27,6 +27,18 @@ type StdHandle = enum(UI32) #pub {
 	ERROR  = native.STD_ERROR_HANDLE,
 }
 
+type HeapAllocFlags = enum(UI32) #pub {
+	NONE                = 0x0,
+	GENERATE_EXCEPTIONS = 0x4,
+	NO_SERIALIZE        = 0x1,
+	ZERO_MEMORY         = 0x8,
+}
+
+type HeapFreeFlags = enum(UI32) #pub {
+	NONE         = 0x0,
+	NO_SERIALIZE = 0x1,
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // functions
@@ -50,21 +62,20 @@ func getProcessHeap = () #pub #rt -> Handle {
 	return native.GetProcessHeap() as Handle;
 }
 
-// TODO(NOW): flags
-func heapAlloc = <{T: Type}> (heap: Handle, flags: UI32) #pub #rt -> T*mut {
-	const raw_ptr: RawPtr = native.HeapAlloc(heap as native.HANDLE, flags, std.types.numBytes<{T}>());
+func heapAlloc = <{T: Type}> (heap: Handle, flags: HeapAllocFlags) #pub #rt -> T*mut {
+	const raw_ptr: RawPtr = native.HeapAlloc(heap as native.HANDLE, flags as UI32, std.types.numBytes<{T}>());
 	unsafe{ return std.bitCast<{T*mut}>(raw_ptr); }
 }
 
-func heapAlloc = <{T: Type}> (heap: Handle, flags: UI32, num_elems: USize) #pub #rt -> [T:*mut] {
-	const raw_ptr: RawPtr = native.HeapAlloc(heap as native.HANDLE, flags, std.types.numBytes<{T}>() * num_elems);
+func heapAlloc = <{T: Type}> (heap: Handle, flags: HeapAllocFlags, num_elems: USize) #pub #rt -> [T:*mut] {
+	const raw_ptr: RawPtr =
+		native.HeapAlloc(heap as native.HANDLE, flags as UI32, std.types.numBytes<{T}>() * num_elems);
 	unsafe{ return new [T:*mut](std.bitCast<{T*mut}>(raw_ptr), copy num_elems); }
 }
 
 
-// TODO(NOW): flags
-func heapFree = (heap: Handle, flags: UI32, mem: $$*) #pub #rt -> Void {
-	native.HeapFree(heap as native.HANDLE, flags, mem as RawPtr);
+func heapFree = (heap: Handle, flags: HeapFreeFlags, mem: $$*) #pub #rt -> Void {
+	native.HeapFree(heap as native.HANDLE, flags as UI32, mem as RawPtr);
 }
 
 
