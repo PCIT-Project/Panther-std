@@ -12,7 +12,7 @@ def std = @import("std");
 def native #pub = @import("./native.pthr");
 
 
-type FileDescriptor = alias #pub /*#distinct*/ CInt;
+type FileDescriptor = alias #pub #distinct CInt;
 
 def STDIN  #pub = 0 as FileDescriptor;
 def STDOUT #pub = 1 as FileDescriptor;

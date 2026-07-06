@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.31.1"></a>
+## v0.0.31.1
+- Fixed `debug.print` and `debug.println` in runtime on Windows
+
+
+<!---------------------------------->
 <a name="v0.0.31.0"></a>
 ## v0.0.31.0
 - Added `os.windows.HeapAllocFlags`
