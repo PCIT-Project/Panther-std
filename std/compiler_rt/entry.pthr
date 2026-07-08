@@ -10,11 +10,10 @@
 def std = @import("std");
 
 
-when(@config.mode != std.Mode.COMPILE && @config.mode != std.Mode.COMPILE_RUN){
+when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode != std.CompilerMode.COMPILE_RUN){
 	// no entry needed
 
 }else when(@options.linkingWithLibC){
-	
 	when(
 		@config.platform == std.Platform.WINDOWS
 		&& @config.windowsSubsystem != null
@@ -36,7 +35,6 @@ when(@config.mode != std.Mode.COMPILE && @config.mode != std.Mode.COMPILE_RUN){
 	}
 
 }else{
-
 	when switch(@config.platform){
 		case(std.Platform.WINDOWS){
 			when(@config.windowsSubsystem == null){

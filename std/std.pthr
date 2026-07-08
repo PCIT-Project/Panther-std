@@ -88,9 +88,10 @@ type CallingConvention = alias #pub @pthr.CallingConvention;
 type Language          = alias #pub @pthr.Language;
 type Architecture      = alias #pub @pthr.Architecture;
 type Platform          = alias #pub @pthr.Platform;
-type Mode              = alias #pub @pthr.Mode;
 type WindowsSubsystem  = alias #pub @pthr.WindowsSubsystem;
+type Mode              = alias #pub @pthr.Mode;
 type OptMode           = alias #pub @pthr.OptMode;
+type CompilerMode      = alias #pub @pthr.CompilerMode;
 
 
 type Iterable         = alias #pub @pthr.Iterable;
@@ -103,11 +104,3 @@ type Iterator         = alias #pub @pthr.Iterator;
 type IteratorRT       = alias #pub @pthr.IteratorRT;
 type MutIterator      = alias #pub @pthr.MutIterator;
 type MutIteratorRT    = alias #pub @pthr.MutIteratorRT;
-
-
-//////////////////////////////////////////////////////////////////////
-// misc
-
-func inPanicHandler = () #pub #rt -> Bool {
-	return copy @import("./compiler_rt/panic.pthr").inPanicHandler;
-}

@@ -10,18 +10,20 @@
 def std = @import("std");
 
 func assert = (cond: Bool, message: [Char:*]) #pub -> Void {
-	when(@config.includeDebugInfo){
+	when(@config.mode == std.Mode.DEBUG || @config.mode == std.Mode.SAFE){
 		if(cond == false){
-			@panic(message);
+			println(message);
+			@breakpoint();
 		}
 	}
 }
 
 
 func assert = (cond: Bool) #pub -> Void {
-	when(@config.includeDebugInfo){
+	when(@config.mode == std.Mode.DEBUG || @config.mode == std.Mode.SAFE){
 		if(cond == false){
-			@panic("Failed assert");
+			println("Failed assert");
+			@breakpoint();
 		}
 	}
 }

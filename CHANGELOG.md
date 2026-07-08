@@ -1,6 +1,14 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.32.0"></a>
+## v0.0.32.0
+- Removed `inPanicHandler`
+- Updated to use `@config.mode` instead of `@config.includeDebugInfo`
+- Improved `assert` to allow continued execution when a debugger is attached
+
+
+<!---------------------------------->
 <a name="v0.0.31.1"></a>
 ## v0.0.31.1
 - Fixed `debug.print` and `debug.println` in runtime on Windows
