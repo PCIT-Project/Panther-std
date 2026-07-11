@@ -7,6 +7,15 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
+//////////////////////////////////////////////////////////////////////
+// atomic
+
+def atomic = @import("atomic.pthr");
+
+type AtomicOrdering = alias #pub @pthr.AtomicOrdering;
+type Atomic         = alias #pub atomic.Atomic;
+type AtomicRef      = alias #pub atomic.AtomicRef;
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -21,7 +30,11 @@ func bitCast = alias #pub bit.bitCast;
 //////////////////////////////////////////////////////////////////////
 // build
 
-def build #pub = @import("building.pthr");
+when(@config.compilerMode == @pthr.CompilerMode.BUILD){
+	def build #pub = @import("building.pthr");
+}else{
+	def build #pub = delete("Current compiler mode is not `build`");
+}
 
 
 //////////////////////////////////////////////////////////////////////
@@ -78,6 +91,7 @@ type MutArrayRefIter = alias #pub iterators.MutArrayRefIter;
 
 
 type ManualLifetime = alias #pub @import("containers/ManualLifetime.pthr").ManualLifetime;
+type StaticArrayList = alias #pub @import("containers/StaticArrayList.pthr").StaticArrayList;
 
 
 

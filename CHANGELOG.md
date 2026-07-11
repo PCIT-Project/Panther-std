@@ -1,6 +1,15 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.33.0"></a>
+## v0.0.33.0
+- Added `Atomic`
+- Added `AtomicRef`
+- Added `AtomicOrdering`
+- Added `StaticArrayList`
+
+
+<!---------------------------------->
 <a name="v0.0.32.0"></a>
 ## v0.0.32.0
 - Removed `inPanicHandler`
