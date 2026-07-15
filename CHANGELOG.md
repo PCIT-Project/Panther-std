@@ -1,6 +1,24 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.34.0"></a>
+## v0.0.34.0
+- Added `heap` module
+	- `heap.PageAllocator`
+	- `heap.pageSize()`
+- Added `mem.Allocator`
+- Added `mem.IAllocator`
+- Added `mem.createAllocator()`
+- Added `mem.createPmAllocator()`
+- Added `bit.popCount()`
+- Added `math.isPowOf2()`
+- Added `math.ceilToPowOf2Multiple()`
+- Added `math.ceilToMultiple()`
+- Added `math.floorToPowOf2Multiple()`
+- Added `math.floorToMultiple()`
+
+
+<!---------------------------------->
 <a name="v0.0.33.0"></a>
 ## v0.0.33.0
 - Added `Atomic`

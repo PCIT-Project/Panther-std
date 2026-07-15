@@ -7,11 +7,13 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-func bitCast = <{To: Type}> (from: $From) #pub #unsafe -> To {
-	return @bitCast<{From, To}>(from);
-}
+def std = @import("std");
 
-func popCount = (num: $Integral) #pub -> Integral {
-	return @ctPop<{Integral}>(num);
-}
 
+
+type PageAllocator = alias #pub @import("./PageAllocator.pthr").PageAllocator;
+
+
+func pageSize = () #pub -> USize {
+	return 4096;
+}

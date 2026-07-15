@@ -10,11 +10,9 @@
 //////////////////////////////////////////////////////////////////////
 // atomic
 
-def atomic = @import("atomic.pthr");
-
 type AtomicOrdering = alias #pub @pthr.AtomicOrdering;
-type Atomic         = alias #pub atomic.Atomic;
-type AtomicRef      = alias #pub atomic.AtomicRef;
+type Atomic         = alias #pub @import("atomic/Atomic.pthr").Atomic;
+type AtomicRef      = alias #pub @import("atomic/AtomicRef.pthr").AtomicRef;
 
 
 
@@ -45,6 +43,13 @@ def debug #pub = @import("debug.pthr");
 
 
 //////////////////////////////////////////////////////////////////////
+// heap
+
+def heap #pub = @import("./heap/heap.pthr");
+
+
+
+//////////////////////////////////////////////////////////////////////
 // math
 
 def math #pub = @import("math.pthr");
@@ -54,7 +59,7 @@ def math #pub = @import("math.pthr");
 //////////////////////////////////////////////////////////////////////
 // mem
 
-def mem #pub = @import("mem.pthr");
+def mem #pub = @import("mem/mem.pthr");
 
 
 
@@ -70,7 +75,7 @@ def os #pub = @import("os/os.pthr");
 
 def ptrMath #pub = @import("ptrMath.pthr");
 
-func advancePointer = alias #pub ptrMath.advancePointer;
+func advancePointer  = alias #pub ptrMath.advancePointer;
 func pointerDistance = alias #pub ptrMath.pointerDistance;
 
 
@@ -85,12 +90,12 @@ def types #pub = @import("types.pthr");
 //////////////////////////////////////////////////////////////////////
 // containers
 
-def iterators = @import("containers/iterators.pthr");
-type ArrayRefIter = alias #pub iterators.ArrayRefIter;
+def iterators        = @import("containers/iterators.pthr");
+type ArrayRefIter    = alias #pub iterators.ArrayRefIter;
 type MutArrayRefIter = alias #pub iterators.MutArrayRefIter;
 
 
-type ManualLifetime = alias #pub @import("containers/ManualLifetime.pthr").ManualLifetime;
+type ManualLifetime  = alias #pub @import("containers/ManualLifetime.pthr").ManualLifetime;
 type StaticArrayList = alias #pub @import("containers/StaticArrayList.pthr").StaticArrayList;
 
 
@@ -108,13 +113,13 @@ type OptMode           = alias #pub @pthr.OptMode;
 type CompilerMode      = alias #pub @pthr.CompilerMode;
 
 
-type Iterable         = alias #pub @pthr.Iterable;
-type IterableRT       = alias #pub @pthr.IterableRT;
-type IterableRef      = alias #pub @pthr.IterableRef;
-type IterableRefRT    = alias #pub @pthr.IterableRefRT;
-type IterableMutRef   = alias #pub @pthr.IterableMutRef;
-type IterableMutRefRT = alias #pub @pthr.IterableMutRefRT;
-type Iterator         = alias #pub @pthr.Iterator;
-type IteratorRT       = alias #pub @pthr.IteratorRT;
-type MutIterator      = alias #pub @pthr.MutIterator;
-type MutIteratorRT    = alias #pub @pthr.MutIteratorRT;
+type IIterable         = alias #pub @pthr.IIterable;
+type IIterableRT       = alias #pub @pthr.IIterableRT;
+type IIterableRef      = alias #pub @pthr.IIterableRef;
+type IIterableRefRT    = alias #pub @pthr.IIterableRefRT;
+type IIterableMutRef   = alias #pub @pthr.IIterableMutRef;
+type IIterableMutRefRT = alias #pub @pthr.IIterableMutRefRT;
+type IIterator         = alias #pub @pthr.IIterator;
+type IIteratorRT       = alias #pub @pthr.IIteratorRT;
+type IMutIterator      = alias #pub @pthr.IMutIterator;
+type IMutIteratorRT    = alias #pub @pthr.IMutIteratorRT;

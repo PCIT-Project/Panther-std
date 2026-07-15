@@ -1,0 +1,114 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+def std = @import("std");
+
+
+
+interface IAllocator = #pub #polymorphic {
+	func alloc       = (this mut, size: USize)                          #rt -> [Byte:*mut];
+	func allocResize = (this mut, buffer: [Byte:*mut], new_size: USize) #rt -> Void <Void>;
+	func dealloc     = (this mut, buffer: [Byte:*mut])                  #rt -> Void;
+}
+
+
+
+func createAllocator = (target_allocator: $TargetAllocator mut) #pub #rt -> Allocator<{TargetAllocator}> {
+	return new Allocator<{TargetAllocator}>(target_allocator);
+}
+
+func createPmAllocator = (target_allocator: $$ mut) #pub #rt -> Allocator<{}> {
+	return new Allocator<{}>(target_allocator as impl(*mut:IAllocator));
+}
+
+
+type Allocator = struct <{TargetAllocatorType: Type = impl(*mut:IAllocator)}> #pub
+	#comptimeAssert(
+		@getTypeID<{TargetAllocatorType}>() != @getTypeID<{impl(*:IAllocator)}>(),
+		"Mutable access to the allocator interface is required"
+	)
+{
+	when(@getTypeID<{TargetAllocatorType}>() == @getTypeID<{impl(*mut:IAllocator)}>()){
+		func new = (allocator_interface: TargetAllocatorType) #rt -> (output: This) {
+			output.allocator_interface = copy allocator_interface;
+			return...;
+		}
+
+		// func new = (allocator_interface: $$ mut) #rt -> (output: This) {
+		// 	output.allocator_interface = allocator_interface as impl(*mut:IAllocator);
+		// 	return...;
+		// }
+
+	}else{
+		func new = (allocator_interface: TargetAllocatorType mut) #rt -> (output: This) {
+			output.allocator_interface = &(allocator_interface as impl(TargetAllocatorType:IAllocator));
+			return...;
+		}
+
+		func new = (allocator_interface: impl(TargetAllocatorType:IAllocator) mut) #rt -> (output: This) {
+			output.allocator_interface = &allocator_interface;
+			return...;
+		}
+	}
+
+
+	
+
+	func alloc = <{T: Type}> (this mut) #rt -> T*uninit {
+		const num_bytes: USize = std.types.numBytes<{T}>();
+
+		unsafe{
+			return std.bitCast<{T*uninit}>(this.allocator_interface.alloc(num_bytes).data());
+		}
+	}
+
+	func alloc = <{T: Type}> (this, num_elements: USize) #rt -> [std.ManualLifetime<{T}>:*mut] {
+		const num_bytes: USize = std.types.numBytes<{T}>() * num_elements;
+
+		unsafe{
+			return new [std.ManualLifetime<{T}>:*mut](
+				std.bitCast<{std.ManualLifetime*mut}>(this.allocator_interface.alloc(num_bytes)),
+				num_elements
+			);
+		}
+	}
+
+	func dealloc = (this mut, ptr: $Ptr*) #rt -> Void {
+		this.dealloc(new [Ptr:*](copy ptr, 1));
+	}
+
+	func dealloc = (this mut, buffer: [$$:*]) #rt -> Void {
+		unsafe{
+			const byte_buffer = new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size());
+			this.allocator_interface.dealloc(byte_buffer);
+		}
+	}
+
+
+	func allocResize = (this, buffer: [$$:*], new_size: USize) #rt -> Void <Void> {
+		const byte_buffer = new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size());
+		try this.allocator_interface.allocResize(byte_buffer, new_size) else { error; };
+	}
+
+	func allocResize = (this, ptr: $Ptr*, new_size: USize) #rt -> Void <Void> {
+		this.allocResize(new [Ptr:*](copy ptr, 1), new_size);
+	}
+
+
+
+	//////////////////////////////////////////////////////////////////////
+	// private
+
+	when(@getTypeID<{TargetAllocatorType}>() == @getTypeID<{impl(*mut:IAllocator)}>()){
+		var allocator_interface: impl(*mut:IAllocator) #priv;
+	}else{
+		var allocator_interface: impl(TargetAllocatorType:IAllocator)*mut #priv;
+	}
+}
+

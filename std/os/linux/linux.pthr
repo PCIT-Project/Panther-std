@@ -12,11 +12,110 @@ def std = @import("std");
 def native #pub = @import("./native.pthr");
 
 
+///////////////////////////////////
+// types
+
 type FileDescriptor = alias #pub #distinct CInt;
+type Offset = alias #pub #distinct I64; // off_t
+
+
+
+//////////////////////////////////////////////////////////////////////
+// enums / vars
 
 def STDIN  #pub = 0 as FileDescriptor;
 def STDOUT #pub = 1 as FileDescriptor;
 def STDERR #pub = 2 as FileDescriptor;
+
+type Errno = alias #pub native.Errno;
+
+type ProtectionFlags = enum(CInt) #pub {
+	NONE  = 0x0,
+	READ  = 0x1,
+	WRITE = 0x2,
+	EXEC  = 0x4,
+}
+
+def MAP_HUGE_SHIFT = 26;
+type MapFlags = enum(CInt) #pub {
+	SHARED            = 0x01,
+	PRIVATE           = 0x02,
+	SHARED_VALIDATE   = 0x03,
+
+	FIXED             = 0x10,
+	ANONYMOUS         = 0x20,
+	GROWSDOWN         = 0x100,
+	MAP_LOCKED        = 0x2000,
+	MAP_NORESERVE     = 0x4000,
+	MAP_POPULATE      = 0x8000,
+	MAP_NONBLOCK      = 0x10000,
+	MAP_STACK         = 0x20000,
+	HUGETLB           = 0x40000,
+	MAP_SYNC          = 0x80000,
+	FIXED_NOREPLACE   = 0x100000,
+	MAP_UNINITIALIZED = 0x4000000,
+	HUGE_16KB         = 14 << MAP_HUGE_SHIFT,
+	HUGE_64KB         = 16 << MAP_HUGE_SHIFT,
+	HUGE_512KB        = 19 << MAP_HUGE_SHIFT,
+	HUGE_1MB          = 20 << MAP_HUGE_SHIFT,
+	HUGE_2MB          = 21 << MAP_HUGE_SHIFT,
+	HUGE_8MB          = 23 << MAP_HUGE_SHIFT,
+	HUGE_16MB         = 24 << MAP_HUGE_SHIFT,
+	HUGE_32MB         = 25 << MAP_HUGE_SHIFT,
+	HUGE_256MB        = 28 << MAP_HUGE_SHIFT,
+	HUGE_512MB        = 29 << MAP_HUGE_SHIFT,
+	HUGE_1GB          = 30 << MAP_HUGE_SHIFT,
+	HUGE_2GB          = 31 << MAP_HUGE_SHIFT,
+	// HUGE_16GB         = 34 << MAP_HUGE_SHIFT,
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+// functions
+
+
+
+
+
+
+
+func mmap = (
+	addr: RawPtr, length: USize, prot: ProtectionFlags, flags: MapFlags, fd: FileDescriptor, offset: Offset
+) #pub #rt -> RawPtr <Errno> {
+	std.debug.assert(
+		(flags & MapFlags.PRIVATE) == MapFlags.PRIVATE
+		|| (flags & MapFlags.SHARED) == MapFlags.SHARED
+		|| (flags & MapFlags.SHARED_VALIDATE) == MapFlags.SHARED_VALIDATE,
+		"Flags must have one of PRIVATE, SHARED, or SHARED_VALIDATE"
+	);
+
+	unsafe{
+		const res: UI64 = native.syscall(
+			native.SyscallCode.MMAP,
+			std.bitCast<{UI64}>(addr),
+			length as UI64,
+			prot as UI64,
+			flags as UI64,
+			fd as CInt as UI64,
+			offset as UI64
+		);
+
+		const e: Errno = native.calcErrno(res);
+		if(e == Errno.SUCCESS){ return std.bitCast<{RawPtr}>(res); }
+		error copy e;
+	}
+}
+
+func munmap = (addr: RawPtr, length: USize) #pub #rt -> Void <Errno> {
+	unsafe{
+		const res: UI64 = native.syscall(native.SyscallCode.MUNMAP, std.bitCast<{UI64}>(addr), length as UI64);
+
+		const e: Errno = native.calcErrno(res);
+		if(e == Errno.SUCCESS){ return; }
+		error copy e;	
+	}
+}
 
 
 

@@ -21,16 +21,19 @@ type Handle = alias #pub #distinct RawPtr;
 //////////////////////////////////////////////////////////////////////
 // enums
 
+type NtStatus = alias #pub @import("./NtStatus.pthr").NtStatus;
+
 type StdHandle = enum(UI32) #pub {
 	INPUT  = native.STD_INPUT_HANDLE,
 	OUTPUT = native.STD_OUTPUT_HANDLE,
 	ERROR  = native.STD_ERROR_HANDLE,
 }
 
+
 type HeapAllocFlags = enum(UI32) #pub {
 	NONE                = 0x0,
-	GENERATE_EXCEPTIONS = 0x4,
 	NO_SERIALIZE        = 0x1,
+	GENERATE_EXCEPTIONS = 0x4,
 	ZERO_MEMORY         = 0x8,
 }
 
@@ -40,9 +43,105 @@ type HeapFreeFlags = enum(UI32) #pub {
 }
 
 
-//////////////////////////////////////////////////////////////////////
-// functions
 
+type AllocationTypeFlags = enum(UI32) #pub {
+	COMMIT     = 0x00001000,
+	RESERVE    = 0x00002000,
+	RESET      = 0x00080000,
+	RESET_UNDO = 0x01000000,
+}
+
+
+type AllocationProtectionFlags = enum(UI32) #pub {
+	NOACCESS     = 0x001,
+	READONLY     = 0x002,
+	READWRITE    = 0x004,
+	EXECUTE      = 0x008,
+	EXECUTE_READ = 0x010,
+	GUARD        = 0x100,
+	NOCACHE      = 0x200,
+	WRITECOMBINE = 0x400,
+}
+
+type FreeTypeFlags = enum(UI32) #pub {
+	DECOMMIT = 0x4000,
+	RELEASE  = 0x8000,
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+// ntdll
+
+func ntAllocateVirtualMemory = (
+	process_handle  : Handle,
+	base_address    : RawPtr, // `null` to let the OS choose
+	zero_bits       : USize,
+	region_size     : USize,
+	allocation_type : AllocationTypeFlags,
+	protection      : AllocationProtectionFlags,
+) #pub #rt -> (address: RawPtr, size: USize) <NtStatus> {
+	std.debug.assert(region_size != 0, "Cannot request 0 bytes");
+	std.debug.assert(
+		(allocation_type & AllocationTypeFlags.COMMIT) as UI32 != 0
+		|| (allocation_type & AllocationTypeFlags.RESERVE) as UI32 != 0
+		|| (allocation_type & AllocationTypeFlags.RESET) as UI32 != 0,
+		"At least of COMMIT, RESERVE, or RESET must be set"
+	);
+
+	address = copy base_address;
+	size = copy region_size;
+
+	const status: NtStatus = native.NtAllocateVirtualMemory(
+		process_handle as native.HANDLE,
+		&address,
+		copy zero_bits,
+		&size,
+		allocation_type as native.ULONG,
+		protection as native.ULONG,
+	) as NtStatus;
+
+	if(status == NtStatus.SUCCESS){ return...; }
+	error copy status;
+}
+
+func ntCurrentProcess = () #pub #rt -> Handle {
+	return native.NtCurrentProcess() as Handle;
+}
+
+func ntCurrentThread = () #pub #rt -> Handle {
+	return native.NtCurrentThread() as Handle;
+}
+
+func ntFreeVirtualMemory = (
+	process_handle : Handle,
+	base_address   : RawPtr,
+	region_size    : USize, // 0 to free the entire region allocated by `ntAllocateVirtualMemory`
+	free_type      : FreeTypeFlags,
+) #pub #rt -> (address: RawPtr, size: USize) <NtStatus> {
+	std.debug.assert(
+		(free_type & FreeTypeFlags.RELEASE) as UI32 == 0 || region_size == 0,
+		"if REALEASE is set, `region_size` must be 0"
+	);
+
+	address = copy base_address;
+	size = copy region_size;
+
+	const status: NtStatus = native.NtFreeVirtualMemory(
+		process_handle as native.HANDLE,
+		&address,
+		&size,
+		free_type as native.ULONG,
+	) as NtStatus;
+
+	if(status == NtStatus.SUCCESS){ return...; }
+	error copy status;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+// kernel32
 
 func exitProcess = (exit_code: CUInt) #pub #rt #noReturn -> Void {
 	native.ExitProcess(exit_code);
@@ -61,6 +160,7 @@ func getStdHandle = (std_handle: StdHandle) #pub #rt -> Handle {
 func getProcessHeap = () #pub #rt -> Handle {
 	return native.GetProcessHeap() as Handle;
 }
+
 
 func heapAlloc = <{T: Type}> (heap: Handle, flags: HeapAllocFlags) #pub #rt -> T*mut {
 	const raw_ptr: RawPtr = native.HeapAlloc(heap as native.HANDLE, flags as UI32, std.types.numBytes<{T}>());

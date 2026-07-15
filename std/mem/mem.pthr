@@ -6,12 +6,19 @@
 //                                                                                //
 ////////////////////////////////////////////////////////////////////////////////////
 
+def std = @import("std");
 
-func bitCast = <{To: Type}> (from: $From) #pub #unsafe -> To {
-	return @bitCast<{From, To}>(from);
-}
 
-func popCount = (num: $Integral) #pub -> Integral {
-	return @ctPop<{Integral}>(num);
-}
+def allocator = @import("./allocator.pthr");
+type IAllocator  = alias #pub allocator.IAllocator;
+type Allocator   = alias #pub allocator.Allocator;
+type PmAllocator = alias #pub Allocator<{}>;
+
+func createAllocator   = alias #pub allocator.createAllocator;
+func createPmAllocator = alias #pub allocator.createPmAllocator;
+
+
+def buffers = @import("./buffers.pthr");
+func copyBuffer = alias #pub buffers.copyBuffer;
+func moveBuffer = alias #pub buffers.moveBuffer;
 

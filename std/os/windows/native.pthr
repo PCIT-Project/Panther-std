@@ -19,13 +19,16 @@ def std = @import("std");
 type DWORD     = alias #pub UI32;
 type HANDLE    = alias #pub RawPtr;
 type HINSTANCE = alias #pub RawPtr;
+type LONG_PTR  = alias #pub ISize;
 type LPCSTR    = alias #pub Char*; // null terminated string
 type LPDWORD   = alias #pub DWORD*mut;
 type LPVOID    = alias #pub RawPtr;
 type LPCVOID   = alias #pub RawPtr;
+type PSIZE_T   = alias #pub SIZE_T*mut;
 type PVOID     = alias #pub RawPtr;
 type SIZE_T    = alias #pub USize;
 type UINT      = alias #pub CUInt;
+type ULONG     = alias #pub CULong;
 type ULONG_PTR = alias #pub USize;
 
 
@@ -52,6 +55,11 @@ type OVERLAPPED = struct #pub #ordered {
 type LPOVERLAPPED = alias #pub OVERLAPPED*mut;
 
 
+//////////////////
+// misc
+
+type NTSTATUS = alias #pub UI32;
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -68,7 +76,40 @@ def STD_ERROR_HANDLE  : DWORD #pub = handle_id_from_spec(-12);
 
 
 //////////////////////////////////////////////////////////////////////
-// funcs
+// ntdll
+
+func NtAllocateVirtualMemory = (
+	ProcessHandle  : HANDLE,
+	BaseAddress    : PVOID*mut?,
+	ZeroBits       : ULONG_PTR,
+	RegionSize     : PSIZE_T,
+	AllocationType : ULONG,
+	Protect        : ULONG,
+) #pub #callConv(@pthr.CallingConvention.WIN_API) -> NTSTATUS = extern(@pthr.Language.C);
+
+func NtCurrentProcess = () #pub #rt -> HANDLE {
+	unsafe{
+		return std.bitCast<{HANDLE}>(-1 as LONG_PTR);
+	}
+}
+
+func NtCurrentThread = () #pub #rt -> HANDLE {
+	unsafe{
+		return std.bitCast<{HANDLE}>(-2 as LONG_PTR);
+	}
+}
+
+func NtFreeVirtualMemory = (
+	ProcessHandle : HANDLE,
+	BaseAddress   : PVOID*mut?,
+	RegionSize    : PSIZE_T,
+	FreeType      : ULONG,
+) #pub #callConv(@pthr.CallingConvention.WIN_API) -> NTSTATUS = extern(@pthr.Language.C);
+
+
+
+//////////////////////////////////////////////////////////////////////
+// kernel32
 
 func ExitProcess = 
 	(uExitCode: UINT) #pub #noReturn #callConv(@pthr.CallingConvention.WIN_API) -> Void = extern(@pthr.Language.C);
@@ -86,10 +127,12 @@ func HeapAlloc = (
 
 func HeapFree = (
 	hHeap: HANDLE, dwFlags: DWORD, lpMem: LPVOID
-) #pub #callConv(@pthr.CallingConvention.C) -> Void = extern(@pthr.Language.C);
+) #pub #callConv(@pthr.CallingConvention.WIN_API) -> Void = extern(@pthr.Language.C);
 
 func OutputDebugStringA =
 	(lpOutputString: LPCSTR) #pub #callConv(@pthr.CallingConvention.WIN_API) -> Void = extern(@pthr.Language.C);
+
+func SwitchToThread = () #pub #callConv(@pthr.CallingConvention.WIN_API) -> Bool32 = extern(@pthr.Language.C);
 
 func WriteConsoleA = (
 	hConsoleOutput         : HANDLE,
@@ -107,6 +150,4 @@ func WriteFile = (
 	lpNumberOfBytesWritten : LPDWORD?,
 	lpOverlapped           : LPOVERLAPPED?,
 ) #pub #callConv(@pthr.CallingConvention.WIN_API) -> Bool32 = extern(@pthr.Language.C);
-
-
 
