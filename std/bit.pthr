@@ -7,6 +7,9 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
+@setModuleName("std.bit");
+
+
 func bitCast = <{To: Type}> (from: $From) #pub #unsafe -> To {
 	return @bitCast<{From, To}>(from);
 }

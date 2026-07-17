@@ -7,6 +7,9 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
+@setModuleName("std.types");
+
+
 func numBytes = <{T: Type, INCLUDE_PADDING: Bool = true}> () #pub -> USize {
 	return @numBytes<{T, INCLUDE_PADDING}>();
 }

@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
+@setModuleName("std.debug");
+
 def std = @import("std");
 
 func assert = (cond: Bool, message: [Char:*]) #pub -> Void {

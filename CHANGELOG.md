@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.37.0"></a>
+## v0.0.37.0
+- Added `@setModuleName()` to every file
+
+
+<!---------------------------------->
 <a name="v0.0.36.0"></a>
 ## v0.0.36.0
 - Added full implementation for `__chkstk`
