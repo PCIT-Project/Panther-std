@@ -7,6 +7,33 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-func __chkstk = () #export #callConv(@pthr.CallingConvention.C) -> Void {
-	// TODO(FUTURE): actually implement
+def std = @import("std");
+
+when(
+	@config.platform == std.Platform.WINDOWS
+	&& @config.architecture == std.Architecture.X86_64
+	&& @config.compilerMode != std.CompilerMode.SCRIPT
+){
+
+	func __chkstk = () #export #naked -> Void {
+		asm () #sideEffect -> Void {"
+			push rax
+			push rcx
+			mov rcx, qword ptr gs:[16] // rcx = stack low address
+			neg rax                    // rax = frame low address
+			add rax, rsp
+			jb .Lloop_cond             // frame low address overflow?
+			xor eax, eax               // overflowed: frame low address = null
+		.Lloop_body:
+			sub rcx, 4096              // extend stack into guard page
+			test dword ptr [rcx], eax  // commit page (two instruction bytes)
+		.Lloop_cond:
+			cmp rcx, rax
+			ja .Lloop_body
+			pop rcx
+			pop rax
+			ret
+		"};
+	}
+
 }

@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.36.0"></a>
+## v0.0.36.0
+- Added full implementation for `__chkstk`
+
+
+<!---------------------------------->
 <a name="v0.0.35.0"></a>
 ## v0.0.35.0
 - Added `rangeFor`
