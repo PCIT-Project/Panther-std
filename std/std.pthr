@@ -94,9 +94,17 @@ def iterators        = @import("containers/iterators.pthr");
 type ArrayRefIter    = alias #pub iterators.ArrayRefIter;
 type MutArrayRefIter = alias #pub iterators.MutArrayRefIter;
 
-
 type ManualLifetime  = alias #pub @import("containers/ManualLifetime.pthr").ManualLifetime;
 type StaticArrayList = alias #pub @import("containers/StaticArrayList.pthr").StaticArrayList;
+
+
+
+//////////////////////////////////////////////////////////////////////
+// misc
+
+def range_for        = @import("misc/rangeFor.pthr");
+func rangeFor        = alias #pub range_for.rangeFor;
+func reverseRangeFor = alias #pub range_for.reverseRangeFor;
 
 
 

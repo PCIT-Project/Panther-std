@@ -1,6 +1,14 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.35.0"></a>
+## v0.0.35.0
+- Added `rangeFor`
+- Added `reverseRangeFor`
+- Fixed `math.ceilToPowOf2Multiple()`, `math.ceilToMultiple()`, `math.floorToPowOf2Multiple()`, and `math.floorToMultiple()` rounding the wrong direction for negative numbers
+
+
+<!---------------------------------->
 <a name="v0.0.34.0"></a>
 ## v0.0.34.0
 - Added `heap` module

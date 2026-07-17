@@ -34,16 +34,7 @@ func ceilToMultiple = (num: $Integral, multiple: Integral) #pub -> Integral {
 	std.debug.assert(multiple != 0, "Multiple cannot be 0");
 
 	if(isPowOf2(multiple)){ return ceilToPowOf2Multiple(num, multiple);	}
-
-	when(std.types.isUnsignedIntegral<{Integral}>()){
-		return ((num + multiple - 1) / multiple) * multiple;
-
-	}else{
-		std.debug.assert(multiple > 0, "Multiple cannot be negative");
-
-		const is_positive: Integral = (num >= 0) as Integral;
-		return ((num + is_positive * (multiple - 1)) / multiple) * multiple;
-	}
+	return ((num + multiple - 1) / multiple) * multiple;
 }
 
 
@@ -54,39 +45,23 @@ func floorToPowOf2Multiple = (num: $Integral, multiple: Integral) #pub -> Integr
 	std.debug.assert(multiple != 0, "Multiple cannot be 0");
 	std.debug.assert(isPowOf2(multiple), "Multiple must be power of 2");
 
-	when(std.types.isUnsignedIntegral<{Integral}>()){
-		return ((num -% 1) + multiple) + (0 -% multiple) - multiple;
 
-	}else{
-		std.debug.assert(multiple > 0, "Multiple cannot be negative");
-
-		if(num == 0){ return 0; }
-
-		const res: Integral = ceilToPowOf2Multiple(num, multiple);
-
-		const is_negative: Integral = (num <= 0) as Integral;
-
-		return res + (((is_negative * 2) - 1) * multiple);
-
-		if(num <= 0){
-			return 12;
-			
-		}else{
-			return 12;
-		}
-	}
+	return ceilToPowOf2Multiple(num, multiple) - multiple;
 }
 
 func floorToMultiple = (num: $Integral, multiple: Integral) #pub -> Integral {
 	@comptimeAssert(std.types.isIntegral<{Integral}>(), "Type must be integral");
 
-	when(std.types.isUnsignedIntegral<{Integral}>()){
-		std.debug.assert(multiple != 0, "Multiple cannot be 0");
-	}else{
-		std.debug.assert(multiple > 0, "Multiple must be positive");
-	}
-
 	if(isPowOf2(multiple)){ return floorToPowOf2Multiple(num, multiple); }
 
-	return num / multiple * multiple;
+	when(std.types.isUnsignedIntegral<{Integral}>()){
+		std.debug.assert(multiple != 0, "Multiple cannot be 0");
+
+		return num / multiple * multiple;
+
+	}else{
+		std.debug.assert(multiple > 0, "Multiple must be positive");
+
+		return num / multiple * multiple - (multiple * (num < 0) as Integral);
+	}
 }

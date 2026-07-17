@@ -51,8 +51,8 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 		atEnd = atEnd,
 	}
 
-	var current: ELEM_TYPE*;
-	var last: ELEM_TYPE*;
+	var current: ELEM_TYPE* #priv;
+	var last: ELEM_TYPE* #priv;
 }
 
 
@@ -98,6 +98,6 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 		atEnd = atEnd,
 	}
 
-	var current: ELEM_TYPE*mut;
-	var last: ELEM_TYPE*mut;
+	var current: ELEM_TYPE*mut #priv;
+	var last: ELEM_TYPE*mut #priv;
 }

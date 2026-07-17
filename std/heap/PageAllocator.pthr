@@ -172,7 +172,7 @@ type PageAllocator = struct #pub {
 			return;
 			
 		}else{ // same size
-			// return;
+			return;
 		}
 	}
 
