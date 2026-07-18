@@ -1,6 +1,20 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.38.0"></a>
+## v0.0.38.0
+- Added `bit.bitFloor()`
+- Added `bit.bitCeil()`
+- Added `bit.bitReverse()`
+- Added `bit.bitWidth()`
+- Added `bit.byteSwap()`
+- Added `bit.countLZero()`
+- Added `bit.countRZero()`
+- Added `bit.countLOne()`
+- Added `bit.countROne()`
+
+
+<!---------------------------------->
 <a name="v0.0.37.0"></a>
 ## v0.0.37.0
 - Added `@setModuleName()` to every file

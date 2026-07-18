@@ -20,7 +20,7 @@ def E   #pub = 2.7182818284590452353602874713526625;
 
 
 func isPowOf2 = (num: $Integral) #pub -> Bool {
-	return std.bit.popCount(num) == 1;
+	return std.popCount(num) == 1;
 }
 
 

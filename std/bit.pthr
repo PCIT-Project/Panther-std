@@ -9,10 +9,64 @@
 
 @setModuleName("std.bit");
 
+def std = @import("std");
+
 
 func bitCast = <{To: Type}> (from: $From) #pub #unsafe -> To {
 	return @bitCast<{From, To}>(from);
 }
+
+func bitCeil = (num: $Integral) #pub -> Integral {
+	@comptimeAssert(std.types.isUnsignedIntegral<{Integral}>(), "std.bit.bitWidth only accepts unsigned integrals");
+
+	if(num != 0){
+		return 1 << bitWidth(num - 1);
+	}else{
+		return 0;
+	}
+}
+
+func bitFloor = (num: $Integral) #pub -> Integral {
+	@comptimeAssert(std.types.isUnsignedIntegral<{Integral}>(), "std.bit.bitWidth only accepts unsigned integrals");
+
+	if(num != 0){
+		return 1 << (bitWidth(num) - 1);
+	}else{
+		return 0;
+	}
+}
+
+
+func bitReverse = (num: $Integral) #pub -> Integral {
+	return @bitReverse<{Integral}>(num);
+}
+
+func bitWidth = (num: $Integral) #pub -> Integral {
+	@comptimeAssert(std.types.isUnsignedIntegral<{Integral}>(), "std.bit.bitWidth only accepts unsigned integrals");
+	return std.types.numBits<{Integral, false}>() - countLZero(num);
+}
+
+func byteSwap = (num: $Integral) #pub -> Integral {
+	return @byteSwap<{Integral}>(num);
+}
+
+
+func countLZero = (num: $Integral) #pub -> Integral {
+	return @ctlz<{Integral}>(num);
+}
+
+func countRZero = (num: $Integral) #pub -> Integral {
+	return @cttz<{Integral}>(num);
+}
+
+func countLOne = (num: $Integral) #pub -> Integral {
+	return @ctlz<{Integral}>(~num);
+}
+
+func countROne = (num: $Integral) #pub -> Integral {
+	return @cttz<{Integral}>(~num);
+}
+
 
 func popCount = (num: $Integral) #pub -> Integral {
 	return @ctPop<{Integral}>(num);

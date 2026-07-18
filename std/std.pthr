@@ -24,7 +24,17 @@ type AtomicRef      = alias #pub @import("atomic/AtomicRef.pthr").AtomicRef;
 
 def bit #pub = @import("bit.pthr");
 
-func bitCast = alias #pub bit.bitCast;
+func bitCast    = alias #pub bit.bitCast;
+func bitCeil    = alias #pub bit.bitCeil;
+func bitFloor   = alias #pub bit.bitFloor;
+func bitReverse = alias #pub bit.bitReverse;
+func bitWidth   = alias #pub bit.bitWidth;
+func byteSwap   = alias #pub bit.byteSwap;
+func countLZero = alias #pub bit.countLZero;
+func countRZero = alias #pub bit.countRZero;
+func countLOne  = alias #pub bit.countLOne;
+func countROne  = alias #pub bit.countROne;
+func popCount   = alias #pub bit.popCount;
 
 
 
