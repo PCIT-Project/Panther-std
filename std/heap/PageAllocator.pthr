@@ -164,7 +164,7 @@ type PageAllocator = struct #pub {
 	}
 
 
-	func allocResize = (this mut, buffer: [Byte:*mut], new_size: USize) #rt -> Void <Void> {
+	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #rt -> Void <Void> {
 		if(buffer.size() < new_size){ // grow
 			if(std.math.ceilToMultiple(buffer.size(), std.heap.pageSize()) < new_size){ error; }
 			return;

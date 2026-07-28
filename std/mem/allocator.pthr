@@ -14,9 +14,9 @@ def std = @import("std");
 
 
 interface IAllocator = #pub #polymorphic {
-	func alloc       = (this mut, size: USize)                          #rt -> [Byte:*mut];
-	func allocResize = (this mut, buffer: [Byte:*mut], new_size: USize) #rt -> Void <Void>;
-	func dealloc     = (this mut, buffer: [Byte:*mut])                  #rt -> Void;
+	func alloc       = (this mut, size: USize)                       #rt -> [Byte:*mut];
+	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #rt -> Void <Void>;
+	func dealloc     = (this mut, buffer: [Byte:*])                  #rt -> Void;
 }
 
 

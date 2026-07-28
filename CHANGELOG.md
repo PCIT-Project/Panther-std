@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.38.1"></a>
+## v0.0.38.1
+- Fixed signatures of `IAllocator.allocResize`, `IAllocator.dealloc`, and `PageAllocator.allocResize`
+
+
+<!---------------------------------->
 <a name="v0.0.38.0"></a>
 ## v0.0.38.0
 - Added `bit.bitFloor()`
