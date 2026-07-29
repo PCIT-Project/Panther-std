@@ -12,9 +12,20 @@
 def std = @import("std");
 
 
+
+func asBytes = (from: $From) #pub -> [Byte:*] {
+	return new [Byte:*](@bitCast<{RawPtr, Byte*}>(&from as RawPtr), std.types.numBytes<{From}>());
+}
+func asBytes = (from: $From mut) #pub -> [Byte:*mut] {
+	return new [Byte:*mut](@bitCast<{RawPtr, Byte*mut}>(&from as RawPtr), std.types.numBytes<{From}>());
+}
+
+
 func bitCast = <{To: Type}> (from: $From) #pub #unsafe -> To {
 	return @bitCast<{From, To}>(from);
 }
+
+
 
 func bitCeil = (num: $Integral) #pub -> Integral {
 	@comptimeAssert(std.types.isUnsignedIntegral<{Integral}>(), "std.bit.bitWidth only accepts unsigned integrals");

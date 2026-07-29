@@ -24,6 +24,7 @@ type AtomicRef      = alias #pub @import("atomic/AtomicRef.pthr").AtomicRef;
 
 def bit #pub = @import("bit.pthr");
 
+func asBytes    = alias #pub bit.asBytes;
 func bitCast    = alias #pub bit.bitCast;
 func bitCeil    = alias #pub bit.bitCeil;
 func bitFloor   = alias #pub bit.bitFloor;
@@ -118,6 +119,22 @@ type StaticArrayList = alias #pub @import("containers/StaticArrayList.pthr").Sta
 def range_for        = @import("misc/rangeFor.pthr");
 func rangeFor        = alias #pub range_for.rangeFor;
 func reverseRangeFor = alias #pub range_for.reverseRangeFor;
+
+
+
+//////////////////////////////////////////////////////////////////////
+// writer
+
+type IWriterBackend       = alias #pub @import("writer/writer_interfaces.pthr").IWriterBackend;
+type IWriter              = alias #pub @import("writer/writer_interfaces.pthr").IWriter;
+
+type FileWriter           = alias #pub @import("writer/FileWriter.pthr").FileWriter;
+type ComptimeStdoutWriter = alias #pub @import("writer/ComptimeStdoutWriter.pthr").ComptimeStdoutWriter;
+
+type DirectWriter         = alias #pub @import("writer/DirectWriter.pthr").DirectWriter;
+type PmDirectWriter       = alias #pub @import("writer/DirectWriter.pthr").PmDirectWriter;
+
+def fmt #pub = @import("writer/fmt.pthr");
 
 
 

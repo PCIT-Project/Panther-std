@@ -68,3 +68,14 @@ func floorToMultiple = (num: $Integral, multiple: Integral) #pub -> Integral {
 		return num / multiple * multiple - (multiple * (num < 0) as Integral);
 	}
 }
+
+
+func abs = (num: $Num) #pub -> Num {
+	@comptimeAssert(std.types.isUnsignedIntegral<{Num}>() == false, "Type cannot be unsigned integral");
+	@comptimeAssert(std.types.isSignedIntegral<{Num}>() || std.types.isFloatingPoint<{Num}>(), "Invalid type");
+
+	if(num < 0 as Num){
+		return num * -1;
+	}
+	return copy num;
+}

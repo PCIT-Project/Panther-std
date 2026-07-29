@@ -37,24 +37,24 @@ type Allocator = struct <{TargetAllocatorType: Type = impl(*mut:IAllocator)}> #p
 	)
 {
 	when(@getTypeID<{TargetAllocatorType}>() == @getTypeID<{impl(*mut:IAllocator)}>()){
-		func new = (allocator_interface: TargetAllocatorType) #rt -> (output: This) {
-			output.allocator_interface = copy allocator_interface;
+		func new = (allocator_impl: TargetAllocatorType) #rt -> (output: This) {
+			output.allocator_impl = copy allocator_impl;
 			return...;
 		}
 
-		// func new = (allocator_interface: $$ mut) #rt -> (output: This) {
-		// 	output.allocator_interface = allocator_interface as impl(*mut:IAllocator);
-		// 	return...;
-		// }
+		func new = (allocator_impl: $$ mut) #rt -> (output: This) {
+			output.allocator_impl = allocator_impl as impl(*mut:IAllocator);
+			return...;
+		}
 
 	}else{
-		func new = (allocator_interface: TargetAllocatorType mut) #rt -> (output: This) {
-			output.allocator_interface = &(allocator_interface as impl(TargetAllocatorType:IAllocator));
+		func new = (allocator_impl: TargetAllocatorType mut) #rt -> (output: This) {
+			output.allocator_impl = &(allocator_impl as impl(TargetAllocatorType:IAllocator));
 			return...;
 		}
 
-		func new = (allocator_interface: impl(TargetAllocatorType:IAllocator) mut) #rt -> (output: This) {
-			output.allocator_interface = &allocator_interface;
+		func new = (allocator_impl: impl(TargetAllocatorType:IAllocator) mut) #rt -> (output: This) {
+			output.allocator_impl = &allocator_impl;
 			return...;
 		}
 	}
@@ -66,7 +66,7 @@ type Allocator = struct <{TargetAllocatorType: Type = impl(*mut:IAllocator)}> #p
 		const num_bytes: USize = std.types.numBytes<{T}>();
 
 		unsafe{
-			return std.bitCast<{T*uninit}>(this.allocator_interface.alloc(num_bytes).data());
+			return std.bitCast<{T*uninit}>(this.allocator_impl.alloc(num_bytes).data());
 		}
 	}
 
@@ -75,7 +75,7 @@ type Allocator = struct <{TargetAllocatorType: Type = impl(*mut:IAllocator)}> #p
 
 		unsafe{
 			return new [std.ManualLifetime<{T}>:*mut](
-				std.bitCast<{std.ManualLifetime*mut}>(this.allocator_interface.alloc(num_bytes)),
+				std.bitCast<{std.ManualLifetime*mut}>(this.allocator_impl.alloc(num_bytes)),
 				num_elements
 			);
 		}
@@ -88,14 +88,14 @@ type Allocator = struct <{TargetAllocatorType: Type = impl(*mut:IAllocator)}> #p
 	func dealloc = (this mut, buffer: [$$:*]) #rt -> Void {
 		unsafe{
 			const byte_buffer = new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size());
-			this.allocator_interface.dealloc(byte_buffer);
+			this.allocator_impl.dealloc(byte_buffer);
 		}
 	}
 
 
 	func allocResize = (this, buffer: [$$:*], new_size: USize) #rt -> Void <Void> {
 		const byte_buffer = new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size());
-		try this.allocator_interface.allocResize(byte_buffer, new_size) else { error; };
+		try this.allocator_impl.allocResize(byte_buffer, new_size) else { error; };
 	}
 
 	func allocResize = (this, ptr: $Ptr*, new_size: USize) #rt -> Void <Void> {
@@ -108,9 +108,9 @@ type Allocator = struct <{TargetAllocatorType: Type = impl(*mut:IAllocator)}> #p
 	// private
 
 	when(@getTypeID<{TargetAllocatorType}>() == @getTypeID<{impl(*mut:IAllocator)}>()){
-		var allocator_interface: impl(*mut:IAllocator) #priv;
+		var allocator_impl: impl(*mut:IAllocator) #priv;
 	}else{
-		var allocator_interface: impl(TargetAllocatorType:IAllocator)*mut #priv;
+		var allocator_impl: impl(TargetAllocatorType:IAllocator)*mut #priv;
 	}
 }
 

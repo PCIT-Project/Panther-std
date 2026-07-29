@@ -1,0 +1,87 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std");
+
+def std = @import("std");
+
+
+type PmDirectWriter = alias #pub DirectWriter<{}>;
+
+type DirectWriter = struct <{TargetWriter: Type = impl(*mut:std.IWriterBackend)}> #pub 
+	#comptimeAssert(
+		@getTypeID<{TargetWriter}>() != @getTypeID<{impl(*:std.IWriterBackend)}>(),
+		"Mutable access to the writer interface is required"
+	)
+{
+	when(@getTypeID<{TargetWriter}>() == @getTypeID<{impl(*mut:std.IWriterBackend)}>()){
+		func new = (writer_impl: impl(*mut:std.IWriterBackend)) -> (output: This) {
+			output.writer_impl = copy writer_impl;
+			return...;
+		}
+
+		func new = (writer_impl: $$ mut) -> (output: This) {
+			output.writer_impl = writer_impl as impl(*mut:std.IWriterBackend);
+			return...;
+		}
+		
+	}else{
+		func new = (writer_impl: TargetWriter mut) -> (output: This) {
+			output.writer_impl = &(writer_impl as impl(TargetWriter:std.IWriterBackend));
+			return...;
+		}
+
+		func new = (writer_impl: impl(TargetWriter:std.IWriterBackend) mut) -> (output: This) {
+			output.writer_impl = &writer_impl;
+			return...;
+		}
+	}
+
+
+
+	func write = (this mut, str: [Char:*]) -> Void {
+		const buffer: [Byte:*] = str_as_buffer(str);
+		this.writer_impl.write(buffer);
+	}
+
+	func write = (this mut, str: [Byte:*]) -> Void {
+		this.writer_impl.write(str);
+	}
+
+	func write = (this mut, fmt_str: std.fmt.FmtString, args: $$...) -> Void {
+		fmt_str.write(this as impl(This:std.IWriter), args...);
+	}
+
+
+	func flush = (this mut) -> Void {
+		// do nothing
+	}
+
+
+	impl std.IWriter {
+		write = write,
+		flush = flush,
+	}
+
+
+	///////////////////////////////////
+	// private
+
+	func str_as_buffer = (str: [Char:*]) -> [Byte:*] {
+		unsafe{
+			return new [Byte:*](std.bitCast<{Byte*}>(str.data()), str.size());
+		}
+	}
+
+	when(@getTypeID<{TargetWriter}>() == @getTypeID<{impl(*mut:std.IWriterBackend)}>()){
+		var writer_impl: TargetWriter;
+	}else{
+		var writer_impl: impl(TargetWriter:std.IWriterBackend)*mut;
+	}
+}

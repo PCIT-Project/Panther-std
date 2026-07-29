@@ -1,0 +1,417 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std");
+
+def std = @import("std");
+
+
+
+func write = (writer: impl($*:std.IWriter) mut, str: [Char:*], format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	std.debug.assert(format_info.size() == 0, "Invalid format info for this type ([Char:*])");
+	writer.write(str_as_buffer(str));
+}
+
+func write = (writer: impl($*:std.IWriter) mut, str: [Char:$$;'\0']*, format_info: [Char:*] = new [Char:*]()) #pub
+-> Void { // string literals
+	std.debug.assert(format_info.size() == 0, "Invalid format info for this type ([Char:$$;'\0']*)");
+	writer.write(str_as_buffer(str.* as [Char:*]));
+}
+
+func write = (writer: impl($*:std.IWriter) mut, char: Char, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	std.debug.assert(format_info.size() == 0, "Invalid format info for this type (Char)");
+	writer.write(str_as_buffer(new [Char:*](&char, 1)));
+}
+
+func write = (writer: impl($*:std.IWriter) mut, char: CWChar, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	std.debug.assert(format_info.size() <= 1, "Invalid format info for this type (CWChar)");
+
+	const is_capital: Bool = {->expr:Bool
+		if(format_info.size() == 0){ return->expr false; }
+
+		switch(format_info[0].*){
+			case('x'){ return->expr false; }
+			case('X'){ return->expr true; }
+			else{ @panic("Invalid format info for this type (CWChar)"); }
+		}
+	};
+
+	if(char as Char as CWChar == char){
+		write(writer, char as Char);
+
+	}else{
+		if(is_capital){
+			write_integral_detail<{I32, 16, true}>(writer, char as I32);
+		}else{
+			write_integral_detail<{I32, 16, false}>(writer, char as I32);
+		}
+	}
+}
+
+func write = (writer: impl($*:std.IWriter) mut, byte: Byte, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	std.debug.assert(format_info.size() <= 1, "Invalid format info for this type (Byte)");
+
+	const is_capital: Bool = {->expr:Bool
+		if(format_info.size() == 0){ return->expr false; }
+
+		switch(format_info[0].*){
+			case('x'){ return->expr false; }
+			case('X'){ return->expr true; }
+			else{ @panic("Invalid format info for this type (Byte)"); }
+		}
+	};
+
+	write_integral_detail<{I32, 16, true}>(writer, char as I32);
+}
+
+
+func write = (writer: impl($*:std.IWriter) mut, bool: Bool, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	std.debug.assert(format_info.size() == 0, "Invalid format info for this type (Bool)");
+	if(bool){
+		writer.write(str_as_buffer("true"));
+	}else{
+		writer.write(str_as_buffer("false"));
+	}
+}
+
+func write = (writer: impl($*:std.IWriter) mut, bool: Bool32, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	std.debug.assert(format_info.size() == 0, "Invalid format info for this type (Bool32)");
+	if(bool){
+		writer.write(str_as_buffer("true"));
+	}else{
+		writer.write(str_as_buffer("false"));
+	}
+}
+
+
+
+
+func parse_pointer_format_info = (format_info: [Char:*]) -> Bool {
+	std.debug.assert(format_info.size() == 1, "Invalid format info for this type (pointer)");
+
+	switch(format_info[0].*){
+		case('p'){ return false; }
+		case('P'){ return true; }
+		else{ @panic("Invalid format info for this type (pointer)"); }
+	}
+}
+
+func write = (writer: impl($*:std.IWriter) mut, arg: $$*, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*)");
+
+	const is_capital: Bool = parse_pointer_format_info(format_info);
+
+	unsafe{
+		if(is_capital){
+			write_integral_detail<{USize, 16, true}>(writer, std.bitCast<{USize}>(arg));
+		}else{
+			write_integral_detail<{USize, 16, false}>(writer, std.bitCast<{USize}>(arg));
+		}
+	}
+}
+
+func write = (writer: impl($*:std.IWriter) mut, arg: $$*mut, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*mut)");
+
+	const is_capital: Bool = parse_pointer_format_info(format_info);
+	
+	unsafe{
+		if(is_capital){
+			write_integral_detail<{USize, 16, true}>(writer, std.bitCast<{USize}>(arg));
+		}else{
+			write_integral_detail<{USize, 16, false}>(writer, std.bitCast<{USize}>(arg));
+		}
+	}
+}
+
+func write = (writer: impl($*:std.IWriter) mut, arg: $$*?, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*?)");
+
+	const is_capital: Bool = parse_pointer_format_info(format_info);
+	
+	if(arg == null){
+		writer.write(str_as_buffer("null"));
+	}else{
+		unsafe{
+			if(is_capital){
+				write_integral_detail<{USize, 16, true}>(writer, std.bitCast<{USize}>(arg));
+			}else{
+				write_integral_detail<{USize, 16, false}>(writer, std.bitCast<{USize}>(arg));
+			}
+		}
+	}
+}
+
+func write = (writer: impl($*:std.IWriter) mut, arg: $$*mut?, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*mut?)");
+
+	const is_capital: Bool = parse_pointer_format_info(format_info);
+	
+	if(arg == null){
+		writer.write(str_as_buffer("null"));
+	}else{
+		unsafe{
+			if(is_capital){
+				write_integral_detail<{USize, 16, true}>(writer, std.bitCast<{USize}>(arg));
+			}else{
+				write_integral_detail<{USize, 16, false}>(writer, std.bitCast<{USize}>(arg));
+			}
+		}
+	}
+}
+
+
+func write = (writer: impl($*:std.IWriter) mut, arg: RawPtr, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	std.debug.assert(format_info.size() == 1, "Invalid format info for this type (RawPtr)");
+
+	const is_capital: Bool = parse_pointer_format_info(format_info);
+	
+	if(arg == null){
+		writer.write(str_as_buffer("null"));
+	}else{
+		unsafe{
+			if(is_capital){
+				write_integral_detail<{USize, 16, true}>(writer, std.bitCast<{USize}>(arg));
+			}else{
+				write_integral_detail<{USize, 16, false}>(writer, std.bitCast<{USize}>(arg));
+			}
+		}
+	}
+}
+
+
+
+
+
+
+func write = (writer: impl($*:std.IWriter) mut, arg: $Arg, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+	when(std.types.isIntegral<{Arg}>()){
+		write_integral(writer, arg, format_info);
+		
+	}else{
+		@comptimeError("Cannot format this type");
+	}
+}
+
+
+
+
+func write_integral = (
+	writer: impl($*:std.IWriter) mut, integral: $Integral, format_info: [Char:*] = new [Char:*]()
+) -> Void {
+	@comptimeAssert(std.types.isIntegral<{Integral}>(), "Must be integral");
+
+	std.debug.assert(format_info.size() < 2, "Invalid format info for this type");
+
+	if(format_info.size() == 0){
+		write_integral_detail<{Integral, 10, false}>(writer, integral);
+
+	}else{
+		switch(format_info[0].*){
+			case('b'){ write_integral_detail<{Integral, 2, false}>(writer, integral); }
+			case('o'){ write_integral_detail<{Integral, 8, false}>(writer, integral); }
+			case('x'){ write_integral_detail<{Integral, 16, false}>(writer, integral); }
+			case('X'){ write_integral_detail<{Integral, 16, true}>(writer, integral); }
+			else{ @panic("Invalid format info for this type"); }
+		}
+	}
+}
+
+
+
+func write_integral_detail =
+	<{Integral: Type, BASE: Integral, IS_CAPITAL: Bool}> (writer: impl($*:std.IWriter) mut, integral: Integral)
+-> Void {
+	@comptimeAssert(BASE == 2 || BASE == 8 || BASE == 10 || BASE == 16, "Invalid base");
+
+
+	def INTEGRAL_NUM_BITS: USize = std.types.numBits<{Integral, false}>();
+	def IS_SIGNED: Bool = std.types.isSignedIntegral<{Integral}>();
+
+	def MAX_BUFFER_SIZE: USize = INTEGRAL_NUM_BITS + (IS_SIGNED as USize) + 2;
+
+	var buffer = new [Char:MAX_BUFFER_SIZE+1]();
+	var cursor: USize = MAX_BUFFER_SIZE;
+
+
+	when(INTEGRAL_NUM_BITS < 32){
+		when(IS_SIGNED){
+			type WorkingIntegral = alias I32;
+			var working_number: I32 = std.math.abs(integral as I32);
+			
+		}else{
+			type WorkingIntegral = alias UI32;
+			var working_number: UI32 = integral as UI32;
+		}
+
+	}else{
+		type WorkingIntegral = alias Integral;
+		when(IS_SIGNED){
+			var working_number: Integral = std.math.abs(integral);
+			
+		}else{
+			var working_number: Integral = copy integral;
+		}
+	}
+
+	func num_to_char = (num: UI8) -> Char {
+		when(BASE == 16){
+			if(num <= 9){
+				return (num + '0' as UI8) as Char;
+			}else{
+				when(IS_CAPITAL){
+					return (num + 'A' as UI8 - 10) as Char;
+				}else{
+					return (num + 'a' as UI8 - 10) as Char;
+				}
+			}
+			
+		}else{
+			return (num + '0' as UI8) as Char;
+		}
+	}
+
+
+	while(working_number > BASE){
+		const current_working_num: WorkingIntegral = copy working_number;
+		working_number /= BASE;
+
+		buffer[cursor].* = num_to_char((current_working_num - (working_number * BASE)) as UI8);
+		cursor -= 1;
+	}
+
+	{
+		const current_working_num: WorkingIntegral = copy working_number;
+		working_number /= BASE;
+		buffer[cursor].* = num_to_char((current_working_num - (working_number * BASE)) as UI8);
+	}
+	
+
+	when switch(BASE) #partial {
+		case(2){
+			buffer[cursor - 1].* = 'b';
+			buffer[cursor - 2].* = '0';
+			cursor -= 2;
+		}
+
+		case(8){
+			buffer[cursor - 1].* = 'o';
+			buffer[cursor - 2].* = '0';
+			cursor -= 2;
+		}
+
+		case(10){
+			// no prefix needed
+		}
+
+		case(16){
+			buffer[cursor - 1].* = 'x';
+			buffer[cursor - 2].* = '0';
+			cursor -= 2;
+		}
+	}
+
+	when(IS_SIGNED){
+		if(integral < 0){
+			cursor -= 1;
+			buffer[cursor].* = '-';
+		}
+	}
+
+	writer.write(str_as_buffer(new [Char:*](buffer[cursor], MAX_BUFFER_SIZE - cursor + 1)));
+}
+
+
+
+
+
+
+
+func str_as_buffer = (str: [Char:*]) -> [Byte:*] {
+	unsafe{
+		return new [Byte:*](std.bitCast<{Byte*}>(str.data()), str.size());
+	}
+}
+
+
+type FmtString = struct #pub {
+	func new = (fmt_str: [Char:*]) #implicit -> (output: This) {
+		std.debug.assert(fmt_str.size() != 0, "Format string cannot be empty");
+
+		output.parts = new std.StaticArrayList<{Part, 32}>();
+
+		var i: USize = 0;
+		var current_start: USize = 0;
+		while(i < fmt_str.size()){
+			
+			if(fmt_str[i].* == '{'){
+				i += 1;
+				while(fmt_str[i].* != '}'){
+					i += 1;
+					std.debug.assert(i < fmt_str.size(), "Missing closing `}` in format string");
+				}
+				i += 1;
+
+				output.parts.append().* = new Part{
+					value = new [Char:*](fmt_str[current_start + 1], i - current_start - 2)
+				};
+				current_start = copy i;
+
+			}else{
+				while(fmt_str[i].* != '{' && i < fmt_str.size()){
+					i += 1;
+				}
+
+				output.parts.append().* = new Part{str = new [Char:*](fmt_str[current_start], i - current_start)};
+				current_start = copy i;
+			}
+		}
+
+		return...;
+	}
+
+
+	func new = (fmt_str: [Char:$$;'\0']*) #implicit -> (output: This) {
+		output = new FmtString(fmt_str.* as [Char:*]);
+		return...;
+	}
+
+
+	func write = (this, writer: impl($*:std.IWriter) mut, args: $$...) -> Void {
+		var index: USize = 0;
+		for(args) [_; arg: $$] #unroll {
+			while(index < this.parts.size() && this.parts[index].* == std.fmt.FmtString.Part.str){
+				std.fmt.write(writer, this.parts[index].str);
+				index += 1;
+			}
+
+			std.debug.assert(index < this.parts.size(), "Too many arguments for format string");
+
+			std.fmt.write(writer, arg, this.parts[index].value);
+			index += 1;
+		}
+
+		if(index < this.parts.size()){
+			std.debug.assert(index + 1 == this.parts.size(), "Not enough arguments for format string");
+			std.fmt.write(writer, this.parts[index].str);
+		}
+	}
+
+
+
+	///////////////////////////////////
+	// private
+
+	type Part = union #priv {
+		str: [Char:*],
+		value: [Char:*],
+	}
+
+	var parts: std.StaticArrayList<{Part, 32}> #priv;
+}

@@ -1,0 +1,95 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std");
+
+def std = @import("std");
+
+
+type FileWriter = struct #pub {
+	when switch(@config.platform){
+		case(std.Platform.WINDOWS){
+			type FileHandle = alias std.os.windows.Handle;
+		}
+
+		case(std.Platform.LINUX){
+			type FileHandle = alias std.os.linux.FileDescriptor;
+		}
+	}
+
+
+	func new = (handle: FileHandle) #rt -> (output: FileWriter) {
+		output.handle = copy handle;
+		return...;
+	}
+
+
+	func createStdout = () #rt -> (output: FileWriter) {
+		when switch(@config.platform){
+			case(std.Platform.WINDOWS){
+				output = new FileWriter(std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT));
+			}
+
+			case(std.Platform.LINUX){
+				output = new FileWriter(std.os.linux.STDOUT);
+			}
+		}
+		return...;
+	}
+
+
+
+	func write = (this mut, buffer: [Byte:*]) #rt -> Void {
+		const str: [Char:*] = {->expr:[Char:*]
+			unsafe{
+				return->expr new [Char:*](std.bitCast<{Char*}>(buffer.data()), buffer.size());
+			}
+		};
+
+		this.write(str);
+	}
+
+	func write = (this mut, str: [Char:*]) #rt -> Void {
+		when switch(@config.platform){
+			case(std.Platform.WINDOWS){
+				std.os.windows.writeFile(this.handle, str);
+			}
+
+			case(std.Platform.LINUX){
+				_ = std.os.linux.write(this.handle, str);
+			}
+		}
+	}
+
+
+	impl std.IWriterBackend {
+		write = (this mut, str: [Byte:*]) #rtDiff -> Void {
+			when(@isComptime()){
+				@panic("std.FileWriter cannot write at comptime");
+				
+			}else{
+				this.write(str);
+			}
+		},
+	}
+
+
+	///////////////////////////////////
+	// priv
+
+	when switch(@config.platform){
+		case(std.Platform.WINDOWS){
+			const handle: std.os.windows.Handle #priv;
+		}
+
+		case(std.Platform.LINUX){
+			const handle: std.os.linux.FileDescriptor #priv;
+		}
+	}
+}

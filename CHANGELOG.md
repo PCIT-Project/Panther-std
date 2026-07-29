@@ -1,6 +1,19 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.39.0"></a>
+## v0.0.39.0
+- Added `bit.asBytes()`
+- Added `fmt` module
+- Added `IWriterBackend`
+- Added `IWriter`
+- Added `FileWriter`
+- Added `ComptimeStdoutWriter`
+- Added `DirectWriter`
+- Added `PmDirectWriter`
+
+
+<!---------------------------------->
 <a name="v0.0.38.1"></a>
 ## v0.0.38.1
 - Fixed signatures of `IAllocator.allocResize`, `IAllocator.dealloc`, and `PageAllocator.allocResize`
