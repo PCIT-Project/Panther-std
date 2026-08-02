@@ -57,6 +57,10 @@ type Writer = struct <{TargetWriter: Type = impl(*mut:std.IWriter)}> #pub
 		this.writer_impl.write(str);
 	}
 
+	func write = (this mut, char: Char) -> Void {
+		this.writer_impl.write(new [Char:*](&char, 1));
+	}
+
 	func write = (this mut, fmt_str: std.fmt.FmtString, args: $$...) -> Void {
 		fmt_str.write(this, args...);
 	}

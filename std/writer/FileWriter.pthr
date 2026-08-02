@@ -47,9 +47,10 @@ type FileWriter = struct #pub {
 
 
 	func write = (this mut, str: [Char:*]) #rt -> Void {
+		// TODO(FUTURE): error handling
 		when switch(@config.platform){
 			case(std.Platform.WINDOWS){
-				std.os.windows.writeFile(this.handle, str);
+				try std.os.windows.ntWriteFile(this.handle, str) else<nt_status> {};
 			}
 
 			case(std.Platform.LINUX){

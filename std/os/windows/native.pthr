@@ -27,11 +27,21 @@ type LPDWORD   = alias #pub DWORD*mut;
 type LPVOID    = alias #pub RawPtr;
 type LPCVOID   = alias #pub RawPtr;
 type PSIZE_T   = alias #pub SIZE_T*mut;
+type PULONG    = alias #pub ULONG*mut;
 type PVOID     = alias #pub RawPtr;
 type SIZE_T    = alias #pub USize;
 type UINT      = alias #pub CUInt;
 type ULONG     = alias #pub CULong;
 type ULONG_PTR = alias #pub USize;
+
+
+
+//////////////////
+// https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-large_integer-r1
+
+type LARGE_INTEGER  = alias #pub I64;
+type PLARGE_INTEGER = alias #pub I64*mut;
+
 
 
 //////////////////
@@ -58,9 +68,27 @@ type LPOVERLAPPED = alias #pub OVERLAPPED*mut;
 
 
 //////////////////
+// IO
+
+type IO_STATUS_BLOCK = struct #pub #ordered {
+	var Status: NTSTATUS; // actually union, but the other member is reserved
+	var Information: ULONG_PTR;
+}
+
+type PIO_STATUS_BLOCK = alias #pub IO_STATUS_BLOCK*mut;
+
+
+type IO_APC_ROUTINE = alias #pub func(PVOID, PIO_STATUS_BLOCK, ULONG) #rt #callConv(@pthr.CallingConvention.WIN_API)
+	-> Void;
+
+type PIO_APC_ROUTINE = alias #pub IO_APC_ROUTINE?;
+
+
+//////////////////
 // misc
 
 type NTSTATUS = alias #pub UI32;
+
 
 
 
@@ -109,6 +137,19 @@ func NtFreeVirtualMemory = (
 ) #pub #callConv(@pthr.CallingConvention.WIN_API) -> NTSTATUS = extern(@pthr.Language.C);
 
 
+func NtWriteFile = (
+	FileHandle: HANDLE,
+	Event: HANDLE,
+	ApcRoutine: PIO_APC_ROUTINE,
+	ApcContext: PVOID,
+	IoStatusBlock: PIO_STATUS_BLOCK,
+	Buffer: PVOID,
+	Length: ULONG,
+	ByteOffset: PLARGE_INTEGER?,
+	Key: PULONG?,
+) #pub #callConv(@pthr.CallingConvention.WIN_API) -> NTSTATUS = extern(@pthr.Language.C);
+
+
 
 //////////////////////////////////////////////////////////////////////
 // kernel32
@@ -134,22 +175,7 @@ func HeapFree = (
 func OutputDebugStringA =
 	(lpOutputString: LPCSTR) #pub #callConv(@pthr.CallingConvention.WIN_API) -> Void = extern(@pthr.Language.C);
 
-func SwitchToThread = () #pub #callConv(@pthr.CallingConvention.WIN_API) -> Bool32 = extern(@pthr.Language.C);
-
-func WriteConsoleA = (
-	hConsoleOutput         : HANDLE,
-	lpBuffer               : Char*,
-	nNumberOfCharsToWrite  : DWORD,
-	lpNumberOfCharsWritten : LPDWORD?,
-	lpReserved             : LPVOID,  // must be null
-) #pub #callConv(@pthr.CallingConvention.WIN_API) -> Bool32 = extern(@pthr.Language.C);
+// func SwitchToThread = () #pub #callConv(@pthr.CallingConvention.WIN_API) -> Bool32 = extern(@pthr.Language.C);
 
 
-func WriteFile = (
-	hFile                  : HANDLE,
-	lpBuffer               : LPCVOID,
-	nNumberOfBytesToWrite  : DWORD,
-	lpNumberOfBytesWritten : LPDWORD?,
-	lpOverlapped           : LPOVERLAPPED?,
-) #pub #callConv(@pthr.CallingConvention.WIN_API) -> Bool32 = extern(@pthr.Language.C);
 

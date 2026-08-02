@@ -52,7 +52,7 @@ func print = (str: [Char:*]) #pub #rtDiff -> Void {
 
 				const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
 
-				std.os.windows.writeFile(stdout, str);
+				try std.os.windows.ntWriteFile(stdout, str) else <nt_status> {}; // TODO(FUTURE): error handling
 				std.os.windows.outputDebugStringA(new [Char:*mut;'\0'](alloc_buffer.data(), str.size()));
 			}
 
@@ -62,6 +62,15 @@ func print = (str: [Char:*]) #pub #rtDiff -> Void {
 		}
 	}
 }
+
+
+func print = (format_str: std.fmt.FmtString, args: $$...) #pub #rtDiff -> Void {
+	var debug_writer = new std.DebugStdoutWriter();
+	var writer = new std.Writer<{std.DebugStdoutWriter}>(debug_writer);
+	writer.write(format_str, args...);
+}
+
+
 
 
 func println = (str: [Char:*]) #pub #rtDiff -> Void {
@@ -86,7 +95,7 @@ func println = (str: [Char:*]) #pub #rtDiff -> Void {
 
 				const created_str = new [Char:*mut;'\0'](alloc_buffer.data(), str.size() + 1);
 
-				std.os.windows.writeFile(stdout, created_str);
+				try std.os.windows.ntWriteFile(stdout, created_str) else <nt_status> {}; // TODO(FUTURE): error handling
 				std.os.windows.outputDebugStringA(created_str);
 			}
 
@@ -98,4 +107,13 @@ func println = (str: [Char:*]) #pub #rtDiff -> Void {
 			}
 		}
 	}
+}
+
+
+func println = (format_str: std.fmt.FmtString, args: $$...) #pub #rtDiff -> Void {
+	var debug_writer = new std.DebugStdoutWriter();
+	var writer = new std.Writer<{std.DebugStdoutWriter}>(debug_writer);
+
+	writer.write(format_str, args...);
+	writer.write('\n');
 }

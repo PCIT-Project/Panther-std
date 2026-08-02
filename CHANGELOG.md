@@ -1,9 +1,18 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.41.0"></a>
+## v0.0.41.0
+- Added `DebugStdoutWriter`
+- Added `Writer.write()` for `Char`
+- Added format args versions of `std.debug.print` and `std.debug.println`
+- Replaced `std.os.windows.writeFile` with `std.os.windows.ntWriteFile`
+
+
+<!---------------------------------->
 <a name="v0.0.40.0"></a>
 ## v0.0.40.0
-- Added `BUfferedWriter`
+- Added `BufferedWriter`
 - Reworked writers
 	- Added `Writer`
 	- Removed `IWriterBackend`

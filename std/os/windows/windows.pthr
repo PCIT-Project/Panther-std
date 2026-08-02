@@ -141,6 +141,28 @@ func ntFreeVirtualMemory = (
 }
 
 
+func ntWriteFile = (handle: Handle, buffer: [Char:*]) #pub #rt -> Void <NtStatus> {
+	unsafe{
+		var io_status_block = new std.ManualLifetime<{native.IO_STATUS_BLOCK}>();
+
+		const status : NtStatus = native.NtWriteFile(
+			FileHandle    : handle as native.HANDLE,
+			Event         : null,
+			ApcRoutine    : null,
+			ApcContext    : null,
+			IoStatusBlock : io_status_block.get(),
+			Buffer        : buffer.data() as RawPtr,
+			Length        : buffer.size() as native.ULONG,
+			ByteOffset    : null,
+			Key           : null
+		) as NtStatus;
+
+		if(status == NtStatus.SUCCESS){ return; }
+		error copy status;
+	}
+}
+
+
 
 //////////////////////////////////////////////////////////////////////
 // kernel32
@@ -183,25 +205,4 @@ func heapFree = (heap: Handle, flags: HeapFreeFlags, mem: $$*) #pub #rt -> Void 
 
 func outputDebugStringA = (string: [Char:*;'\0']) #pub #rt -> Void {
 	native.OutputDebugStringA(string.data());
-}
-
-
-func writeConsoleA = (handle: Handle, buffer: [Char:*]) #pub #rt -> Void {
-	_ = native.WriteConsoleA(
-		handle as native.HANDLE, buffer.data(), buffer.size() as UI32, null, null
-	);
-}
-
-
-
-func writeFile = (handle: Handle, buffer: [Char:*]) #pub #rt -> Void {
-	_ = native.WriteFile(
-		handle as native.HANDLE, buffer.data() as RawPtr, buffer.size() as UI32, null, null
-	);
-}
-
-func writeFile = (handle: Handle, buffer: [Byte:*]) #pub #rt -> Void {
-	_ = native.WriteFile(
-		handle as native.HANDLE, buffer.data() as RawPtr, buffer.size() as UI32, null, null
-	);
 }

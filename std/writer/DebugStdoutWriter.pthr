@@ -1,0 +1,28 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std");
+
+def std = @import("std");
+
+
+type DebugStdoutWriter = struct #pub {
+	func write = (this mut, str: [Char:*]) -> Void {
+		std.debug.print(str);
+	}
+
+	func flush = (this mut) -> Void {
+		// not buffered, do nothing
+	}
+
+	impl std.IWriter {
+		write = write,
+		flush = flush,
+	}
+}
