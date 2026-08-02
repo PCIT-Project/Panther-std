@@ -125,14 +125,15 @@ func reverseRangeFor = alias #pub range_for.reverseRangeFor;
 //////////////////////////////////////////////////////////////////////
 // writer
 
-type IWriterBackend       = alias #pub @import("writer/writer_interfaces.pthr").IWriterBackend;
-type IWriter              = alias #pub @import("writer/writer_interfaces.pthr").IWriter;
+type IWriter             = alias #pub @import("writer/Writer.pthr").IWriter;
+type Writer              = alias #pub @import("writer/Writer.pthr").Writer;
+type PmWriter            = alias #pub @import("writer/Writer.pthr").PmWriter;
 
 type FileWriter           = alias #pub @import("writer/FileWriter.pthr").FileWriter;
 type ComptimeStdoutWriter = alias #pub @import("writer/ComptimeStdoutWriter.pthr").ComptimeStdoutWriter;
 
-type DirectWriter         = alias #pub @import("writer/DirectWriter.pthr").DirectWriter;
-type PmDirectWriter       = alias #pub @import("writer/DirectWriter.pthr").PmDirectWriter;
+type BufferedWriter       = alias #pub @import("writer/BufferedWriter.pthr").BufferedWriter;
+type PmBufferedWriter     = alias #pub @import("writer/BufferedWriter.pthr").PmBufferedWriter;
 
 def fmt #pub = @import("writer/fmt.pthr");
 

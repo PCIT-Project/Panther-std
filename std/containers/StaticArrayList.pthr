@@ -167,8 +167,12 @@ type StaticArrayList = struct <{T: Type, CAPACITY: USize}> #pub
 		-> (output: T) {
 			std.debug.assert(this.isEmpty() == false, "Already empty");
 
-			// TODO(FUTURE): remove warning about unsafe in unsafe
-			unsafe{ output = move this.last().*; }
+			when(std.types.isSafeMovable<{T}>()){
+				unsafe{ output = move this.last().*; }
+			}else{
+				output = move this.last().*;
+			}
+
 			this._size -= 1;
 			return...;
 		}

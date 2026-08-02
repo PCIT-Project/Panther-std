@@ -1,6 +1,17 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.40.0"></a>
+## v0.0.40.0
+- Added `BUfferedWriter`
+- Reworked writers
+	- Added `Writer`
+	- Removed `IWriterBackend`
+	- `IWriter.write` now takes `[Char:*]` instead of `[Byte:*]`
+	- Added `IWriter.flush()`
+
+
+<!---------------------------------->
 <a name="v0.0.39.0"></a>
 ## v0.0.39.0
 - Added `bit.asBytes()`

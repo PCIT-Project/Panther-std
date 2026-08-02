@@ -45,15 +45,6 @@ type FileWriter = struct #pub {
 
 
 
-	func write = (this mut, buffer: [Byte:*]) #rt -> Void {
-		const str: [Char:*] = {->expr:[Char:*]
-			unsafe{
-				return->expr new [Char:*](std.bitCast<{Char*}>(buffer.data()), buffer.size());
-			}
-		};
-
-		this.write(str);
-	}
 
 	func write = (this mut, str: [Char:*]) #rt -> Void {
 		when switch(@config.platform){
@@ -67,9 +58,13 @@ type FileWriter = struct #pub {
 		}
 	}
 
+	func flush = (this mut) -> Void {
+		// not buffered, do nothing
+	}
 
-	impl std.IWriterBackend {
-		write = (this mut, str: [Byte:*]) #rtDiff -> Void {
+
+	impl std.IWriter {
+		write = (this mut, str: [Char:*]) #rtDiff -> Void {
 			when(@isComptime()){
 				@panic("std.FileWriter cannot write at comptime");
 				
@@ -77,6 +72,8 @@ type FileWriter = struct #pub {
 				this.write(str);
 			}
 		},
+
+		flush = flush,
 	}
 
 

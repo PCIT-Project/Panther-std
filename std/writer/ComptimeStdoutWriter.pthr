@@ -13,23 +13,16 @@ def std = @import("std");
 
 
 type ComptimeStdoutWriter = struct #pub {
-	func write = (this mut, buffer: [Byte:*]) #ct -> Void {
-		const str: [Char:*] = {->expr:[Char:*]
-			unsafe{
-				return->expr new [Char:*](std.bitCast<{Char*}>(buffer.data()), buffer.size());
-			}
-		};
-
-		this.write(str);
-	}
-
 	func write = (this mut, str: [Char:*]) #ct -> Void {
 		@comptimePrint(str);
 	}
 
+	func flush = (this mut) -> Void {
+		// not buffered, do nothing
+	}
 
-	impl std.IWriterBackend {
-		write = (this mut, str: [Byte:*]) #rtDiff -> Void {
+	impl std.IWriter {
+		write = (this mut, str: [Char:*]) #rtDiff -> Void {
 			when(@isComptime()){
 				this.write(str);
 
@@ -37,5 +30,7 @@ type ComptimeStdoutWriter = struct #pub {
 				@panic("std.ComptimeStdoutWriter cannot write at runtime");
 			}
 		},
+
+		flush = flush,
 	}
 }

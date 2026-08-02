@@ -13,23 +13,23 @@ def std = @import("std");
 
 
 
-func write = (writer: impl($*:std.IWriter) mut, str: [Char:*], format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, str: [Char:*], format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type ([Char:*])");
-	writer.write(str_as_buffer(str));
+	writer.write(str);
 }
 
-func write = (writer: impl($*:std.IWriter) mut, str: [Char:$$;'\0']*, format_info: [Char:*] = new [Char:*]()) #pub
+func write = (writer: std.Writer<{$$}> mut, str: [Char:$$;'\0']*, format_info: [Char:*] = new [Char:*]()) #pub
 -> Void { // string literals
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type ([Char:$$;'\0']*)");
-	writer.write(str_as_buffer(str.* as [Char:*]));
+	writer.write(str.* as [Char:*]);
 }
 
-func write = (writer: impl($*:std.IWriter) mut, char: Char, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, char: Char, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type (Char)");
-	writer.write(str_as_buffer(new [Char:*](&char, 1)));
+	writer.write(new [Char:*](&char, 1));
 }
 
-func write = (writer: impl($*:std.IWriter) mut, char: CWChar, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, char: CWChar, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	std.debug.assert(format_info.size() <= 1, "Invalid format info for this type (CWChar)");
 
 	const is_capital: Bool = {->expr:Bool
@@ -54,7 +54,7 @@ func write = (writer: impl($*:std.IWriter) mut, char: CWChar, format_info: [Char
 	}
 }
 
-func write = (writer: impl($*:std.IWriter) mut, byte: Byte, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, byte: Byte, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	std.debug.assert(format_info.size() <= 1, "Invalid format info for this type (Byte)");
 
 	const is_capital: Bool = {->expr:Bool
@@ -71,21 +71,21 @@ func write = (writer: impl($*:std.IWriter) mut, byte: Byte, format_info: [Char:*
 }
 
 
-func write = (writer: impl($*:std.IWriter) mut, bool: Bool, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, bool: Bool, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type (Bool)");
 	if(bool){
-		writer.write(str_as_buffer("true"));
+		writer.write("true");
 	}else{
-		writer.write(str_as_buffer("false"));
+		writer.write("false");
 	}
 }
 
-func write = (writer: impl($*:std.IWriter) mut, bool: Bool32, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, bool: Bool32, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type (Bool32)");
 	if(bool){
-		writer.write(str_as_buffer("true"));
+		writer.write("true");
 	}else{
-		writer.write(str_as_buffer("false"));
+		writer.write("false");
 	}
 }
 
@@ -102,7 +102,7 @@ func parse_pointer_format_info = (format_info: [Char:*]) -> Bool {
 	}
 }
 
-func write = (writer: impl($*:std.IWriter) mut, arg: $$*, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: $$*, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*)");
 
 	const is_capital: Bool = parse_pointer_format_info(format_info);
@@ -116,7 +116,7 @@ func write = (writer: impl($*:std.IWriter) mut, arg: $$*, format_info: [Char:*] 
 	}
 }
 
-func write = (writer: impl($*:std.IWriter) mut, arg: $$*mut, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: $$*mut, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*mut)");
 
 	const is_capital: Bool = parse_pointer_format_info(format_info);
@@ -130,13 +130,13 @@ func write = (writer: impl($*:std.IWriter) mut, arg: $$*mut, format_info: [Char:
 	}
 }
 
-func write = (writer: impl($*:std.IWriter) mut, arg: $$*?, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: $$*?, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*?)");
 
 	const is_capital: Bool = parse_pointer_format_info(format_info);
 	
 	if(arg == null){
-		writer.write(str_as_buffer("null"));
+		writer.write("null");
 	}else{
 		unsafe{
 			if(is_capital){
@@ -148,13 +148,13 @@ func write = (writer: impl($*:std.IWriter) mut, arg: $$*?, format_info: [Char:*]
 	}
 }
 
-func write = (writer: impl($*:std.IWriter) mut, arg: $$*mut?, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: $$*mut?, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*mut?)");
 
 	const is_capital: Bool = parse_pointer_format_info(format_info);
 	
 	if(arg == null){
-		writer.write(str_as_buffer("null"));
+		writer.write("null");
 	}else{
 		unsafe{
 			if(is_capital){
@@ -167,13 +167,13 @@ func write = (writer: impl($*:std.IWriter) mut, arg: $$*mut?, format_info: [Char
 }
 
 
-func write = (writer: impl($*:std.IWriter) mut, arg: RawPtr, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: RawPtr, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	std.debug.assert(format_info.size() == 1, "Invalid format info for this type (RawPtr)");
 
 	const is_capital: Bool = parse_pointer_format_info(format_info);
 	
 	if(arg == null){
-		writer.write(str_as_buffer("null"));
+		writer.write("null");
 	}else{
 		unsafe{
 			if(is_capital){
@@ -190,7 +190,7 @@ func write = (writer: impl($*:std.IWriter) mut, arg: RawPtr, format_info: [Char:
 
 
 
-func write = (writer: impl($*:std.IWriter) mut, arg: $Arg, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: $Arg, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
 	when(std.types.isIntegral<{Arg}>()){
 		write_integral(writer, arg, format_info);
 		
@@ -203,7 +203,7 @@ func write = (writer: impl($*:std.IWriter) mut, arg: $Arg, format_info: [Char:*]
 
 
 func write_integral = (
-	writer: impl($*:std.IWriter) mut, integral: $Integral, format_info: [Char:*] = new [Char:*]()
+	writer: std.Writer<{$$}> mut, integral: $Integral, format_info: [Char:*] = new [Char:*]()
 ) -> Void {
 	@comptimeAssert(std.types.isIntegral<{Integral}>(), "Must be integral");
 
@@ -226,7 +226,7 @@ func write_integral = (
 
 
 func write_integral_detail =
-	<{Integral: Type, BASE: Integral, IS_CAPITAL: Bool}> (writer: impl($*:std.IWriter) mut, integral: Integral)
+	<{Integral: Type, BASE: Integral, IS_CAPITAL: Bool}> (writer: std.Writer<{$$}> mut, integral: Integral)
 -> Void {
 	@comptimeAssert(BASE == 2 || BASE == 8 || BASE == 10 || BASE == 16, "Invalid base");
 
@@ -324,20 +324,13 @@ func write_integral_detail =
 		}
 	}
 
-	writer.write(str_as_buffer(new [Char:*](buffer[cursor], MAX_BUFFER_SIZE - cursor + 1)));
+	writer.write(new [Char:*](buffer[cursor], MAX_BUFFER_SIZE - cursor + 1));
 }
 
 
 
 
 
-
-
-func str_as_buffer = (str: [Char:*]) -> [Byte:*] {
-	unsafe{
-		return new [Byte:*](std.bitCast<{Byte*}>(str.data()), str.size());
-	}
-}
 
 
 type FmtString = struct #pub {
@@ -383,7 +376,7 @@ type FmtString = struct #pub {
 	}
 
 
-	func write = (this, writer: impl($*:std.IWriter) mut, args: $$...) -> Void {
+	func write = (this, writer: std.Writer<{$$}> mut, args: $$...) -> Void {
 		var index: USize = 0;
 		for(args) [_; arg: $$] #unroll {
 			while(index < this.parts.size() && this.parts[index].* == std.fmt.FmtString.Part.str){
