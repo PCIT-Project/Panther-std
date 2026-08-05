@@ -277,23 +277,25 @@ func write_integral_detail =
 		}
 	}
 
+	def WORKING_BASE: WorkingIntegral = BASE as WorkingIntegral;
 
-	while(working_number > BASE){
+
+	while(working_number > WORKING_BASE){
 		const current_working_num: WorkingIntegral = copy working_number;
-		working_number /= BASE;
+		working_number /= WORKING_BASE;
 
-		buffer[cursor].* = num_to_char((current_working_num - (working_number * BASE)) as UI8);
+		buffer[cursor].* = num_to_char((current_working_num - (working_number * WORKING_BASE)) as UI8);
 		cursor -= 1;
 	}
 
 	{
 		const current_working_num: WorkingIntegral = copy working_number;
-		working_number /= BASE;
-		buffer[cursor].* = num_to_char((current_working_num - (working_number * BASE)) as UI8);
+		working_number /= WORKING_BASE;
+		buffer[cursor].* = num_to_char((current_working_num - (working_number * WORKING_BASE)) as UI8);
 	}
 	
 
-	when switch(BASE) #partial {
+	when switch(WORKING_BASE) #partial {
 		case(2){
 			buffer[cursor - 1].* = 'b';
 			buffer[cursor - 2].* = '0';

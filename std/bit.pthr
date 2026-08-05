@@ -14,10 +14,14 @@ def std = @import("std");
 
 
 func asBytes = (from: $From) #pub -> [Byte:*] {
-	return new [Byte:*](@bitCast<{RawPtr, Byte*}>(&from as RawPtr), std.types.numBytes<{From}>());
+	unsafe{
+		return new [Byte:*](@bitCast<{RawPtr, Byte*}>(&from as RawPtr), std.types.numBytes<{From}>());
+	}
 }
 func asBytes = (from: $From mut) #pub -> [Byte:*mut] {
-	return new [Byte:*mut](@bitCast<{RawPtr, Byte*mut}>(&from as RawPtr), std.types.numBytes<{From}>());
+	unsafe{
+		return new [Byte:*mut](@bitCast<{RawPtr, Byte*mut}>(&from as RawPtr), std.types.numBytes<{From}>());
+	}
 }
 
 

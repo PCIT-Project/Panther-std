@@ -79,3 +79,23 @@ func abs = (num: $Num) #pub -> Num {
 	}
 	return copy num;
 }
+
+func min = (lhs: $Num, rhs: Num) #pub -> Num {
+	@comptimeAssert(std.types.isIntegral<{Num}>() || std.types.isFloatingPoint<{Num}>(), "Invalid type");
+
+	if(lhs < rhs){
+		return copy lhs;
+	}else{
+		return copy rhs;
+	}
+}
+
+func max = (lhs: $Num, rhs: Num) #pub -> Num {
+	@comptimeAssert(std.types.isIntegral<{Num}>() || std.types.isFloatingPoint<{Num}>(), "Invalid type");
+
+	if(lhs > rhs){
+		return copy lhs;
+	}else{
+		return copy rhs;
+	}
+}

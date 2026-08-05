@@ -1,6 +1,20 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.42.0"></a>
+## v0.0.42.0
+- Added alignment to `mem.IAllocator.allocate`
+- Added `types.numAlignBytes`
+- Added `math.min()`
+- Added `math.max()`
+- Fixed `bit.asBytes()`
+- Fixed `mem.Allocator.dealloc()`
+	- not calling `delete` elements
+	- passing wrong size for buffer of elements if number of bytes of the element was not 0
+- Fixed `fmt.write()` for integrals smaller than 4 bytes
+
+
+<!---------------------------------->
 <a name="v0.0.41.0"></a>
 ## v0.0.41.0
 - Added `DebugStdoutWriter`

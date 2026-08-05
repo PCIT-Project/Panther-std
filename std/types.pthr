@@ -14,6 +14,10 @@ func numBytes = <{T: Type, INCLUDE_PADDING: Bool = true}> () #pub -> USize {
 	return @numBytes<{T, INCLUDE_PADDING}>();
 }
 
+func numAlignBytes = <{T: Type}> () #pub -> UI32 {
+	return @numAlignBytes<{T}>();
+}
+
 func numBits = <{T: Type, INCLUDE_PADDING: Bool = true}> () #pub -> USize {
 	return @numBits<{T, INCLUDE_PADDING}>();
 }

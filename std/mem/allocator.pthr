@@ -14,7 +14,7 @@ def std = @import("std");
 
 
 interface IAllocator = #pub #polymorphic {
-	func alloc       = (this mut, size: USize)                       #rt -> [Byte:*mut];
+	func alloc       = (this mut, size: USize, alignment: UI32)     #rt -> [Byte:*mut];
 	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #rt -> Void <Void>;
 	func dealloc     = (this mut, buffer: [Byte:*])                  #rt -> Void;
 }
@@ -64,32 +64,45 @@ type Allocator = struct <{TargetAllocatorType: Type = impl(*mut:IAllocator)}> #p
 
 	func alloc = <{T: Type}> (this mut) #rt -> T*uninit {
 		const num_bytes: USize = std.types.numBytes<{T}>();
+		const num_bytes_alignment: UI32 = std.types.numAlignBytes<{T}>();
 
 		unsafe{
-			return std.bitCast<{T*uninit}>(this.allocator_impl.alloc(num_bytes).data());
+			return std.bitCast<{T*uninit}>(this.allocator_impl.alloc(num_bytes, num_bytes_alignment).data());
 		}
 	}
 
 	func alloc = <{T: Type}> (this, num_elements: USize) #rt -> [std.ManualLifetime<{T}>:*mut] {
 		const num_bytes: USize = std.types.numBytes<{T}>() * num_elements;
+		const num_bytes_alignment: UI32 = std.types.numAlignBytes<{T}>();
 
 		unsafe{
 			return new [std.ManualLifetime<{T}>:*mut](
-				std.bitCast<{std.ManualLifetime*mut}>(this.allocator_impl.alloc(num_bytes)),
+				std.bitCast<{std.ManualLifetime*mut}>(this.allocator_impl.alloc(num_bytes, num_bytes_alignment)),
 				num_elements
 			);
 		}
 	}
 
-	func dealloc = (this mut, ptr: $Ptr*) #rt -> Void {
-		this.dealloc(new [Ptr:*](copy ptr, 1));
+	func dealloc = (this mut, ptr: $T*mut) #rt -> Void {
+		when(std.types.isTriviallyDeletable<{T}>() == false){
+			unsafe{ delete ptr.*; }
+		}
+
+		this.allocator_impl.dealloc(std.asBytes(ptr.*));
 	}
 
-	func dealloc = (this mut, buffer: [$$:*]) #rt -> Void {
-		unsafe{
-			const byte_buffer = new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size());
-			this.allocator_impl.dealloc(byte_buffer);
+	func dealloc = (this mut, buffer: [$T:*mut]) #rt -> Void {
+		when(std.types.isTriviallyDeletable<{T}>() == false){
+			for(buffer) [_; item: T mut] {
+				unsafe{
+					delete item;
+				}
+			}
 		}
+
+		this.allocator_impl.dealloc(
+			new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>())
+		);
 	}
 
 

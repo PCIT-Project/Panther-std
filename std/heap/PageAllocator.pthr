@@ -28,7 +28,12 @@ type PageAllocator = struct #pub {
 
 
 
-	func alloc = (this mut, size: USize) #rt -> [Byte:*mut] {
+	func alloc = (this mut, size: USize, alignment: UI32) #rt -> [Byte:*mut] {
+		std.debug.assert(
+			alignment as USize <= std.heap.pageSize(),
+			"This alignment is currently unsupported by std.heap.PageAllocator"
+		);
+
 		when(@config.mode == std.Mode.DEBUG){
 			this.num_allocations += 1;
 		}
