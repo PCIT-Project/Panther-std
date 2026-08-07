@@ -146,9 +146,8 @@ type StaticArrayList = struct <{T: Type, CAPACITY: USize}> #pub
 	func append = (this mut) -> T*uninit {
 		std.debug.assert(this.size() < CAPACITY, "Already at capacity");
 
-		this._size += 1;
-
-		unsafe{ return this._data[this._size - 1].getUninit(); }
+		defer{ this._size += 1; }
+		unsafe{ return this._data[this._size].getUninit(); }
 	}
 
 
@@ -230,6 +229,15 @@ type StaticArrayList = struct <{T: Type, CAPACITY: USize}> #pub
 		},
 		createIterator = (this mut) -> impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorRT) {
 			return new impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorRT)(this as [T:*mut]);
+		},
+	}
+
+	impl std.IIterableCT{
+		createIterator = (this) -> impl(std.ArrayRefIter<{[T:*]}>:std.IIteratorCT) {
+			return new impl(std.ArrayRefIter<{[T:*]}>:std.IIteratorCT)(this as [T:*]);
+		},
+		createIterator = (this mut) -> impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorCT) {
+			return new impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorCT)(this as [T:*mut]);
 		},
 	}
 

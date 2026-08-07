@@ -35,7 +35,8 @@ func bitCeil = (num: $Integral) #pub -> Integral {
 	@comptimeAssert(std.types.isUnsignedIntegral<{Integral}>(), "std.bit.bitWidth only accepts unsigned integrals");
 
 	if(num != 0){
-		return 1 << bitWidth(num - 1);
+		// TODO(FUTURE): fix this for integers larger than 64
+		return (1 as UI64 << bitWidth(num - 1) as UI6) as Integral;
 	}else{
 		return 0;
 	}
@@ -45,7 +46,8 @@ func bitFloor = (num: $Integral) #pub -> Integral {
 	@comptimeAssert(std.types.isUnsignedIntegral<{Integral}>(), "std.bit.bitWidth only accepts unsigned integrals");
 
 	if(num != 0){
-		return 1 << (bitWidth(num) - 1);
+		// TODO(FUTURE): fix this for integers larger than 64
+		return (1 as UI64 << (bitWidth(num) - 1) as UI6) as Integral;
 	}else{
 		return 0;
 	}

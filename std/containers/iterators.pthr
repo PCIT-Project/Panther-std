@@ -53,6 +53,12 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 		atEnd = atEnd,
 	}
 
+	impl std.IIteratorCT {
+		next  = next,
+		get   = get,
+		atEnd = atEnd,
+	}
+
 	var current: ELEM_TYPE* #priv;
 	var last: ELEM_TYPE* #priv;
 }
@@ -95,6 +101,12 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 	}
 
 	impl std.IMutIteratorRT {
+		next  = next,
+		get   = get,
+		atEnd = atEnd,
+	}
+
+	impl std.IMutIteratorCT {
 		next  = next,
 		get   = get,
 		atEnd = atEnd,

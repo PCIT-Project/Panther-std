@@ -14,7 +14,7 @@ def std = @import("std");
 
 
 interface IAllocator = #pub #polymorphic {
-	func alloc       = (this mut, size: USize, alignment: UI32)     #rt -> [Byte:*mut];
+	func alloc       = (this mut, size: USize, alignment: UI32)      #rt -> [Byte:*mut];
 	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #rt -> Void <Void>;
 	func dealloc     = (this mut, buffer: [Byte:*])                  #rt -> Void;
 }
@@ -75,10 +75,11 @@ type Allocator = struct <{TargetAllocatorType: Type = impl(*mut:IAllocator)}> #p
 		const num_bytes: USize = std.types.numBytes<{T}>() * num_elements;
 		const num_bytes_alignment: UI32 = std.types.numAlignBytes<{T}>();
 
+		const new_alloc: [Byte:*] = this.allocator_impl.alloc(num_bytes, num_bytes_alignment);
+
 		unsafe{
 			return new [std.ManualLifetime<{T}>:*mut](
-				std.bitCast<{std.ManualLifetime*mut}>(this.allocator_impl.alloc(num_bytes, num_bytes_alignment)),
-				num_elements
+				std.bitCast<{std.ManualLifetime<{T}>*mut}>(new_alloc.data()), copy num_elements
 			);
 		}
 	}
@@ -100,19 +101,39 @@ type Allocator = struct <{TargetAllocatorType: Type = impl(*mut:IAllocator)}> #p
 			}
 		}
 
-		this.allocator_impl.dealloc(
-			new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>())
-		);
+		unsafe{
+			this.allocator_impl.dealloc(
+				new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>())
+			);
+		}
 	}
 
 
 	func allocResize = (this, buffer: [$$:*], new_size: USize) #rt -> Void <Void> {
-		const byte_buffer = new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size());
-		try this.allocator_impl.allocResize(byte_buffer, new_size) else { error; };
+		unsafe{
+			const byte_buffer = new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size());
+			try this.allocator_impl.allocResize(byte_buffer, new_size) else { error; };
+		}
 	}
 
 	func allocResize = (this, ptr: $Ptr*, new_size: USize) #rt -> Void <Void> {
 		this.allocResize(new [Ptr:*](copy ptr, 1), new_size);
+	}
+
+
+
+	impl IAllocator {
+		alloc = (this mut, size: USize, alignment: UI32) #rt -> [Byte:*mut] {
+			return this.allocator_impl.alloc(size, alignment);
+		},
+
+		allocResize = (this mut, buffer: [Byte:*], new_size: USize) #rt -> Void <Void> {
+			try this.allocator_impl.allocResize(buffer, new_size) else { error; };
+		},
+
+		dealloc = (this mut, buffer: [Byte:*]) #rt -> Void {
+			this.allocator_impl.dealloc(buffer);
+		},
 	}
 
 

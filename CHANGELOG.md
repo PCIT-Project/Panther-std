@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.43.0"></a>
+## v0.0.43.0
+- Added support for new iteration interfaces introduced in [PCIT-CPP v0.0.355.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.355.0)
+
+
+<!---------------------------------->
 <a name="v0.0.42.0"></a>
 ## v0.0.42.0
 - Added alignment to `mem.IAllocator.allocate`

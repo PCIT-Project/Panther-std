@@ -155,11 +155,16 @@ type CompilerMode      = alias #pub @pthr.CompilerMode;
 
 type IIterable         = alias #pub @pthr.IIterable;
 type IIterableRT       = alias #pub @pthr.IIterableRT;
+type IIterableCT       = alias #pub @pthr.IIterableCT;
 type IIterableRef      = alias #pub @pthr.IIterableRef;
 type IIterableRefRT    = alias #pub @pthr.IIterableRefRT;
+type IIterableRefCT    = alias #pub @pthr.IIterableRefCT;
 type IIterableMutRef   = alias #pub @pthr.IIterableMutRef;
 type IIterableMutRefRT = alias #pub @pthr.IIterableMutRefRT;
+type IIterableMutRefCT = alias #pub @pthr.IIterableMutRefCT;
 type IIterator         = alias #pub @pthr.IIterator;
 type IIteratorRT       = alias #pub @pthr.IIteratorRT;
+type IIteratorCT       = alias #pub @pthr.IIteratorCT;
 type IMutIterator      = alias #pub @pthr.IMutIterator;
 type IMutIteratorRT    = alias #pub @pthr.IMutIteratorRT;
+type IMutIteratorCT    = alias #pub @pthr.IMutIteratorCT;
