@@ -38,7 +38,7 @@ func write = (writer: std.Writer<{$$}> mut, char: CWChar, format_info: [Char:*] 
 		switch(format_info[0].*){
 			case('x'){ return->expr false; }
 			case('X'){ return->expr true; }
-			else{ @panic("Invalid format info for this type (CWChar)"); }
+			else{ unreachable("Invalid format info for this type (CWChar)"); }
 		}
 	};
 
@@ -63,7 +63,7 @@ func write = (writer: std.Writer<{$$}> mut, byte: Byte, format_info: [Char:*] = 
 		switch(format_info[0].*){
 			case('x'){ return->expr false; }
 			case('X'){ return->expr true; }
-			else{ @panic("Invalid format info for this type (Byte)"); }
+			else{ unreachable("Invalid format info for this type (Byte)"); }
 		}
 	};
 
@@ -98,7 +98,7 @@ func parse_pointer_format_info = (format_info: [Char:*]) -> Bool {
 	switch(format_info[0].*){
 		case('p'){ return false; }
 		case('P'){ return true; }
-		else{ @panic("Invalid format info for this type (pointer)"); }
+		else{ unreachable("Invalid format info for this type (pointer)"); }
 	}
 }
 
@@ -218,7 +218,7 @@ func write_integral = (
 			case('o'){ write_integral_detail<{Integral, 8, false}>(writer, integral); }
 			case('x'){ write_integral_detail<{Integral, 16, false}>(writer, integral); }
 			case('X'){ write_integral_detail<{Integral, 16, true}>(writer, integral); }
-			else{ @panic("Invalid format info for this type"); }
+			else{ unreachable("Invalid format info for this type"); }
 		}
 	}
 }

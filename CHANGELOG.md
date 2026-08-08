@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.44.0"></a>
+## v0.0.44.0
+- Updated calls to `@panic` to `unreachable` with message (added in [PCIT-CPP v0.0.356.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.356.0))
+
+
+<!---------------------------------->
 <a name="v0.0.43.0"></a>
 ## v0.0.43.0
 - Added support for new iteration interfaces introduced in [PCIT-CPP v0.0.355.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.355.0)

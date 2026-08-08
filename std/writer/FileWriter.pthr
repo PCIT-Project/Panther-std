@@ -67,7 +67,7 @@ type FileWriter = struct #pub {
 	impl std.IWriter {
 		write = (this mut, str: [Char:*]) #rtDiff -> Void {
 			when(@isComptime()){
-				@panic("std.FileWriter cannot write at comptime");
+				unreachable("std.FileWriter cannot write at comptime");
 				
 			}else{
 				this.write(str);

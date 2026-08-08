@@ -51,47 +51,47 @@ type PageAllocator = struct #pub {
 				) else<nt_status> {->expr:(_base_addr: RawPtr, _size: USize)
 					switch(nt_status){
 						case(std.os.windows.NtStatus.ACCESS_DENIED){
-							@panic("std.heap.PageAllocator failed to allocate - ACCESS_DENIED");
+							unreachable("std.heap.PageAllocator failed to allocate - ACCESS_DENIED");
 						}
 
 						case(std.os.windows.NtStatus.ALREADY_COMMITTED){
-							@panic("std.heap.PageAllocator failed to allocate - ALREADY_COMMITTED");
+							unreachable("std.heap.PageAllocator failed to allocate - ALREADY_COMMITTED");
 						}
 
 						case(std.os.windows.NtStatus.COMMITMENT_LIMIT){
-							@panic("std.heap.PageAllocator failed to allocate - COMMITMENT_LIMIT");
+							unreachable("std.heap.PageAllocator failed to allocate - COMMITMENT_LIMIT");
 						}
 
 						case(std.os.windows.NtStatus.CONFLICTING_ADDRESSES){
-							@panic("std.heap.PageAllocator failed to allocate - CONFLICTING_ADDRESSES");
+							unreachable("std.heap.PageAllocator failed to allocate - CONFLICTING_ADDRESSES");
 						}
 
 						case(std.os.windows.NtStatus.INSUFFICIENT_RESOURCES){
-							@panic("std.heap.PageAllocator failed to allocate - INSUFFICIENT_RESOURCES");
+							unreachable("std.heap.PageAllocator failed to allocate - INSUFFICIENT_RESOURCES");
 						}
 
 						case(std.os.windows.NtStatus.INVALID_HANDLE){
-							@panic("std.heap.PageAllocator failed to allocate - INVALID_HANDLE");
+							unreachable("std.heap.PageAllocator failed to allocate - INVALID_HANDLE");
 						}
 
 						case(std.os.windows.NtStatus.INVALID_PAGE_PROTECTION){
-							@panic("std.heap.PageAllocator failed to allocate - INVALID_PAGE_PROTECTION");
+							unreachable("std.heap.PageAllocator failed to allocate - INVALID_PAGE_PROTECTION");
 						}
 
 						case(std.os.windows.NtStatus.NO_MEMORY){
-							@panic("std.heap.PageAllocator failed to allocate - NO_MEMORY");
+							unreachable("std.heap.PageAllocator failed to allocate - NO_MEMORY");
 						}
 
 						case(std.os.windows.NtStatus.OBJECT_TYPE_MISMATCH){
-							@panic("std.heap.PageAllocator failed to allocate - OBJECT_TYPE_MISMATCH");
+							unreachable("std.heap.PageAllocator failed to allocate - OBJECT_TYPE_MISMATCH");
 						}
 
 						case(std.os.windows.NtStatus.PROCESS_IS_TERMINATING){
-							@panic("std.heap.PageAllocator failed to allocate - PROCESS_IS_TERMINATING");
+							unreachable("std.heap.PageAllocator failed to allocate - PROCESS_IS_TERMINATING");
 						}
 
 						else{
-							@panic("std.heap.PageAllocator failed to allocate - Unexpected error");
+							unreachable("std.heap.PageAllocator failed to allocate - Unexpected error");
 						}
 					}
 				};
@@ -112,51 +112,51 @@ type PageAllocator = struct #pub {
 				) else<errno> {->expr:RawPtr
 					switch(errno){
 						case(std.os.linux.Errno.ACCES){
-							@panic("std.heap.PageAllocator failed to allocate - EACCES");
+							unreachable("std.heap.PageAllocator failed to allocate - EACCES");
 						}
 
 						case(std.os.linux.Errno.AGAIN){
-							@panic("std.heap.PageAllocator failed to allocate - EAGAIN");
+							unreachable("std.heap.PageAllocator failed to allocate - EAGAIN");
 						}
 
 						case(std.os.linux.Errno.BADF){
-							@panic("std.heap.PageAllocator failed to allocate - EBADF");
+							unreachable("std.heap.PageAllocator failed to allocate - EBADF");
 						}
 
 						case(std.os.linux.Errno.EXIST){
-							@panic("std.heap.PageAllocator failed to allocate - EEXIST");
+							unreachable("std.heap.PageAllocator failed to allocate - EEXIST");
 						}
 
 						case(std.os.linux.Errno.INVAL){
-							@panic("std.heap.PageAllocator failed to allocate - EINVAL");
+							unreachable("std.heap.PageAllocator failed to allocate - EINVAL");
 						}
 
 						case(std.os.linux.Errno.NFILE){
-							@panic("std.heap.PageAllocator failed to allocate - ENFILE");
+							unreachable("std.heap.PageAllocator failed to allocate - ENFILE");
 						}
 
 						case(std.os.linux.Errno.NODEV){
-							@panic("std.heap.PageAllocator failed to allocate - ENODEV");
+							unreachable("std.heap.PageAllocator failed to allocate - ENODEV");
 						}
 
 						case(std.os.linux.Errno.NOMEM){
-							@panic("std.heap.PageAllocator failed to allocate - ENOMEM");
+							unreachable("std.heap.PageAllocator failed to allocate - ENOMEM");
 						}
 
 						case(std.os.linux.Errno.OVERFLOW){
-							@panic("std.heap.PageAllocator failed to allocate - EOVERFLOW");
+							unreachable("std.heap.PageAllocator failed to allocate - EOVERFLOW");
 						}
 
 						case(std.os.linux.Errno.PERM){
-							@panic("std.heap.PageAllocator failed to allocate - EPERM");
+							unreachable("std.heap.PageAllocator failed to allocate - EPERM");
 						}
 
 						case(std.os.linux.Errno.TXTBSY){
-							@panic("std.heap.PageAllocator failed to allocate - ETXTBSY");
+							unreachable("std.heap.PageAllocator failed to allocate - ETXTBSY");
 						}
 
 						else{
-							@panic("std.heap.PageAllocator failed to allocate - Unexpected error");
+							unreachable("std.heap.PageAllocator failed to allocate - Unexpected error");
 						}
 					}
 				};
@@ -201,23 +201,23 @@ type PageAllocator = struct #pub {
 				) else<nt_status> {->expr:(_base_addr: RawPtr, _size: USize)
 					switch(nt_status){
 						case(std.os.windows.NtStatus.ACCESS_DENIED){
-							@panic("std.heap.PageAllocator failed to deallocate - ACCESS_DENIED");
+							unreachable("std.heap.PageAllocator failed to deallocate - ACCESS_DENIED");
 						}
 
 						case(std.os.windows.NtStatus.INVALID_HANDLE){
-							@panic("std.heap.PageAllocator failed to deallocate - INVALID_HANDLE");
+							unreachable("std.heap.PageAllocator failed to deallocate - INVALID_HANDLE");
 						}
 
 						case(std.os.windows.NtStatus.OBJECT_TYPE_MISMATCH){
-							@panic("std.heap.PageAllocator failed to deallocate - OBJECT_TYPE_MISMATCH");
+							unreachable("std.heap.PageAllocator failed to deallocate - OBJECT_TYPE_MISMATCH");
 						}
 
 						case(std.os.windows.NtStatus.MEMORY_NOT_ALLOCATED){
-							@panic("std.heap.PageAllocator failed to deallocate - MEMORY_NOT_ALLOCATED");
+							unreachable("std.heap.PageAllocator failed to deallocate - MEMORY_NOT_ALLOCATED");
 						}
 
 						else{
-							@panic("std.heap.PageAllocator failed to deallocate - Unexpected error");
+							unreachable("std.heap.PageAllocator failed to deallocate - Unexpected error");
 						}
 					}
 				};
@@ -229,11 +229,11 @@ type PageAllocator = struct #pub {
 				try std.os.linux.munmap(buffer.data() as RawPtr, allocation_size) else<errno> {
 					switch(errno){
 						case(std.os.linux.Errno.INVAL){
-							@panic("std.heap.PageAllocator failed to allocate - EINVAL");
+							unreachable("std.heap.PageAllocator failed to allocate - EINVAL");
 						}
 
 						else{
-							@panic("std.heap.PageAllocator failed to allocate - Unexpected error");
+							unreachable("std.heap.PageAllocator failed to allocate - Unexpected error");
 						}
 					}
 				};

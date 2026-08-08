@@ -27,7 +27,7 @@ type ComptimeStdoutWriter = struct #pub {
 				this.write(str);
 
 			}else{
-				@panic("std.ComptimeStdoutWriter cannot write at runtime");
+				unreachable("std.ComptimeStdoutWriter cannot write at runtime");
 			}
 		},
 
