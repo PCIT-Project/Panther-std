@@ -23,6 +23,20 @@ func numBits = <{T: Type, INCLUDE_PADDING: Bool = true}> () #pub -> USize {
 }
 
 
+func getIntegerTypeID = (width: UI32, is_unsigned: Bool) #pub #ct -> TypeID {
+	return @ctGetIntegerTypeID(width, is_unsigned);
+}
+
+func getIntegerTypeID = <{WIDTH: UI32, IS_UNSIGNED: Bool}> () #pub -> TypeID {
+	return @getIntegerTypeID<{WIDTH, IS_UNSIGNED}>();
+}
+
+
+func getShiftValueTypeID = <{T: Type}> () #pub -> TypeID {
+	return @getIntegerTypeID<{std.bitWidth(@numBits<{T, false}>()), true}>();
+}
+
+
 func isDefaultInitializable          = <{T: Type}> () #pub -> Bool { return @isDefaultInitializable<{T}>();          }
 func isTriviallyDefaultInitializable = <{T: Type}> () #pub -> Bool { return @isTriviallyDefaultInitializable<{T}>(); }
 func isComptimeDefaultInitializable  = <{T: Type}> () #pub -> Bool { return @isComptimeDefaultInitializable<{T}>();  }

@@ -1,6 +1,14 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.45.0"></a>
+## v0.0.45.0
+- Added `types.getIntegerTypeID()`
+- Added `types.getShiftValueTypeID()`
+- Fixed `bit.bitFloor()` and `bit.bitCeil()` for integer types larger than 64 bits
+
+
+<!---------------------------------->
 <a name="v0.0.44.0"></a>
 ## v0.0.44.0
 - Updated calls to `@panic` to `unreachable` with message (added in [PCIT-CPP v0.0.356.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.356.0))
