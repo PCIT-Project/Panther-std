@@ -1,6 +1,14 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.46.0"></a>
+## v0.0.46.0
+- Added `heap.ComptimeAllocator`
+- Added `mem.IAllocatorRT` and `mem.IAllocatorCT`
+- Added `mem.AllocatorRT` and `mem.AllocatorCT`
+
+
+<!---------------------------------->
 <a name="v0.0.45.0"></a>
 ## v0.0.45.0
 - Added `types.getIntegerTypeID()`

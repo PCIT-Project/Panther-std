@@ -1,0 +1,48 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std.heap");
+
+def std = @import("std");
+
+
+type ComptimeAllocator = struct #pub {
+	func alloc = (this mut, size: USize, alignment: UI32) #ct -> [Byte:*mut] {
+		const ptr: RawPtr = @ctAlloc(size, alignment);
+
+		unsafe{
+			return new [Byte:*mut](std.bitCast<{Byte*mut}>(ptr), copy size);
+		}
+	}
+
+
+	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #ct -> Void <Void> {
+		error;
+	}
+
+
+
+	func dealloc = (this mut, buffer: [Byte:*]) #ct -> Void {
+		@ctDealloc(buffer.data() as RawPtr);
+	}
+
+
+
+	impl std.mem.IAllocator {
+		alloc       = alloc,
+		allocResize = allocResize,
+		dealloc     = dealloc,
+	}
+
+	impl std.mem.IAllocatorCT {
+		alloc       = alloc,
+		allocResize = allocResize,
+		dealloc     = dealloc,
+	}
+}

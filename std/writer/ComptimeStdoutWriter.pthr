@@ -14,7 +14,7 @@ def std = @import("std");
 
 type ComptimeStdoutWriter = struct #pub {
 	func write = (this mut, str: [Char:*]) #ct -> Void {
-		@comptimePrint(str);
+		@ctPrint(str);
 	}
 
 	func flush = (this mut) -> Void {

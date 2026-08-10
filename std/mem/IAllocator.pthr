@@ -1,0 +1,33 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std.mem");
+
+def std = @import("std");
+
+
+
+interface IAllocator = #pub #polymorphic {
+	func alloc       = (this mut, size: USize, alignment: UI32)      -> [Byte:*mut];
+	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) -> Void <Void>;
+	func dealloc     = (this mut, buffer: [Byte:*])                  -> Void;
+}
+
+interface IAllocatorRT = #pub #polymorphic {
+	func alloc       = (this mut, size: USize, alignment: UI32)      #rt -> [Byte:*mut];
+	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #rt -> Void <Void>;
+	func dealloc     = (this mut, buffer: [Byte:*])                  #rt -> Void;
+}
+
+interface IAllocatorCT = #pub #polymorphic {
+	func alloc       = (this mut, size: USize, alignment: UI32)      #ct -> [Byte:*mut];
+	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #ct -> Void <Void>;
+	func dealloc     = (this mut, buffer: [Byte:*])                  #ct -> Void;
+}
+

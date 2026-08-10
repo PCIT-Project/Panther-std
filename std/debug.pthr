@@ -35,7 +35,7 @@ func assert = (cond: Bool) #pub -> Void {
 
 func print = (str: [Char:*]) #pub #rtDiff -> Void {
 	when(@isComptime()){
-		@comptimePrint(str);
+		@ctPrint(str);
 
 	}else{
 		when switch(@config.platform){
@@ -64,7 +64,7 @@ func print = (str: [Char:*]) #pub #rtDiff -> Void {
 }
 
 
-func print = (format_str: std.fmt.FmtString, args: $$...) #pub #rtDiff -> Void {
+func print = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void {
 	var debug_writer = new std.DebugStdoutWriter();
 	var writer = new std.Writer<{std.DebugStdoutWriter}>(debug_writer);
 	writer.write(format_str, args...);
@@ -75,7 +75,7 @@ func print = (format_str: std.fmt.FmtString, args: $$...) #pub #rtDiff -> Void {
 
 func println = (str: [Char:*]) #pub #rtDiff -> Void {
 	when(@isComptime()){
-		@comptimePrintln(str);
+		@ctPrintln(str);
 
 	}else{
 		when switch(@config.platform){
@@ -110,7 +110,7 @@ func println = (str: [Char:*]) #pub #rtDiff -> Void {
 }
 
 
-func println = (format_str: std.fmt.FmtString, args: $$...) #pub #rtDiff -> Void {
+func println = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void {
 	var debug_writer = new std.DebugStdoutWriter();
 	var writer = new std.Writer<{std.DebugStdoutWriter}>(debug_writer);
 

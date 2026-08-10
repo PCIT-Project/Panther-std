@@ -28,7 +28,61 @@ type PageAllocator = struct #pub {
 
 
 
-	func alloc = (this mut, size: USize, alignment: UI32) #rt -> [Byte:*mut] {
+	func alloc = (this mut, size: USize, alignment: UI32) #rtDiff -> [Byte:*mut] {
+		when(@isComptime()){
+			const ptr: RawPtr = @ctAlloc(std.math.ceilToMultiple(size, std.heap.pageSize()), alignment);
+
+			unsafe{
+				return new [Byte:*mut](std.bitCast<{Byte*mut}>(ptr), copy size);
+			}
+
+		}else{
+			return this.rt_alloc(size, alignment);
+		}
+	}
+
+
+	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #rtDiff -> Void <Void> {
+		when(@isComptime()){
+			error;
+		}else{
+			try this.rt_alloc_resize(buffer, new_size) else { error; };
+		}
+	}
+
+
+	func dealloc = (this mut, buffer: [Byte:*]) #rtDiff -> Void {
+		when(@isComptime()){
+			@ctDealloc(buffer.data() as RawPtr);
+		}else{
+			this.rt_dealloc(buffer);
+		}
+	}
+
+	
+
+
+
+	impl std.mem.IAllocator {
+		alloc       = alloc,
+		allocResize = allocResize,
+		dealloc     = dealloc,
+	}
+
+
+	impl std.mem.IAllocatorRT {
+		alloc       = rt_alloc,
+		allocResize = rt_alloc_resize,
+		dealloc     = rt_dealloc,
+	}
+
+
+
+	///////////////////////////////////
+	// private
+
+
+	func rt_alloc = (this mut, size: USize, alignment: UI32) #rt -> [Byte:*mut] {
 		std.debug.assert(
 			alignment as USize <= std.heap.pageSize(),
 			"This alignment is currently unsupported by std.heap.PageAllocator"
@@ -169,7 +223,7 @@ type PageAllocator = struct #pub {
 	}
 
 
-	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #rt -> Void <Void> {
+	func rt_alloc_resize = (this mut, buffer: [Byte:*], new_size: USize) #rt -> Void <Void> {
 		if(buffer.size() < new_size){ // grow
 			if(std.math.ceilToMultiple(buffer.size(), std.heap.pageSize()) < new_size){ error; }
 			return;
@@ -185,7 +239,7 @@ type PageAllocator = struct #pub {
 
 
 
-	func dealloc = (this mut, buffer: [Byte:*]) #rt -> Void {
+	func rt_dealloc = (this mut, buffer: [Byte:*]) #rt -> Void {
 		when(@config.mode == std.Mode.DEBUG){
 			const current_num_allocations: USize = this.num_allocations.fetchSub(1);
 			std.debug.assert(current_num_allocations > 0, "More deallocations than allocations");
@@ -243,16 +297,13 @@ type PageAllocator = struct #pub {
 
 
 
-	impl std.mem.IAllocator {
-		alloc       = alloc,
-		allocResize = allocResize,
-		dealloc     = dealloc,
-	}
 
 
 
-	///////////////////////////////////
-	// private
+
+
+
+
 
 	when(@config.mode == std.Mode.DEBUG){
 		var num_allocations: std.Atomic<{USize}> #priv;

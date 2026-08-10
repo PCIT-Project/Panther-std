@@ -12,7 +12,8 @@
 def std = @import("std");
 
 
-type PageAllocator  = alias #pub @import("./PageAllocator.pthr").PageAllocator;
+type PageAllocator     = alias #pub @import("./PageAllocator.pthr").PageAllocator;
+type ComptimeAllocator = alias #pub @import("./ComptimeAllocator.pthr").ComptimeAllocator;
 
 
 func pageSize = () #pub -> USize {
