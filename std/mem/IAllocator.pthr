@@ -13,19 +13,19 @@ def std = @import("std");
 
 
 
-interface IAllocator = #pub #polymorphic {
+type IAllocator = interface #pub {
 	func alloc       = (this mut, size: USize, alignment: UI32)      -> [Byte:*mut];
 	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) -> Void <Void>;
 	func dealloc     = (this mut, buffer: [Byte:*])                  -> Void;
 }
 
-interface IAllocatorRT = #pub #polymorphic {
+type IAllocatorRT = interface #pub {
 	func alloc       = (this mut, size: USize, alignment: UI32)      #rt -> [Byte:*mut];
 	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #rt -> Void <Void>;
 	func dealloc     = (this mut, buffer: [Byte:*])                  #rt -> Void;
 }
 
-interface IAllocatorCT = #pub #polymorphic {
+type IAllocatorCT = interface #pub {
 	func alloc       = (this mut, size: USize, alignment: UI32)      #ct -> [Byte:*mut];
 	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #ct -> Void <Void>;
 	func dealloc     = (this mut, buffer: [Byte:*])                  #ct -> Void;

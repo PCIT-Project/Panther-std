@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.48.0"></a>
+## v0.0.48.0
+- Updated interfaces to reflect updates to [PCIT-CPP v0.0.360.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.360.0)
+
+
+<!---------------------------------->
 <a name="v0.0.47.0"></a>
 ## v0.0.47.0
 - Improved `panic` and `debug.assert` with output formatting and better performance of optimized code

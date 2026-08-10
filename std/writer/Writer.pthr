@@ -13,7 +13,7 @@ def std = @import("std");
 
 
 
-interface IWriter = #pub #polymorphic {
+type IWriter = interface #pub {
 	func write = (this mut, bytes: [Char:*]) -> Void;
 	func flush = (this mut) -> Void;
 }
