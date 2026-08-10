@@ -12,20 +12,26 @@
 def std = @import("std");
 
 func assert = (cond: Bool, message: [Char:*]) #pub -> Void {
-	when(@config.mode == std.Mode.DEBUG || @config.mode == std.Mode.SAFE){
-		if(cond == false){
-			println(message);
+	if(cond == false){
+		when(@config.mode == std.Mode.DEBUG){
+			print("\e[37m\e[41m");
+			print(message);
+			print("\e[0m\n");
 			@breakpoint();
+		}else{
+			unreachable("Failed assert");
 		}
 	}
 }
 
 
 func assert = (cond: Bool) #pub -> Void {
-	when(@config.mode == std.Mode.DEBUG || @config.mode == std.Mode.SAFE){
-		if(cond == false){
-			println("Failed assert");
+	if(cond == false){
+		when(@config.mode == std.Mode.DEBUG){
+			println("\e[37m\e[41mFailed assert\e[0m");
 			@breakpoint();
+		}else{
+			unreachable("Failed assert");
 		}
 	}
 }

@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.47.0"></a>
+## v0.0.47.0
+- Improved `panic` and `debug.assert` with output formatting and better performance of optimized code
+
+
+<!---------------------------------->
 <a name="v0.0.46.0"></a>
 ## v0.0.46.0
 - Added `heap.ComptimeAllocator`

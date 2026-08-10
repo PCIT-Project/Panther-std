@@ -12,11 +12,10 @@
 def std = @import("std");
 
 
-var inPanicHandler: Bool #pub = false;
 
 func panic = (message: [Char:*]) #noReturn #builtin("panic") #rtDiff -> Void {
 	when(@config.mode == std.Mode.DEBUG){
-		std.debug.println(message);
+		std.debug.println("\e[37m\e[41m{}\e[0m", message);
 		@breakpoint();
 		@abort();
 
