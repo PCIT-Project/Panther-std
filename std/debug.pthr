@@ -14,10 +14,14 @@ def std = @import("std");
 func assert = (cond: Bool, message: [Char:*]) #pub -> Void {
 	if(cond == false){
 		when(@config.mode == std.Mode.DEBUG){
-			print("\e[37m\e[41m");
-			print(message);
-			print("\e[0m\n");
+			when(std.os.SUPPORTS_IO){
+				print("\e[37m\e[41m");
+				print(message);
+				print("\e[0m\n");
+			}
+
 			@breakpoint();
+
 		}else{
 			unreachable("Failed assert");
 		}
@@ -28,7 +32,10 @@ func assert = (cond: Bool, message: [Char:*]) #pub -> Void {
 func assert = (cond: Bool) #pub -> Void {
 	if(cond == false){
 		when(@config.mode == std.Mode.DEBUG){
-			println("\e[37m\e[41mFailed assert\e[0m");
+			when(std.os.SUPPORTS_IO){
+				println("\e[37m\e[41mFailed assert\e[0m");
+			}
+
 			@breakpoint();
 		}else{
 			unreachable("Failed assert");
@@ -39,87 +46,116 @@ func assert = (cond: Bool) #pub -> Void {
 
 
 
-func print = (str: [Char:*]) #pub #rtDiff -> Void {
-	when(@isComptime()){
-		@ctPrint(str);
+when(std.os.SUPPORTS_IO){
+	func print = (str: [Char:*]) #pub #rtDiff -> Void {
+		when(@isComptime()){
+			@ctPrint(str);
 
-	}else{
-		when switch(@config.platform){
-			case(std.Platform.WINDOWS){
-				const heap_handle: std.os.windows.Handle = std.os.windows.getProcessHeap();
+		}else{
+			when switch(@config.platform){
+				case(std.Platform.LINUX){
+					_ = std.os.linux.write(std.os.linux.STDOUT, str);
+				}
 
-				const alloc_buffer: [Char:*mut] = std.os.windows.heapAlloc<{Char}>(
-					heap_handle, std.os.windows.HeapAllocFlags.NONE, str.size() + 1
-				);
-				defer{ std.os.windows.heapFree(heap_handle, std.os.windows.HeapFreeFlags.NONE, alloc_buffer.data()); }
+				case(std.Platform.WINDOWS){
+					const heap_handle: std.os.windows.Handle = std.os.windows.getProcessHeap();
 
-				std.mem.copyBuffer(new [Char:*mut](alloc_buffer.data(), str.size()), str);
-				alloc_buffer[str.size()].* = '\0';
+					const alloc_buffer: [Char:*mut] = std.os.windows.heapAlloc<{Char}>(
+						heap_handle, std.os.windows.HeapAllocFlags.NONE, str.size() + 1
+					);
+					defer{ std.os.windows.heapFree(heap_handle, std.os.windows.HeapFreeFlags.NONE, alloc_buffer.data()); }
 
-				const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
+					std.mem.copyBuffer(new [Char:*mut](alloc_buffer.data(), str.size()), str);
+					alloc_buffer[str.size()].* = '\0';
 
-				try std.os.windows.ntWriteFile(stdout, str) else <nt_status> {}; // TODO(FUTURE): error handling
-				std.os.windows.outputDebugStringA(new [Char:*mut;'\0'](alloc_buffer.data(), str.size()));
-			}
+					const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
 
-			case(std.Platform.LINUX){
-				_ = std.os.linux.write(std.os.linux.STDOUT, str);
-			}
-		}
-	}
-}
+					try std.os.windows.ntWriteFile(stdout, str) else <nt_status> {}; // TODO(FUTURE): error handling
+					std.os.windows.outputDebugStringA(new [Char:*mut;'\0'](alloc_buffer.data(), str.size()));
+				}
 
-
-func print = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void {
-	var debug_writer = new std.DebugStdoutWriter();
-	var writer = new std.Writer<{std.DebugStdoutWriter}>(debug_writer);
-	writer.write(format_str, args...);
-}
-
-
-
-
-func println = (str: [Char:*]) #pub #rtDiff -> Void {
-	when(@isComptime()){
-		@ctPrintln(str);
-
-	}else{
-		when switch(@config.platform){
-			case(std.Platform.WINDOWS){
-				const heap_handle: std.os.windows.Handle = std.os.windows.getProcessHeap();
-
-				const alloc_buffer: [Char:*mut] = std.os.windows.heapAlloc<{Char}>(
-					heap_handle, std.os.windows.HeapAllocFlags.NONE, str.size() + 2
-				);
-				defer{ std.os.windows.heapFree(heap_handle, std.os.windows.HeapFreeFlags.NONE, alloc_buffer.data()); }
-
-				std.mem.copyBuffer(new [Char:*mut](alloc_buffer.data(), str.size()), str);
-				alloc_buffer[str.size()].* = '\n';
-				alloc_buffer[str.size() + 1].* = '\0';
-
-				const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
-
-				const created_str = new [Char:*mut;'\0'](alloc_buffer.data(), str.size() + 1);
-
-				try std.os.windows.ntWriteFile(stdout, created_str) else <nt_status> {}; // TODO(FUTURE): error handling
-				std.os.windows.outputDebugStringA(created_str);
-			}
-
-			case(std.Platform.LINUX){
-				_ = std.os.linux.write(std.os.linux.STDOUT, str);
-
-				const newline: Char = '\n';
-				_ = std.os.linux.write(std.os.linux.STDOUT, new [Char:*](&newline, 1));
+				case(std.Platform.FREESTANDING){
+					@comptimeError("`std.debug.print` is not supported in freestanding platform target");
+				}
 			}
 		}
 	}
+
+
+	func print = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void {
+		var debug_writer = new std.DebugStdoutWriter();
+		var writer = new std.Writer<{std.DebugStdoutWriter}>(debug_writer);
+		writer.write(format_str, args...);
+	}
+
+
+
+
+	func println = (str: [Char:*]) #pub #rtDiff -> Void {
+		when(@isComptime()){
+			@ctPrintln(str);
+
+		}else{
+			when switch(@config.platform){
+				case(std.Platform.LINUX){
+					_ = std.os.linux.write(std.os.linux.STDOUT, str);
+
+					const newline: Char = '\n';
+					_ = std.os.linux.write(std.os.linux.STDOUT, new [Char:*](&newline, 1));
+				}
+
+				case(std.Platform.WINDOWS){
+					const heap_handle: std.os.windows.Handle = std.os.windows.getProcessHeap();
+
+					const alloc_buffer: [Char:*mut] = std.os.windows.heapAlloc<{Char}>(
+						heap_handle, std.os.windows.HeapAllocFlags.NONE, str.size() + 2
+					);
+					defer{
+						std.os.windows.heapFree(heap_handle, std.os.windows.HeapFreeFlags.NONE, alloc_buffer.data());
+					}
+
+					std.mem.copyBuffer(new [Char:*mut](alloc_buffer.data(), str.size()), str);
+					alloc_buffer[str.size()].* = '\n';
+					alloc_buffer[str.size() + 1].* = '\0';
+
+					const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
+
+					const created_str = new [Char:*mut;'\0'](alloc_buffer.data(), str.size() + 1);
+
+					// TODO(FUTURE): error handling
+					try std.os.windows.ntWriteFile(stdout, created_str) else <nt_status> {};
+					std.os.windows.outputDebugStringA(created_str);
+				}
+
+				case(std.Platform.FREESTANDING){
+					@abort("std.debug.println isn't supported in freestanding platform target");
+				}
+			}
+		}
+	}
+
+
+	func println = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void {
+		var debug_writer = new std.DebugStdoutWriter();
+		var writer = new std.Writer<{std.DebugStdoutWriter}>(debug_writer);
+
+		writer.write(format_str, args...);
+		writer.write('\n');
+	}
+
+}else{
+	func print = (str: [Char:*]) #pub #rtDiff -> Void =
+		delete("Not supported in this platform target");
+
+	func print = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void =
+		delete("Not supported in this platform target");
+
+	func println = (str: [Char:*]) #pub #rtDiff -> Void =
+		delete("Not supported in this platform target");
+
+	func println = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void =
+		delete("Not supported in this platform target");
+
 }
 
 
-func println = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void {
-	var debug_writer = new std.DebugStdoutWriter();
-	var writer = new std.Writer<{std.DebugStdoutWriter}>(debug_writer);
-
-	writer.write(format_str, args...);
-	writer.write('\n');
-}

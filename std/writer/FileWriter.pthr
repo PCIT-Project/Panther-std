@@ -14,12 +14,16 @@ def std = @import("std");
 
 type FileWriter = struct #pub {
 	when switch(@config.platform){
+		case(std.Platform.LINUX){
+			type FileHandle = alias std.os.linux.FileDescriptor;
+		}
+
 		case(std.Platform.WINDOWS){
 			type FileHandle = alias std.os.windows.Handle;
 		}
 
-		case(std.Platform.LINUX){
-			type FileHandle = alias std.os.linux.FileDescriptor;
+		case(std.Platform.FREESTANDING){
+			@comptimeError("`std.FileWriter` is not supported in frestanding platform target");
 		}
 	}
 
@@ -32,12 +36,16 @@ type FileWriter = struct #pub {
 
 	func createStdout = () #rt -> (output: FileWriter) {
 		when switch(@config.platform){
+			case(std.Platform.LINUX){
+				output = new FileWriter(std.os.linux.STDOUT);
+			}
+
 			case(std.Platform.WINDOWS){
 				output = new FileWriter(std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT));
 			}
 
-			case(std.Platform.LINUX){
-				output = new FileWriter(std.os.linux.STDOUT);
+			case(std.Platform.FREESTANDING){
+				@comptimeError("`std.FileWriter` is not supported in freestanding platform target");
 			}
 		}
 		return...;
@@ -49,12 +57,16 @@ type FileWriter = struct #pub {
 	func write = (this mut, str: [Char:*]) #rt -> Void {
 		// TODO(FUTURE): error handling
 		when switch(@config.platform){
+			case(std.Platform.LINUX){
+				_ = std.os.linux.write(this.handle, str);
+			}
+
 			case(std.Platform.WINDOWS){
 				try std.os.windows.ntWriteFile(this.handle, str) else<nt_status> {};
 			}
 
-			case(std.Platform.LINUX){
-				_ = std.os.linux.write(this.handle, str);
+			case(std.Platform.FREESTANDING){
+				@comptimeError("`std.FileWriter.` is not supported in freestanding platform target");
 			}
 		}
 	}
@@ -67,7 +79,7 @@ type FileWriter = struct #pub {
 	impl std.IWriter {
 		write = (this mut, str: [Char:*]) #rtDiff -> Void {
 			when(@isComptime()){
-				unreachable("std.FileWriter cannot write at comptime");
+				unreachable("`std.FileWriter` cannot write at comptime");
 				
 			}else{
 				this.write(str);
@@ -81,13 +93,5 @@ type FileWriter = struct #pub {
 	///////////////////////////////////
 	// priv
 
-	when switch(@config.platform){
-		case(std.Platform.WINDOWS){
-			const handle: std.os.windows.Handle #priv;
-		}
-
-		case(std.Platform.LINUX){
-			const handle: std.os.linux.FileDescriptor #priv;
-		}
-	}
+	const handle: FileHandle #priv;
 }

@@ -16,10 +16,25 @@ when switch(@config.platform){
 	case(std.Platform.WINDOWS){
 		def windows #pub = @import("./windows/windows.pthr");
 		def linux #pub = delete("Current target platform is Windows");
+
+		def SUPPORTS_IO: Bool #pub = true;
+		def SUPPORTS_NON_LINEAR_HEAP: Bool #pub = true;
 	}
 
 	case(std.Platform.LINUX){
 		def windows #pub = delete("Current target platform is Linux");
 		def linux #pub = @import("./linux/linux.pthr");
+
+		def SUPPORTS_IO: Bool #pub = true;
+		def SUPPORTS_NON_LINEAR_HEAP: Bool #pub = true;
+	}
+
+	case(std.Platform.FREESTANDING){
+		def windows #pub = delete("Current target platform is freestanding");
+		def linux #pub = delete("Current target platform is freestanding");
+
+		def SUPPORTS_IO: Bool #pub = false;
+		def SUPPORTS_NON_LINEAR_HEAP: Bool #pub = false;
 	}
 }
+

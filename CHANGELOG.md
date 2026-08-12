@@ -1,6 +1,14 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.49.0"></a>
+## v0.0.49.0
+- Added `os.SUPPORTS_IO`
+- Added `os.SUPPORTS_NON_LINEAR_HEAP`
+- Updated interfaces to reflect updates to [PCIT-CPP v0.0.361.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.361.0)
+
+
+<!---------------------------------->
 <a name="v0.0.48.0"></a>
 ## v0.0.48.0
 - Updated interfaces to reflect updates to [PCIT-CPP v0.0.360.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.360.0)

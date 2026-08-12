@@ -129,9 +129,11 @@ type IWriter             = alias #pub @import("writer/Writer.pthr").IWriter;
 type Writer              = alias #pub @import("writer/Writer.pthr").Writer;
 type PmWriter            = alias #pub @import("writer/Writer.pthr").PmWriter;
 
-type FileWriter           = alias #pub @import("writer/FileWriter.pthr").FileWriter;
 type ComptimeStdoutWriter = alias #pub @import("writer/ComptimeStdoutWriter.pthr").ComptimeStdoutWriter;
-type DebugStdoutWriter    = alias #pub @import("writer/DebugStdoutWriter.pthr").DebugStdoutWriter;
+when(os.SUPPORTS_IO){
+	type FileWriter           = alias #pub @import("writer/FileWriter.pthr").FileWriter;
+	type DebugStdoutWriter    = alias #pub @import("writer/DebugStdoutWriter.pthr").DebugStdoutWriter;
+}
 
 type BufferedWriter       = alias #pub @import("writer/BufferedWriter.pthr").BufferedWriter;
 type PmBufferedWriter     = alias #pub @import("writer/BufferedWriter.pthr").PmBufferedWriter;
