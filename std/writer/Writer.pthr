@@ -20,21 +20,13 @@ type IWriter = interface #pub {
 
 
 
-type PmWriter = alias #pub Writer<{}>;
+type PmWriter = alias #pub Writer<{impl(*mut:std.IWriter)}>;
 
-type Writer = struct <{TargetWriter: Type = std.PolymorphicTag}> #pub {
-	type UnderlyingWriter = alias type(
-		std.getInterfacePtrMapUnderlyingType<{TargetWriter, std.IWriter}>()
-	);
-
-
-	func new = (writer_impl: impl*mut(UnderlyingWriter:std.IWriter)) -> (output: This) {
-		// @breakpoint();
+type Writer = struct <{TargetWriter: Type}> #pub {
+	func new = (writer_impl: impl*mut(TargetWriter:std.IWriter)) -> (output: This) {
 		output.writer_impl = copy writer_impl;
 		return...;
 	}
-
-
 
 
 	func write = (this mut, str: [Char:*]) -> Void {
@@ -58,5 +50,5 @@ type Writer = struct <{TargetWriter: Type = std.PolymorphicTag}> #pub {
 	///////////////////////////////////
 	// private
 
-	var writer_impl: impl*mut(UnderlyingWriter:std.IWriter);
+	var writer_impl: impl*mut(TargetWriter:std.IWriter);
 }

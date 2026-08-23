@@ -16,23 +16,8 @@ def std = @import("std");
 //////////////////////////////////////////////////////////////////////
 // Allocator
 
-func createAllocator = (target_allocator: $TargetAllocator mut) #pub -> Allocator<{TargetAllocator}> {
-	return new Allocator<{TargetAllocator}>(target_allocator);
-}
-
-func createPmAllocator = (target_allocator: $$ mut) #pub -> Allocator<{}> {
-	return new Allocator<{}>(std._temp_asInterfacePtrMap<{std.mem.IAllocator}>(target_allocator));
-}
-
-
-type Allocator = struct <{TargetAllocatorType: Type = std.PolymorphicTag}> #pub {
-	type UnderlyingAllocator = alias type(
-		std.getInterfacePtrMapUnderlyingType<{TargetAllocatorType, std.mem.IAllocator}>()
-	);
-
-
-
-	func new = (allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocator)) -> (output: This) {
+type Allocator = struct <{TargetAllocatorType: Type}> #pub {
+	func new = (allocator_impl: impl*mut(TargetAllocatorType:std.mem.IAllocator)) -> (output: This) {
 		output.allocator_impl = copy allocator_impl;
 		return...;
 	}
@@ -118,7 +103,7 @@ type Allocator = struct <{TargetAllocatorType: Type = std.PolymorphicTag}> #pub 
 	//////////////////////////////////////////////////////////////////////
 	// private
 
-	var allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocator) #priv;
+	var allocator_impl: impl*mut(TargetAllocatorType:std.mem.IAllocator) #priv;
 }
 
 
@@ -126,24 +111,8 @@ type Allocator = struct <{TargetAllocatorType: Type = std.PolymorphicTag}> #pub 
 //////////////////////////////////////////////////////////////////////
 // AllocatorRT
 
-
-func createAllocatorRT = (target_allocator: $TargetAllocatorRT mut) #pub #rt -> AllocatorRT<{TargetAllocatorRT}> {
-	return new AllocatorRT<{TargetAllocatorRT}>(target_allocator);
-}
-
-func createPmAllocatorRT = (target_allocator: $$ mut) #pub #rt -> AllocatorRT<{}> {
-	return new AllocatorRT<{}>(std._temp_asInterfacePtrMap<{std.mem.IAllocatorRT}>(target_allocator));
-}
-
-
-type AllocatorRT = struct <{TargetAllocatorRTType: Type = std.PolymorphicTag}> #pub {
-	type UnderlyingAllocator = alias type(
-		std.getInterfacePtrMapUnderlyingType<{TargetAllocatorRTType, std.mem.IAllocatorRT}>()
-	);
-
-
-
-	func new = (allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocatorRT)) #rt -> (output: This) {
+type AllocatorRT = struct <{TargetAllocatorRTType: Type}> #pub {
+	func new = (allocator_impl: impl*mut(TargetAllocatorRTType:std.mem.IAllocatorRT)) #rt -> (output: This) {
 		output.allocator_impl = copy allocator_impl;
 		return...;
 	}
@@ -230,7 +199,7 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type = std.PolymorphicTag}> #
 	//////////////////////////////////////////////////////////////////////
 	// private
 
-	var allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocatorRT) #priv;
+	var allocator_impl: impl*mut(TargetAllocatorRTType:std.mem.IAllocatorRT) #priv;
 }
 
 
@@ -238,24 +207,8 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type = std.PolymorphicTag}> #
 //////////////////////////////////////////////////////////////////////
 // AllocatorCT
 
-
-func createAllocatorCT = (target_allocator: $TargetAllocatorCT mut) #pub #ct -> AllocatorCT<{TargetAllocatorCT}> {
-	return new AllocatorCT<{TargetAllocatorCT}>(target_allocator);
-}
-
-func createPmAllocatorCT = (target_allocator: $$ mut) #pub #ct -> AllocatorCT<{}> {
-	return new AllocatorCT<{}>(std._temp_asInterfacePtrMap<{std.mem.IAllocatorCT}>(target_allocator));
-}
-
-
-type AllocatorCT = struct <{TargetAllocatorCTType: Type = std.PolymorphicTag}> #pub {
-	type UnderlyingAllocator = alias type(
-		std.getInterfacePtrMapUnderlyingType<{TargetAllocatorCTType, std.mem.IAllocatorCT}>()
-	);
-
-
-
-	func new = (allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocatorCT)) -> (output: This) {
+type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAllocatorCT)}> #pub {
+	func new = (allocator_impl: impl*mut(TargetAllocatorCTType:std.mem.IAllocatorCT)) -> (output: This) {
 		output.allocator_impl = copy allocator_impl;
 		return...;
 	}
@@ -342,5 +295,5 @@ type AllocatorCT = struct <{TargetAllocatorCTType: Type = std.PolymorphicTag}> #
 	//////////////////////////////////////////////////////////////////////
 	// private
 
-	var allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocatorCT) #priv;
+	var allocator_impl: impl*mut(TargetAllocatorCTType:std.mem.IAllocatorCT) #priv;
 }

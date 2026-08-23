@@ -22,19 +22,13 @@ type IAllocatorCT = alias #pub iallocator.IAllocatorCT;
 
 def allocator = @import("./allocator.pthr");
 type Allocator   = alias #pub allocator.Allocator;
-type PmAllocator = alias #pub Allocator<{}>;
-func createAllocator   = alias #pub allocator.createAllocator;
-func createPmAllocator = alias #pub allocator.createPmAllocator;
+type PmAllocator = alias #pub Allocator<{impl(*mut:IAllocator)}>;
 
 type AllocatorRT   = alias #pub allocator.AllocatorRT;
-type PmAllocatorRT = alias #pub AllocatorRT<{}>;
-func createAllocatorRT   = alias #pub allocator.createAllocatorRT;
-func createPmAllocatorRT = alias #pub allocator.createPmAllocatorRT;
+type PmAllocatorRT = alias #pub AllocatorRT<{impl(*mut:IAllocatorRT)}>;
 
 type AllocatorCT   = alias #pub allocator.AllocatorCT;
-type PmAllocatorCT = alias #pub AllocatorCT<{}>;
-func createAllocatorCT   = alias #pub allocator.createAllocatorCT;
-func createPmAllocatorCT = alias #pub allocator.createPmAllocatorCT;
+type PmAllocatorCT = alias #pub AllocatorCT<{impl(*mut:IAllocatorCT)}>;
 
 
 

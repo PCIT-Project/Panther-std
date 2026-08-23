@@ -1,6 +1,14 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.51.0"></a>
+## v0.0.51.0
+- Added `PolymorphicTag`
+- Added `getInterfacePtrMapUnderlyingType`
+- Updated `mem.Allocator` and `Writer` to reflect changes in [PCIT-CPP v0.0.367.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.367.0)
+
+
+<!---------------------------------->
 <a name="v0.0.50.0"></a>
 ## v0.0.50.0
 - Added `PolymorphicTag`
