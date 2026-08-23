@@ -21,39 +21,21 @@ func createAllocator = (target_allocator: $TargetAllocator mut) #pub -> Allocato
 }
 
 func createPmAllocator = (target_allocator: $$ mut) #pub -> Allocator<{}> {
-	return new Allocator<{}>(target_allocator as impl(*mut:std.mem.IAllocator));
+	return new Allocator<{}>(std._temp_asInterfacePtrMap<{std.mem.IAllocator}>(target_allocator));
 }
 
 
-type Allocator = struct <{TargetAllocatorType: Type = impl(*mut:std.mem.IAllocator)}> #pub
-	#comptimeAssert(
-		@getTypeID<{TargetAllocatorType}>() != @getTypeID<{impl(*:std.mem.IAllocator)}>(),
-		"Mutable access to the allocator interface is required"
-	)
-{
-	when(@getTypeID<{TargetAllocatorType}>() == @getTypeID<{impl(*mut:std.mem.IAllocator)}>()){
-		func new = (allocator_impl: TargetAllocatorType) -> (output: This) {
-			output.allocator_impl = copy allocator_impl;
-			return...;
-		}
+type Allocator = struct <{TargetAllocatorType: Type = std.PolymorphicTag}> #pub {
+	type UnderlyingAllocator = alias type(
+		std.getInterfacePtrMapUnderlyingType<{TargetAllocatorType, std.mem.IAllocator}>()
+	);
 
-		func new = (allocator_impl: $$ mut) -> (output: This) {
-			output.allocator_impl = allocator_impl as impl(*mut:std.mem.IAllocator);
-			return...;
-		}
 
-	}else{
-		func new = (allocator_impl: TargetAllocatorType mut) -> (output: This) {
-			output.allocator_impl = &(allocator_impl as impl(TargetAllocatorType:std.mem.IAllocator));
-			return...;
-		}
 
-		func new = (allocator_impl: impl(TargetAllocatorType:std.mem.IAllocator) mut) -> (output: This) {
-			output.allocator_impl = &allocator_impl;
-			return...;
-		}
+	func new = (allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocator)) -> (output: This) {
+		output.allocator_impl = copy allocator_impl;
+		return...;
 	}
-
 
 	
 
@@ -136,11 +118,7 @@ type Allocator = struct <{TargetAllocatorType: Type = impl(*mut:std.mem.IAllocat
 	//////////////////////////////////////////////////////////////////////
 	// private
 
-	when(@getTypeID<{TargetAllocatorType}>() == @getTypeID<{impl(*mut:std.mem.IAllocator)}>()){
-		var allocator_impl: impl(*mut:std.mem.IAllocator) #priv;
-	}else{
-		var allocator_impl: impl(TargetAllocatorType:std.mem.IAllocator)*mut #priv;
-	}
+	var allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocator) #priv;
 }
 
 
@@ -154,37 +132,20 @@ func createAllocatorRT = (target_allocator: $TargetAllocatorRT mut) #pub #rt -> 
 }
 
 func createPmAllocatorRT = (target_allocator: $$ mut) #pub #rt -> AllocatorRT<{}> {
-	return new AllocatorRT<{}>(target_allocator as impl(*mut:std.mem.IAllocatorRT));
+	return new AllocatorRT<{}>(std._temp_asInterfacePtrMap<{std.mem.IAllocatorRT}>(target_allocator));
 }
 
 
-type AllocatorRT = struct <{TargetAllocatorRTType: Type = impl(*mut:std.mem.IAllocatorRT)}> #pub
-	#comptimeAssert(
-		@getTypeID<{TargetAllocatorRTType}>() != @getTypeID<{impl(*:std.mem.IAllocatorRT)}>(),
-		"Mutable access to the allocator interface is required"
-	)
-{
-	when(@getTypeID<{TargetAllocatorRTType}>() == @getTypeID<{impl(*mut:std.mem.IAllocatorRT)}>()){
-		func new = (allocator_impl: TargetAllocatorRTType) #rt -> (output: This) {
-			output.allocator_impl = copy allocator_impl;
-			return...;
-		}
+type AllocatorRT = struct <{TargetAllocatorRTType: Type = std.PolymorphicTag}> #pub {
+	type UnderlyingAllocator = alias type(
+		std.getInterfacePtrMapUnderlyingType<{TargetAllocatorRTType, std.mem.IAllocatorRT}>()
+	);
 
-		func new = (allocator_impl: $$ mut) #rt -> (output: This) {
-			output.allocator_impl = allocator_impl as impl(*mut:std.mem.IAllocatorRT);
-			return...;
-		}
 
-	}else{
-		func new = (allocator_impl: TargetAllocatorRTType mut) #rt -> (output: This) {
-			output.allocator_impl = &(allocator_impl as impl(TargetAllocatorRTType:std.mem.IAllocatorRT));
-			return...;
-		}
 
-		func new = (allocator_impl: impl(TargetAllocatorRTType:std.mem.IAllocatorRT) mut) #rt -> (output: This) {
-			output.allocator_impl = &allocator_impl;
-			return...;
-		}
+	func new = (allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocatorRT)) #rt -> (output: This) {
+		output.allocator_impl = copy allocator_impl;
+		return...;
 	}
 
 
@@ -269,11 +230,7 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type = impl(*mut:std.mem.IAll
 	//////////////////////////////////////////////////////////////////////
 	// private
 
-	when(@getTypeID<{TargetAllocatorRTType}>() == @getTypeID<{impl(*mut:std.mem.IAllocatorRT)}>()){
-		var allocator_impl: impl(*mut:std.mem.IAllocatorRT) #priv;
-	}else{
-		var allocator_impl: impl(TargetAllocatorRTType:std.mem.IAllocatorRT)*mut #priv;
-	}
+	var allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocatorRT) #priv;
 }
 
 
@@ -287,37 +244,20 @@ func createAllocatorCT = (target_allocator: $TargetAllocatorCT mut) #pub #ct -> 
 }
 
 func createPmAllocatorCT = (target_allocator: $$ mut) #pub #ct -> AllocatorCT<{}> {
-	return new AllocatorCT<{}>(target_allocator as impl(*mut:std.mem.IAllocatorCT));
+	return new AllocatorCT<{}>(std._temp_asInterfacePtrMap<{std.mem.IAllocatorCT}>(target_allocator));
 }
 
 
-type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAllocatorCT)}> #pub
-	#comptimeAssert(
-		@getTypeID<{TargetAllocatorCTType}>() != @getTypeID<{impl(*:std.mem.IAllocatorCT)}>(),
-		"Mutable access to the allocator interface is required"
-	)
-{
-	when(@getTypeID<{TargetAllocatorCTType}>() == @getTypeID<{impl(*mut:std.mem.IAllocatorCT)}>()){
-		func new = (allocator_impl: TargetAllocatorCTType) #ct -> (output: This) {
-			output.allocator_impl = copy allocator_impl;
-			return...;
-		}
+type AllocatorCT = struct <{TargetAllocatorCTType: Type = std.PolymorphicTag}> #pub {
+	type UnderlyingAllocator = alias type(
+		std.getInterfacePtrMapUnderlyingType<{TargetAllocatorCTType, std.mem.IAllocatorCT}>()
+	);
 
-		func new = (allocator_impl: $$ mut) #ct -> (output: This) {
-			output.allocator_impl = allocator_impl as impl(*mut:std.mem.IAllocatorCT);
-			return...;
-		}
 
-	}else{
-		func new = (allocator_impl: TargetAllocatorCTType mut) #ct -> (output: This) {
-			output.allocator_impl = &(allocator_impl as impl(TargetAllocatorCTType:std.mem.IAllocatorCT));
-			return...;
-		}
 
-		func new = (allocator_impl: impl(TargetAllocatorCTType:std.mem.IAllocatorCT) mut) #ct -> (output: This) {
-			output.allocator_impl = &allocator_impl;
-			return...;
-		}
+	func new = (allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocatorCT)) -> (output: This) {
+		output.allocator_impl = copy allocator_impl;
+		return...;
 	}
 
 
@@ -402,9 +342,5 @@ type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAll
 	//////////////////////////////////////////////////////////////////////
 	// private
 
-	when(@getTypeID<{TargetAllocatorCTType}>() == @getTypeID<{impl(*mut:std.mem.IAllocatorCT)}>()){
-		var allocator_impl: impl(*mut:std.mem.IAllocatorCT) #priv;
-	}else{
-		var allocator_impl: impl(TargetAllocatorCTType:std.mem.IAllocatorCT)*mut #priv;
-	}
+	var allocator_impl: impl*mut(UnderlyingAllocator:std.mem.IAllocatorCT) #priv;
 }

@@ -22,34 +22,18 @@ type IWriter = interface #pub {
 
 type PmWriter = alias #pub Writer<{}>;
 
-type Writer = struct <{TargetWriter: Type = impl(*mut:std.IWriter)}> #pub 
-	#comptimeAssert(
-		@getTypeID<{TargetWriter}>() != @getTypeID<{impl(*:std.IWriter)}>(),
-		"Mutable access to the writer interface is required"
-	)
-{
-	when(@getTypeID<{TargetWriter}>() == @getTypeID<{impl(*mut:std.IWriter)}>()){
-		func new = (writer_impl: impl(*mut:std.IWriter)) -> (output: This) {
-			output.writer_impl = copy writer_impl;
-			return...;
-		}
+type Writer = struct <{TargetWriter: Type = std.PolymorphicTag}> #pub {
+	type UnderlyingWriter = alias type(
+		std.getInterfacePtrMapUnderlyingType<{TargetWriter, std.IWriter}>()
+	);
 
-		func new = (writer_impl: $$ mut) -> (output: This) {
-			output.writer_impl = writer_impl as impl(*mut:std.IWriter);
-			return...;
-		}
-		
-	}else{
-		func new = (writer_impl: TargetWriter mut) -> (output: This) {
-			output.writer_impl = &(writer_impl as impl(TargetWriter:std.IWriter));
-			return...;
-		}
 
-		func new = (writer_impl: impl(TargetWriter:std.IWriter) mut) -> (output: This) {
-			output.writer_impl = &writer_impl;
-			return...;
-		}
+	func new = (writer_impl: impl*mut(UnderlyingWriter:std.IWriter)) -> (output: This) {
+		// @breakpoint();
+		output.writer_impl = copy writer_impl;
+		return...;
 	}
+
 
 
 
@@ -74,9 +58,5 @@ type Writer = struct <{TargetWriter: Type = impl(*mut:std.IWriter)}> #pub
 	///////////////////////////////////
 	// private
 
-	when(@getTypeID<{TargetWriter}>() == @getTypeID<{impl(*mut:std.IWriter)}>()){
-		var writer_impl: TargetWriter #priv;
-	}else{
-		var writer_impl: impl(TargetWriter:std.IWriter)*mut #priv;
-	}
+	var writer_impl: impl*mut(UnderlyingWriter:std.IWriter);
 }

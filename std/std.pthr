@@ -116,9 +116,14 @@ type StaticArrayList = alias #pub @import("containers/StaticArrayList.pthr").Sta
 //////////////////////////////////////////////////////////////////////
 // misc
 
-def range_for        = @import("misc/rangeFor.pthr");
-func rangeFor        = alias #pub range_for.rangeFor;
-func reverseRangeFor = alias #pub range_for.reverseRangeFor;
+def interface_ptr_map                 = @import("misc/interface_ptr_map.pthr");
+type PolymorphicTag                   = alias #pub interface_ptr_map.PolymorphicTag;
+func getInterfacePtrMapUnderlyingType = alias #pub interface_ptr_map.getInterfacePtrMapUnderlyingType;
+func _temp_asInterfacePtrMap          = alias #pub interface_ptr_map._temp_asInterfacePtrMap;
+
+def range_for                         = @import("misc/rangeFor.pthr");
+func rangeFor                         = alias #pub range_for.rangeFor;
+func reverseRangeFor                  = alias #pub range_for.reverseRangeFor;
 
 
 

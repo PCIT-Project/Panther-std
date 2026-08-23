@@ -20,7 +20,7 @@ type IAllocatorCT = alias #pub iallocator.IAllocatorCT;
 
 
 
-def allocator = @import("./Allocator.pthr");
+def allocator = @import("./allocator.pthr");
 type Allocator   = alias #pub allocator.Allocator;
 type PmAllocator = alias #pub Allocator<{}>;
 func createAllocator   = alias #pub allocator.createAllocator;

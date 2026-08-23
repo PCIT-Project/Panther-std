@@ -103,7 +103,9 @@ func parse_pointer_format_info = (format_info: [Char:*]) -> Bool {
 }
 
 func write = (writer: std.Writer<{$$}> mut, arg: $$*, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
-	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*)");
+	std.debug.assert(
+		format_info.size() == 1, "Invalid format info for this type ($$*) - did you mean to dereference?"
+	);
 
 	const is_capital: Bool = parse_pointer_format_info(format_info);
 
@@ -117,7 +119,9 @@ func write = (writer: std.Writer<{$$}> mut, arg: $$*, format_info: [Char:*] = ne
 }
 
 func write = (writer: std.Writer<{$$}> mut, arg: $$*mut, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
-	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*mut)");
+	std.debug.assert(
+		format_info.size() == 1, "Invalid format info for this type ($$*mut) - did you mean to dereference?"
+	);
 
 	const is_capital: Bool = parse_pointer_format_info(format_info);
 	
@@ -131,7 +135,9 @@ func write = (writer: std.Writer<{$$}> mut, arg: $$*mut, format_info: [Char:*] =
 }
 
 func write = (writer: std.Writer<{$$}> mut, arg: $$*?, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
-	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*?)");
+	std.debug.assert(
+		format_info.size() == 1, "Invalid format info for this type ($$*?) - did you mean to dereference?"
+	);
 
 	const is_capital: Bool = parse_pointer_format_info(format_info);
 	
@@ -149,7 +155,9 @@ func write = (writer: std.Writer<{$$}> mut, arg: $$*?, format_info: [Char:*] = n
 }
 
 func write = (writer: std.Writer<{$$}> mut, arg: $$*mut?, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
-	std.debug.assert(format_info.size() == 1, "Invalid format info for this type ($$*mut?)");
+	std.debug.assert(
+		format_info.size() == 1, "Invalid format info for this type ($$*mut?) - did you mean to dereference?"
+	);
 
 	const is_capital: Bool = parse_pointer_format_info(format_info);
 	
