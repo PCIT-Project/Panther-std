@@ -24,7 +24,7 @@ type AtomicRef      = alias #pub @import("atomic/AtomicRef.pthr").AtomicRef;
 
 def bit #pub = @import("bit.pthr");
 
-func asBytes    = alias #pub bit.asBytes;
+func asBuffer   = alias #pub bit.asBuffer;
 func bitCast    = alias #pub bit.bitCast;
 func bitCeil    = alias #pub bit.bitCeil;
 func bitFloor   = alias #pub bit.bitFloor;

@@ -12,42 +12,14 @@
 def std = @import("std");
 
 
-type PmBufferedWriter = alias #pub BufferedWriter<{}>;
+type PmBufferedWriter = alias #pub BufferedWriter<{impl(*mut:std.IWriter)}>;
 
-type BufferedWriter = struct <{TargetWriter: Type = impl(*mut:std.IWriter)}> #pub 
-	#comptimeAssert(
-		@getTypeID<{TargetWriter}>() != @getTypeID<{impl(*:std.IWriter)}>(),
-		"Mutable access to the writer interface is required"
-	)
-{
-	when(@getTypeID<{TargetWriter}>() == @getTypeID<{impl(*mut:std.IWriter)}>()){
-		func new = (writer_backend: impl(*mut:std.IWriter), buffer: [Char:*mut]) -> (output: This) {
-			output.writer_backend = copy writer_backend;
-			output.buffer = copy buffer;
-			return...;
-		}
-
-		func new = (writer_backend: $$ mut, buffer: [Char:*mut]) -> (output: This) {
-			output.writer_backend = writer_backend as impl(*mut:std.IWriter);
-			output.buffer = copy buffer;
-			return...;
-		}
-		
-	}else{
-		func new = (writer_backend: TargetWriter mut, buffer: [Char:*mut]) -> (output: This) {
-			output.writer_backend = &(writer_backend as impl(TargetWriter:std.IWriter));
-			output.buffer = copy buffer;
-			return...;
-		}
-
-		func new = (writer_backend: impl(TargetWriter:std.IWriter) mut, buffer: [Char:*mut]) -> (output: This) {
-			output.writer_backend = &writer_backend;
-			output.buffer = copy buffer;
-			return...;
-		}
+type BufferedWriter = struct <{TargetWriter: Type}> #pub {
+	func new = (writer_backend: impl*mut(TargetWriter:std.IWriter), buffer: [Char:*mut]) -> (output: This) {
+		output.writer_backend = copy writer_backend;
+		output.buffer = copy buffer;
+		return...;
 	}
-
-
 
 
 	func write = (this mut, str: [Char:*]) -> Void {
@@ -77,11 +49,7 @@ type BufferedWriter = struct <{TargetWriter: Type = impl(*mut:std.IWriter)}> #pu
 	///////////////////////////////////
 	// private
 
-	when(@getTypeID<{TargetWriter}>() == @getTypeID<{impl(*mut:std.IWriter)}>()){
-		var writer_backend: TargetWriter #priv;
-	}else{
-		var writer_backend: impl(TargetWriter:std.IWriter)*mut #priv;
-	}
+	var writer_backend: impl*mut(TargetWriter:std.IWriter) #priv;
 
 	var buffer: [Char:*mut] #priv;
 	var buffer_index: USize #priv = 0;

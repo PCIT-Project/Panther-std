@@ -1,6 +1,13 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.52.0"></a>
+## v0.0.52.0
+- Added `mem.Allocator.deallocWithoutDelete()`
+- Replaced `bit.asBytes()` with `bit.asBuffer()`
+
+
+<!---------------------------------->
 <a name="v0.0.51.0"></a>
 ## v0.0.51.0
 - Added `PolymorphicTag`

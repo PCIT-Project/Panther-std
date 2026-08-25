@@ -138,9 +138,7 @@ when(std.os.SUPPORTS_IO){
 
 	func println = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void {
 		var debug_writer = new std.DebugStdoutWriter();
-		var writer = new std.Writer<{std.DebugStdoutWriter}>(
-			debug_writer as impl*mut(std.DebugStdoutWriter:std.IWriter)
-		);
+		var writer = new std.Writer<{std.DebugStdoutWriter}>(debug_writer);
 
 		writer.write(format_str, args...);
 		writer.write('\n');
