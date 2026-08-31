@@ -16,7 +16,9 @@ def std = @import("std");
 func panic = (message: [Char:*]) #noReturn #builtin("panic") #rtDiff -> Void {
 	when(@config.mode == std.Mode.DEBUG){
 		when(std.os.SUPPORTS_IO){
-			std.debug.println("\e[37m\e[41m{}\e[0m", message);
+			std.debug.print("\e[37m\e[41mPCIT Panther Language - `@panic`: \"");
+			std.debug.print(message);
+			std.debug.print("\"\e[0m\n");
 		}
 
 		@breakpoint();

@@ -64,7 +64,9 @@ when(std.os.SUPPORTS_IO){
 					const alloc_buffer: [Char:*mut] = std.os.windows.heapAlloc<{Char}>(
 						heap_handle, std.os.windows.HeapAllocFlags.NONE, str.size() + 1
 					);
-					defer{ std.os.windows.heapFree(heap_handle, std.os.windows.HeapFreeFlags.NONE, alloc_buffer.data()); }
+					defer{
+						std.os.windows.heapFree(heap_handle, std.os.windows.HeapFreeFlags.NONE, alloc_buffer.data());
+					}
 
 					std.mem.copyBuffer(new [Char:*mut](alloc_buffer.data(), str.size()), str);
 					alloc_buffer[str.size()].* = '\0';
@@ -145,15 +147,11 @@ when(std.os.SUPPORTS_IO){
 	}
 
 }else{
-	func print = (str: [Char:*]) #pub #rtDiff -> Void =
-		delete("Not supported in this platform target");
-
+	func print = (str: [Char:*]) #pub #rtDiff -> Void = delete("Not supported in this platform target");
 	func print = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void =
 		delete("Not supported in this platform target");
 
-	func println = (str: [Char:*]) #pub #rtDiff -> Void =
-		delete("Not supported in this platform target");
-
+	func println = (str: [Char:*]) #pub #rtDiff -> Void = delete("Not supported in this platform target");
 	func println = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void =
 		delete("Not supported in this platform target");
 
