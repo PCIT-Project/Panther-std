@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.54.0"></a>
+## v0.0.54.0
+- Improved usage of `ManualLifetime` as a comptime value
+
+
+<!---------------------------------->
 <a name="v0.0.53.0"></a>
 ## v0.0.53.0
 - Improved error message from `panic`
