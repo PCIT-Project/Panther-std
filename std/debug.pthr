@@ -14,7 +14,7 @@ def std = @import("std");
 func assert = (cond: Bool, message: [Char:*]) #pub -> Void {
 	if(cond == false){
 		when(@config.mode == std.Mode.DEBUG){
-			when(std.os.SUPPORTS_IO){
+			when(std.platform.SUPPORTS_CMD){
 				print("\e[37m\e[41m");
 				print(message);
 				print("\e[0m\n");
@@ -32,7 +32,7 @@ func assert = (cond: Bool, message: [Char:*]) #pub -> Void {
 func assert = (cond: Bool) #pub -> Void {
 	if(cond == false){
 		when(@config.mode == std.Mode.DEBUG){
-			when(std.os.SUPPORTS_IO){
+			when(std.platform.SUPPORTS_CMD){
 				println("\e[37m\e[41mFailed assert\e[0m");
 			}
 
@@ -47,38 +47,46 @@ func assert = (cond: Bool) #pub -> Void {
 
 
 
-when(std.os.SUPPORTS_IO){
+when(std.platform.SUPPORTS_CMD){
 	func print = (str: [Char:*]) #pub #rtDiff -> Void {
 		when(@isComptime()){
 			@ctPrint(str);
 
 		}else{
 			when switch(@config.platform){
+				case(std.Platform.FREESTANDING){
+					@comptimeError("`std.debug.print` is not supported in freestanding platform target");
+				}
+
 				case(std.Platform.LINUX){
-					_ = std.os.linux.write(std.os.linux.STDOUT, str);
+					_ = std.platform.linux.write(std.platform.linux.STDOUT, str);
+				}
+
+				case(std.Platform.PANTHER_VM){
+					try std.platform.pantherVM.fileWrite(std.platform.pantherVM.STDOUT, str) else<err> {};
 				}
 
 				case(std.Platform.WINDOWS){
-					const heap_handle: std.os.windows.Handle = std.os.windows.getProcessHeap();
+					const heap_handle: std.platform.windows.Handle = std.platform.windows.getProcessHeap();
 
-					const alloc_buffer: [Char:*mut] = std.os.windows.heapAlloc<{Char}>(
-						heap_handle, std.os.windows.HeapAllocFlags.NONE, str.size() + 1
+					const alloc_buffer: [Char:*mut] = std.platform.windows.heapAlloc<{Char}>(
+						heap_handle, std.platform.windows.HeapAllocFlags.NONE, str.size() + 1
 					);
 					defer{
-						std.os.windows.heapFree(heap_handle, std.os.windows.HeapFreeFlags.NONE, alloc_buffer.data());
+						std.platform.windows.heapFree(
+							heap_handle, std.platform.windows.HeapFreeFlags.NONE, alloc_buffer.data()
+						);
 					}
 
 					std.mem.copyBuffer(new [Char:*mut](alloc_buffer.data(), str.size()), str);
 					alloc_buffer[str.size()].* = '\0';
 
-					const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
+					const stdout: std.platform.windows.Handle = std.platform.windows.getStdHandle(
+						std.platform.windows.StdHandle.OUTPUT
+					);
 
-					try std.os.windows.ntWriteFile(stdout, str) else <nt_status> {}; // TODO(FUTURE): error handling
-					std.os.windows.outputDebugStringA(new [Char:*mut;'\0'](alloc_buffer.data(), str.size()));
-				}
-
-				case(std.Platform.FREESTANDING){
-					@comptimeError("`std.debug.print` is not supported in freestanding platform target");
+					try std.platform.windows.ntWriteFile(stdout, str) else <nt_status> {}; // TODO(FUTURE): error handling
+					std.platform.windows.outputDebugStringA(new [Char:*mut;'\0'](alloc_buffer.data(), str.size()));
 				}
 			}
 		}
@@ -100,38 +108,51 @@ when(std.os.SUPPORTS_IO){
 
 		}else{
 			when switch(@config.platform){
+				case(std.Platform.FREESTANDING){
+					@abort("std.debug.println isn't supported in freestanding platform target");
+				}
+
 				case(std.Platform.LINUX){
-					_ = std.os.linux.write(std.os.linux.STDOUT, str);
+					_ = std.platform.linux.write(std.platform.linux.STDOUT, str);
 
 					const newline: Char = '\n';
-					_ = std.os.linux.write(std.os.linux.STDOUT, new [Char:*](&newline, 1));
+					_ = std.platform.linux.write(std.platform.linux.STDOUT, new [Char:*](&newline, 1));
+				}
+
+				case(std.Platform.PANTHER_VM){
+					try std.platform.pantherVM.fileWrite(std.platform.pantherVM.STDOUT, str) else<err> {};
+
+					const newline: Char = '\n';
+					try std.platform.pantherVM.fileWrite(
+						std.platform.pantherVM.STDOUT, new [Char:*](&newline, 1)
+					) else<err> {};
 				}
 
 				case(std.Platform.WINDOWS){
-					const heap_handle: std.os.windows.Handle = std.os.windows.getProcessHeap();
+					const heap_handle: std.platform.windows.Handle = std.platform.windows.getProcessHeap();
 
-					const alloc_buffer: [Char:*mut] = std.os.windows.heapAlloc<{Char}>(
-						heap_handle, std.os.windows.HeapAllocFlags.NONE, str.size() + 2
+					const alloc_buffer: [Char:*mut] = std.platform.windows.heapAlloc<{Char}>(
+						heap_handle, std.platform.windows.HeapAllocFlags.NONE, str.size() + 2
 					);
 					defer{
-						std.os.windows.heapFree(heap_handle, std.os.windows.HeapFreeFlags.NONE, alloc_buffer.data());
+						std.platform.windows.heapFree(
+							heap_handle, std.platform.windows.HeapFreeFlags.NONE, alloc_buffer.data()
+						);
 					}
 
 					std.mem.copyBuffer(new [Char:*mut](alloc_buffer.data(), str.size()), str);
 					alloc_buffer[str.size()].* = '\n';
 					alloc_buffer[str.size() + 1].* = '\0';
 
-					const stdout: std.os.windows.Handle = std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT);
+					const stdout: std.platform.windows.Handle = std.platform.windows.getStdHandle(
+						std.platform.windows.StdHandle.OUTPUT
+					);
 
 					const created_str = new [Char:*mut;'\0'](alloc_buffer.data(), str.size() + 1);
 
 					// TODO(FUTURE): error handling
-					try std.os.windows.ntWriteFile(stdout, created_str) else <nt_status> {};
-					std.os.windows.outputDebugStringA(created_str);
-				}
-
-				case(std.Platform.FREESTANDING){
-					@abort("std.debug.println isn't supported in freestanding platform target");
+					try std.platform.windows.ntWriteFile(stdout, created_str) else <nt_status> {};
+					std.platform.windows.outputDebugStringA(created_str);
 				}
 			}
 		}

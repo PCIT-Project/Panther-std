@@ -21,9 +21,9 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 		&& @config.windowsSubsystem.?.* == std.WindowsSubsystem.WINDOWS
 	){
 		func WinMain = (
-			hInstance     : std.os.windows.native.HINSTANCE,
-			hPrevInstance : std.os.windows.native.HINSTANCE,
-			lpCmdLine     : std.os.windows.native.LPCSTR,
+			hInstance     : std.platform.windows.native.HINSTANCE,
+			hPrevInstance : std.platform.windows.native.HINSTANCE,
+			lpCmdLine     : std.platform.windows.native.LPCSTR,
 			nShowCmd      : CInt
 		) #rt #export #callConv(std.CallingConvention.C) -> CInt {
 			return @entry() as CInt;
@@ -37,13 +37,17 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 
 }else{
 	when switch(@config.platform){
+		case(std.Platform.FREESTANDING){
+			// none
+		}
+
 		case(std.Platform.LINUX){
 			func main = (argc: CInt, argv: Char**) #rt #export #callConv(std.CallingConvention.C) -> CInt {
 				return @entry() as CInt;
 			}
 
 			func exit = (exit_code: CInt) #rt #export #noReturn #callConv(std.CallingConvention.C) -> Void {
-				std.os.linux.exit(exit_code);
+				std.platform.linux.exit(exit_code);
 			}
 
 			func _start = () #naked #export #callConv(std.CallingConvention.C) -> Void {
@@ -57,6 +61,10 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 					call exit
 				"};
 			}
+		}
+
+		case(std.Platform.PANTHER_VM){
+			// none
 		}
 
 		case(std.Platform.WINDOWS){
@@ -75,15 +83,11 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 
 					case(std.WindowsSubsystem.WINDOWS){
 						func WinMainCRTStartup = () #rt #export #callConv(std.CallingConvention.C) -> CInt {
-							std.os.windows.exitProcess(@entry() as CInt);
+							std.platform.windows.exitProcess(@entry() as CInt);
 						}
 					}
 				}
 			}
-		}
-
-		case(std.Platform.FREESTANDING){
-			// none
 		}
 	}
 

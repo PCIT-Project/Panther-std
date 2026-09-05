@@ -1,0 +1,56 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std.platform");
+
+def std = @import("std");
+
+
+when switch(@config.platform){
+	case(std.Platform.FREESTANDING){
+		def linux #pub = delete("Current target platform is freestanding");
+		def panther #pub = delete("Current target platform is freestanding");
+		def windows #pub = delete("Current target platform is freestanding");
+
+		def SUPPORTS_CMD: Bool #pub = false;
+		def SUPPORTS_NON_CMD_IO: Bool #pub = false;
+		def SUPPORTS_NON_LINEAR_HEAP: Bool #pub = false;
+	}
+
+	case(std.Platform.LINUX){
+		def linux #pub = @import("./Linux/Linux.pthr");
+		def panther #pub = delete("Current target platform is Linux");
+		def windows #pub = delete("Current target platform is Linux");
+
+		def SUPPORTS_CMD: Bool #pub = true;
+		def SUPPORTS_NON_CMD_IO: Bool #pub = true;
+		def SUPPORTS_NON_LINEAR_HEAP: Bool #pub = true;
+	}
+
+	case(std.Platform.PANTHER_VM){
+		def linux #pub = delete("Current target platform is PantherVM");
+		def pantherVM #pub = @import("./PantherVM/PantherVM.pthr");
+		def windows #pub = delete("Current target platform is PantherVM");
+
+		def SUPPORTS_CMD: Bool #pub = true;
+		def SUPPORTS_NON_CMD_IO: Bool #pub = true;
+		def SUPPORTS_NON_LINEAR_HEAP: Bool #pub = true;
+	}
+
+	case(std.Platform.WINDOWS){
+		def linux #pub = delete("Current target platform is Windows");
+		def panther #pub = delete("Current target platform is Windows");
+		def windows #pub = @import("./Windows/Windows.pthr");
+
+		def SUPPORTS_CMD: Bool #pub = true;
+		def SUPPORTS_NON_CMD_IO: Bool #pub = true;
+		def SUPPORTS_NON_LINEAR_HEAP: Bool #pub = true;
+	}
+}
+

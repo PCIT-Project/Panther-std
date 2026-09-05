@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-@setModuleName("std.os.windows");
+@setModuleName("std.platform.windows");
 
 // format: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/87fba13e-bf06-450e-83b1-9241dc81e781
 // codes: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55

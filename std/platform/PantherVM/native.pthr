@@ -7,17 +7,23 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-@setModuleName("std.heap");
+@setModuleName("std.platform.pantherVM");
 
 def std = @import("std");
 
-when(std.platform.SUPPORTS_NON_LINEAR_HEAP){
-	type PageAllocator = alias #pub @import("./PageAllocator.pthr").PageAllocator;
-}
 
-type ComptimeAllocator = alias #pub @import("./ComptimeAllocator.pthr").ComptimeAllocator;
+type FileHandle = alias #pub UI32;
 
 
-func pageSize = () #pub -> USize {
-	return 4096;
-}
+
+func pantherVMMemPageAlloc = (size: USize, alignment: UI32) #pub #callConv(@pthr.CallingConvention.C) -> RawPtr =
+	extern(@pthr.Language.C);
+
+func pantherVMMemPageDealloc = (
+	buffer_data: Byte*, buffer_size: USize, ERR: UI32*mut
+) #pub #callConv(@pthr.CallingConvention.C) -> Bool = extern(@pthr.Language.C);
+
+
+func pantherVMFileWrite = (
+	file_handle: FileHandle, str_data: Char*, str_size: USize, ERR: UI32*mut
+) #pub #callConv(@pthr.CallingConvention.C) -> Bool = extern(@pthr.Language.C);

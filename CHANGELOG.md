@@ -1,6 +1,13 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.55.0"></a>
+## v0.0.55.0
+- Added support for platform `PantherVM`
+- Renamed `os` module to `platform`
+
+
+<!---------------------------------->
 <a name="v0.0.54.0"></a>
 ## v0.0.54.0
 - Improved usage of `ManualLifetime` as a comptime value

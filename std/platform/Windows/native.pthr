@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-@setModuleName("std.os.windows");
+@setModuleName("std.platform.windows");
 
 def std = @import("std");
 

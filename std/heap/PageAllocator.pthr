@@ -93,57 +93,61 @@ type PageAllocator = struct #pub {
 		}
 
 		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				@comptimeError("`std.heap.PageAllocator` is unsupported in freestanding platform target");
+			}
+
 			case(std.Platform.LINUX){
-				const allocated_addr: RawPtr = try std.os.linux.mmap(
+				const allocated_addr: RawPtr = try std.platform.linux.mmap(
 					null,
 					std.math.ceilToMultiple(size, std.heap.pageSize()),
-					std.os.linux.ProtectionFlags.READ | std.os.linux.ProtectionFlags.WRITE,
-					std.os.linux.MapFlags.PRIVATE | std.os.linux.MapFlags.ANONYMOUS,
-					-1 as std.os.linux.FileDescriptor,
+					std.platform.linux.ProtectionFlags.READ | std.platform.linux.ProtectionFlags.WRITE,
+					std.platform.linux.MapFlags.PRIVATE | std.platform.linux.MapFlags.ANONYMOUS,
+					-1 as std.platform.linux.FileDescriptor,
 					0
 				) else<errno> {->expr:RawPtr
 					switch(errno){
-						case(std.os.linux.Errno.ACCES){
+						case(std.platform.linux.Errno.ACCES){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.ACCES");
 						}
 
-						case(std.os.linux.Errno.AGAIN){
+						case(std.platform.linux.Errno.AGAIN){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.AGAIN");
 						}
 
-						case(std.os.linux.Errno.BADF){
+						case(std.platform.linux.Errno.BADF){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.BADF");
 						}
 
-						case(std.os.linux.Errno.EXIST){
+						case(std.platform.linux.Errno.EXIST){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.EXIST");
 						}
 
-						case(std.os.linux.Errno.INVAL){
+						case(std.platform.linux.Errno.INVAL){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.INVAL");
 						}
 
-						case(std.os.linux.Errno.NFILE){
+						case(std.platform.linux.Errno.NFILE){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.NFILE");
 						}
 
-						case(std.os.linux.Errno.NODEV){
+						case(std.platform.linux.Errno.NODEV){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.NODEV");
 						}
 
-						case(std.os.linux.Errno.NOMEM){
+						case(std.platform.linux.Errno.NOMEM){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.NOMEM");
 						}
 
-						case(std.os.linux.Errno.OVERFLOW){
+						case(std.platform.linux.Errno.OVERFLOW){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.OVERFLOW");
 						}
 
-						case(std.os.linux.Errno.PERM){
+						case(std.platform.linux.Errno.PERM){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.PERM");
 						}
 
-						case(std.os.linux.Errno.TXTBSY){
+						case(std.platform.linux.Errno.TXTBSY){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.TXTBSY");
 						}
 
@@ -158,54 +162,58 @@ type PageAllocator = struct #pub {
 				}
 			}
 
+			case(std.Platform.PANTHER_VM){
+				return std.platform.pantherVM.memPageAlloc(size, alignment);
+			}
+
 			case(std.Platform.WINDOWS){
 				const allocated_addr: RawPtr = uninit;
-				[allocated_addr, _] = try std.os.windows.ntAllocateVirtualMemory(
-					std.os.windows.ntCurrentProcess(),
+				[allocated_addr, _] = try std.platform.windows.ntAllocateVirtualMemory(
+					std.platform.windows.ntCurrentProcess(),
 					null,
 					0,
 					size,
-					std.os.windows.AllocationTypeFlags.COMMIT | std.os.windows.AllocationTypeFlags.RESERVE,
-					std.os.windows.AllocationProtectionFlags.READWRITE
+					std.platform.windows.AllocationTypeFlags.COMMIT | std.platform.windows.AllocationTypeFlags.RESERVE,
+					std.platform.windows.AllocationProtectionFlags.READWRITE
 				) else<nt_status> {->expr:(_base_addr: RawPtr, _size: USize)
 					switch(nt_status){
-						case(std.os.windows.NtStatus.ACCESS_DENIED){
+						case(std.platform.windows.NtStatus.ACCESS_DENIED){
 							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.ACCESS_DENIED");
 						}
 
-						case(std.os.windows.NtStatus.ALREADY_COMMITTED){
+						case(std.platform.windows.NtStatus.ALREADY_COMMITTED){
 							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.ALREADY_COMMITTED");
 						}
 
-						case(std.os.windows.NtStatus.COMMITMENT_LIMIT){
+						case(std.platform.windows.NtStatus.COMMITMENT_LIMIT){
 							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.COMMITMENT_LIMIT");
 						}
 
-						case(std.os.windows.NtStatus.CONFLICTING_ADDRESSES){
+						case(std.platform.windows.NtStatus.CONFLICTING_ADDRESSES){
 							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.CONFLICTING_ADDRESSES");
 						}
 
-						case(std.os.windows.NtStatus.INSUFFICIENT_RESOURCES){
+						case(std.platform.windows.NtStatus.INSUFFICIENT_RESOURCES){
 							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.INSUFFICIENT_RESOURCES");
 						}
 
-						case(std.os.windows.NtStatus.INVALID_HANDLE){
+						case(std.platform.windows.NtStatus.INVALID_HANDLE){
 							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.INVALID_HANDLE");
 						}
 
-						case(std.os.windows.NtStatus.INVALID_PAGE_PROTECTION){
+						case(std.platform.windows.NtStatus.INVALID_PAGE_PROTECTION){
 							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.INVALID_PAGE_PROTECTION");
 						}
 
-						case(std.os.windows.NtStatus.NO_MEMORY){
+						case(std.platform.windows.NtStatus.NO_MEMORY){
 							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.NO_MEMORY");
 						}
 
-						case(std.os.windows.NtStatus.OBJECT_TYPE_MISMATCH){
+						case(std.platform.windows.NtStatus.OBJECT_TYPE_MISMATCH){
 							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.OBJECT_TYPE_MISMATCH");
 						}
 
-						case(std.os.windows.NtStatus.PROCESS_IS_TERMINATING){
+						case(std.platform.windows.NtStatus.PROCESS_IS_TERMINATING){
 							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.PROCESS_IS_TERMINATING");
 						}
 
@@ -218,10 +226,6 @@ type PageAllocator = struct #pub {
 				unsafe{
 					return new [Byte:*mut](std.bitCast<{Byte*mut}>(allocated_addr), copy size);
 				}
-			}
-
-			case(std.Platform.FREESTANDING){
-				@comptimeError("`std.heap.PageAllocator` is unsupported in freestanding platform target");
 			}
 		}
 	}
@@ -250,12 +254,16 @@ type PageAllocator = struct #pub {
 		}
 
 		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				@comptimeError("`std.heap.PageAllocator` is unsupported in freestanding platform target");
+			}
+			
 			case(std.Platform.LINUX){
 				const allocation_size: USize = std.math.ceilToMultiple(buffer.size(), std.heap.pageSize());
 
-				try std.os.linux.munmap(buffer.data() as RawPtr, allocation_size) else<errno> {
+				try std.platform.linux.munmap(buffer.data() as RawPtr, allocation_size) else<errno> {
 					switch(errno){
-						case(std.os.linux.Errno.INVAL){
+						case(std.platform.linux.Errno.INVAL){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.INVAL");
 						}
 
@@ -266,31 +274,47 @@ type PageAllocator = struct #pub {
 				};
 			}
 
+			case(std.Platform.PANTHER_VM){
+				try std.platform.pantherVM.memPageDealloc(buffer) else<err> {
+					switch(err){
+						case(std.platform.pantherVM.DeallocError.NOT_ALLOCATED){
+							unreachable("std.heap.PageAllocator failed to deallocate - DeallocError.NOT_ALLOCATED");
+						}
+
+						case(std.platform.pantherVM.DeallocError.ALREADY_DEALLOCATED){
+							unreachable(
+								"std.heap.PageAllocator failed to deallocate - DeallocError.ALREADY_DEALLOCATED"
+							);
+						}
+					}
+				};
+			}
+
 			case(std.Platform.WINDOWS){
-				[_, _] = try std.os.windows.ntFreeVirtualMemory(
-					std.os.windows.ntCurrentProcess(),
+				[_, _] = try std.platform.windows.ntFreeVirtualMemory(
+					std.platform.windows.ntCurrentProcess(),
 					buffer.data() as RawPtr,
 					0,
-					std.os.windows.FreeTypeFlags.RELEASE
+					std.platform.windows.FreeTypeFlags.RELEASE
 				) else<nt_status> {->expr:(_base_addr: RawPtr, _size: USize)
 					switch(nt_status){
-						case(std.os.windows.NtStatus.ACCESS_DENIED){
+						case(std.platform.windows.NtStatus.ACCESS_DENIED){
 							unreachable("std.heap.PageAllocator failed to deallocate - NtStatus.ACCESS_DENIED");
 						}
 
-						case(std.os.windows.NtStatus.INVALID_HANDLE){
+						case(std.platform.windows.NtStatus.INVALID_HANDLE){
 							unreachable("std.heap.PageAllocator failed to deallocate - NtStatus.INVALID_HANDLE");
 						}
 
-						case(std.os.windows.NtStatus.OBJECT_TYPE_MISMATCH){
+						case(std.platform.windows.NtStatus.OBJECT_TYPE_MISMATCH){
 							unreachable("std.heap.PageAllocator failed to deallocate - NtStatus.OBJECT_TYPE_MISMATCH");
 						}
 
-						case(std.os.windows.NtStatus.MEMORY_NOT_ALLOCATED){
+						case(std.platform.windows.NtStatus.MEMORY_NOT_ALLOCATED){
 							unreachable("std.heap.PageAllocator failed to deallocate - NtStatus.MEMORY_NOT_ALLOCATED");
 						}
 
-						case(std.os.windows.NtStatus.FREE_VM_NOT_AT_BASE){
+						case(std.platform.windows.NtStatus.FREE_VM_NOT_AT_BASE){
 							unreachable("std.heap.PageAllocator failed to deallocate - NtStatus.FREE_VM_NOT_AT_BASE");
 						}
 
@@ -299,10 +323,6 @@ type PageAllocator = struct #pub {
 						}
 					}
 				};
-			}
-
-			case(std.Platform.FREESTANDING){
-				@comptimeError("`std.heap.PageAllocator` is unsupported in freestanding platform target");
 			}
 		}
 	}

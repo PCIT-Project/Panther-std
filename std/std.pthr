@@ -78,9 +78,9 @@ def mem #pub = @import("mem/mem.pthr");
 
 
 //////////////////////////////////////////////////////////////////////
-// os
+// platform
 
-def os #pub = @import("os/os.pthr");
+def platform #pub = @import("platform/platform.pthr");
 
 
 
@@ -130,7 +130,7 @@ type Writer              = alias #pub @import("writer/Writer.pthr").Writer;
 type PmWriter            = alias #pub @import("writer/Writer.pthr").PmWriter;
 
 type ComptimeStdoutWriter = alias #pub @import("writer/ComptimeStdoutWriter.pthr").ComptimeStdoutWriter;
-when(os.SUPPORTS_IO){
+when(platform.SUPPORTS_CMD){
 	type FileWriter           = alias #pub @import("writer/FileWriter.pthr").FileWriter;
 	type DebugStdoutWriter    = alias #pub @import("writer/DebugStdoutWriter.pthr").DebugStdoutWriter;
 }

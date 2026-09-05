@@ -14,16 +14,20 @@ def std = @import("std");
 
 type FileWriter = struct #pub {
 	when switch(@config.platform){
+		case(std.Platform.FREESTANDING){
+			@comptimeError("`std.FileWriter` is not supported in frestanding platform target");
+		}
+
 		case(std.Platform.LINUX){
-			type FileHandle = alias std.os.linux.FileDescriptor;
+			type FileHandle = alias std.platform.linux.FileDescriptor;
+		}
+
+		case(std.Platform.PANTHER_VM){
+			type FileHandle = alias std.platform.pantherVM.FileHandle;
 		}
 
 		case(std.Platform.WINDOWS){
-			type FileHandle = alias std.os.windows.Handle;
-		}
-
-		case(std.Platform.FREESTANDING){
-			@comptimeError("`std.FileWriter` is not supported in frestanding platform target");
+			type FileHandle = alias std.platform.windows.Handle;
 		}
 	}
 
@@ -36,16 +40,20 @@ type FileWriter = struct #pub {
 
 	func createStdout = () #rt -> (output: FileWriter) {
 		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				@comptimeError("`std.FileWriter` is not supported in freestanding platform target");
+			}
+
 			case(std.Platform.LINUX){
-				output = new FileWriter(std.os.linux.STDOUT);
+				output = new FileWriter(std.platform.linux.STDOUT);
+			}
+
+			case(std.Platform.PANTHER_VM){
+				output = new FileWriter(std.platform.pantherVM.STDOUT);
 			}
 
 			case(std.Platform.WINDOWS){
-				output = new FileWriter(std.os.windows.getStdHandle(std.os.windows.StdHandle.OUTPUT));
-			}
-
-			case(std.Platform.FREESTANDING){
-				@comptimeError("`std.FileWriter` is not supported in freestanding platform target");
+				output = new FileWriter(std.platform.windows.getStdHandle(std.platform.windows.StdHandle.OUTPUT));
 			}
 		}
 		return...;
@@ -57,16 +65,20 @@ type FileWriter = struct #pub {
 	func write = (this mut, str: [Char:*]) #rt -> Void {
 		// TODO(FUTURE): error handling
 		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				@comptimeError("`std.FileWriter` is not supported in freestanding platform target");
+			}
+
 			case(std.Platform.LINUX){
-				_ = std.os.linux.write(this.handle, str);
+				_ = std.platform.linux.write(this.handle, str);
+			}
+
+			case(std.Platform.PANTHER_VM){
+				try std.platform.pantherVM.fileWrite(this.handle, str) else<err> {};
 			}
 
 			case(std.Platform.WINDOWS){
-				try std.os.windows.ntWriteFile(this.handle, str) else<nt_status> {};
-			}
-
-			case(std.Platform.FREESTANDING){
-				@comptimeError("`std.FileWriter.` is not supported in freestanding platform target");
+				try std.platform.windows.ntWriteFile(this.handle, str) else<nt_status> {};
 			}
 		}
 	}
@@ -74,6 +86,7 @@ type FileWriter = struct #pub {
 	func flush = (this mut) -> Void {
 		// not buffered, do nothing
 	}
+	
 
 
 	impl std.IWriter {
