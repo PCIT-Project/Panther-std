@@ -18,7 +18,7 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 	when(
 		@config.platform == std.Platform.WINDOWS
 		&& @config.windowsSubsystem != null
-		&& @config.windowsSubsystem.?.* == std.WindowsSubsystem.WINDOWS
+		&& @config.windowsSubsystem.? == std.WindowsSubsystem.WINDOWS
 	){
 		func WinMain = (
 			hInstance     : std.platform.windows.native.HINSTANCE,
@@ -74,7 +74,7 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 				}
 
 			}else{
-				when switch(@config.windowsSubsystem.?.*){
+				when switch(@config.windowsSubsystem.?){
 					case(std.WindowsSubsystem.CONSOLE){
 						func mainCRTStartup = () #rt #export #callConv(std.CallingConvention.C) -> CInt {
 							return @entry() as CInt;
