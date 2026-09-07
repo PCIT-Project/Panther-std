@@ -204,5 +204,6 @@ func heapFree = (heap: Handle, flags: HeapFreeFlags, mem: $$*) #pub #rt -> Void 
 
 
 func outputDebugStringA = (string: [Char:*;'\0']) #pub #rt -> Void {
-	native.OutputDebugStringA(string.data());
+	if(string.size() == 0){ return; }
+	native.OutputDebugStringA(string.data().?);
 }

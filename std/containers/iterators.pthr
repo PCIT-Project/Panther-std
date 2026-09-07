@@ -17,21 +17,28 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 	type ELEM_TYPE = alias type(@arrayRefElementTypeID<{ARRAY_REF_TYPE}>());
 
 	func new = (arr_ref_ptr: ARRAY_REF_TYPE) -> (output: This) {
-		output.current = arr_ref_ptr.data();
-		output.last = arr_ref_ptr[arr_ref_ptr.size() - 1];
+		if(arr_ref_ptr.size() != 0){
+			output.current = copy arr_ref_ptr.data().?;
+			output.last = arr_ref_ptr[arr_ref_ptr.size() - 1];
+			
+		}else{
+			output.current = null;
+			output.last = null;
+		}
+
 		return...;
 	}
 
 	func next = (this mut) -> Void {
 		std.debug.assert(this.atEnd() == false, "Already at end");
 		unsafe{
-			this.current = std.advancePointer(this.current);
+			this.current = std.advancePointer(this.current.?);
 		}
 	}
 
 	func get = (this) -> ELEM_TYPE* {
 		std.debug.assert(this.atEnd() == false, "Already at end");
-		return copy this.current;
+		return copy this.current.?;
 	}
 
 	func atEnd = (this) -> Bool {
@@ -59,8 +66,8 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 		atEnd = atEnd,
 	}
 
-	var current: ELEM_TYPE* #priv;
-	var last: ELEM_TYPE* #priv;
+	var current: ELEM_TYPE*? #priv;
+	var last: ELEM_TYPE*? #priv;
 }
 
 
@@ -69,8 +76,15 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 	type ELEM_TYPE = alias type(@arrayRefElementTypeID<{ARRAY_REF_TYPE}>());
 
 	func new = (arr_ref_ptr: ARRAY_REF_TYPE) -> (output: This) {
-		output.current = arr_ref_ptr.data();
-		output.last = arr_ref_ptr[arr_ref_ptr.size() - 1];
+		if(arr_ref_ptr.size() != 0){
+			output.current = copy arr_ref_ptr.data().?;
+			output.last = arr_ref_ptr[arr_ref_ptr.size() - 1];
+			
+		}else{
+			output.current = null;
+			output.last = null;
+		}
+
 		return...;
 	}
 
@@ -78,13 +92,13 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 		std.debug.assert(this.atEnd() == false, "Already at end");
 
 		unsafe{
-			this.current = std.advancePointer(this.current);
+			this.current = std.advancePointer(this.current.?);
 		}
 	}
 
 	func get = (this) -> ELEM_TYPE*mut {
 		std.debug.assert(this.atEnd() == false, "Already at end");
-		return copy this.current;
+		return copy this.current.?;
 	}
 
 	func atEnd = (this) -> Bool {
@@ -112,6 +126,6 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 		atEnd = atEnd,
 	}
 
-	var current: ELEM_TYPE*mut #priv;
-	var last: ELEM_TYPE*mut #priv;
+	var current: ELEM_TYPE*mut? #priv;
+	var last: ELEM_TYPE*mut? #priv;
 }

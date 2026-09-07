@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.57.0"></a>
+## v0.0.57.0
+- Updated reflect updates to [PCIT-CPP v0.0.380.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.380.0)
+
+
+<!---------------------------------->
 <a name="v0.0.56.0"></a>
 ## v0.0.56.0
 - Updated reflect updates to [PCIT-CPP v0.0.379.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.379.0)

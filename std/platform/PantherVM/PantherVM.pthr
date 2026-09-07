@@ -41,14 +41,14 @@ func memPageAlloc = (size: USize, alignment: UI32) #pub #rt -> [Byte:*mut] {
 
 func memPageDealloc = (buffer: [Byte:*]) #pub #rt -> Void <err: DeallocError> {
 	unsafe{
-		if(native.pantherVMMemPageDealloc(buffer.data(), buffer.size(), std.bitCast<{UI32*mut}>(&err))){ error...; }
+		if(native.pantherVMMemPageDealloc(buffer.data().?, buffer.size(), std.bitCast<{UI32*mut}>(&err))){ error...; }
 	}
 }
 
 func fileWrite = (file_handle: FileHandle, str: [Char:*]) #pub #rt -> Void <err: FileWriteError> {
 	if(str.size() == 0){ return; }
 	unsafe{
-		if(native.pantherVMFileWrite(file_handle as UI32, str.data(), str.size(), std.bitCast<{UI32*mut}>(&err))){
+		if(native.pantherVMFileWrite(file_handle as UI32, str.data().?, str.size(), std.bitCast<{UI32*mut}>(&err))){
 			error...;
 		}
 	}
