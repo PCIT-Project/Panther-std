@@ -12,7 +12,7 @@
 def std = @import("std");
 
 
-type PageAllocator = struct #pub {
+type PageAllocator = struct {
 	when(@config.mode == std.Mode.DEBUG){
 		func new = () -> (output: PageAllocator) {
 			output.num_allocations = new std.Atomic<{USize}>(0);

@@ -12,19 +12,19 @@
 def std = @import("std");
 
 
-def PI  #pub = 3.1415926535897932384626433832795029;
-def TAU #pub = 6.2831853071795864769252867665590058;
-def E   #pub = 2.7182818284590452353602874713526625;
+def PI   = 3.1415926535897932384626433832795029;
+def TAU  = 6.2831853071795864769252867665590058;
+def E    = 2.7182818284590452353602874713526625;
 
 
 
 
-func isPowOf2 = (num: $Integral) #pub -> Bool {
+func isPowOf2 = (num: $Integral)  -> Bool {
 	return std.popCount(num) == 1;
 }
 
 
-func ceilToPowOf2Multiple = (num: $Integral, multiple: Integral) #pub -> Integral {
+func ceilToPowOf2Multiple = (num: $Integral, multiple: Integral)  -> Integral {
 	@comptimeAssert(std.types.isIntegral<{Integral}>(), "Type must be integral");
 	std.debug.assert(multiple != 0, "Multiple cannot be 0");
 	std.debug.assert(isPowOf2(multiple), "Multiple must be power of 2");
@@ -32,7 +32,7 @@ func ceilToPowOf2Multiple = (num: $Integral, multiple: Integral) #pub -> Integra
 	return (num + (multiple - 1)) & ~(multiple - 1);
 }
 
-func ceilToMultiple = (num: $Integral, multiple: Integral) #pub -> Integral {
+func ceilToMultiple = (num: $Integral, multiple: Integral)  -> Integral {
 	@comptimeAssert(std.types.isIntegral<{Integral}>(), "Type must be integral");
 	std.debug.assert(multiple != 0, "Multiple cannot be 0");
 
@@ -43,7 +43,7 @@ func ceilToMultiple = (num: $Integral, multiple: Integral) #pub -> Integral {
 
 
 
-func floorToPowOf2Multiple = (num: $Integral, multiple: Integral) #pub -> Integral {
+func floorToPowOf2Multiple = (num: $Integral, multiple: Integral)  -> Integral {
 	@comptimeAssert(std.types.isIntegral<{Integral}>(), "Type must be integral");
 	std.debug.assert(multiple != 0, "Multiple cannot be 0");
 	std.debug.assert(isPowOf2(multiple), "Multiple must be power of 2");
@@ -52,7 +52,7 @@ func floorToPowOf2Multiple = (num: $Integral, multiple: Integral) #pub -> Integr
 	return ceilToPowOf2Multiple(num, multiple) - multiple;
 }
 
-func floorToMultiple = (num: $Integral, multiple: Integral) #pub -> Integral {
+func floorToMultiple = (num: $Integral, multiple: Integral)  -> Integral {
 	@comptimeAssert(std.types.isIntegral<{Integral}>(), "Type must be integral");
 
 	if(isPowOf2(multiple)){ return floorToPowOf2Multiple(num, multiple); }
@@ -70,7 +70,7 @@ func floorToMultiple = (num: $Integral, multiple: Integral) #pub -> Integral {
 }
 
 
-func abs = (num: $Num) #pub -> Num {
+func abs = (num: $Num)  -> Num {
 	@comptimeAssert(std.types.isUnsignedIntegral<{Num}>() == false, "Type cannot be unsigned integral");
 	@comptimeAssert(std.types.isSignedIntegral<{Num}>() || std.types.isFloatingPoint<{Num}>(), "Invalid type");
 
@@ -80,7 +80,7 @@ func abs = (num: $Num) #pub -> Num {
 	return copy num;
 }
 
-func min = (lhs: $Num, rhs: Num) #pub -> Num {
+func min = (lhs: $Num, rhs: Num)  -> Num {
 	@comptimeAssert(std.types.isIntegral<{Num}>() || std.types.isFloatingPoint<{Num}>(), "Invalid type");
 
 	if(lhs < rhs){
@@ -90,7 +90,7 @@ func min = (lhs: $Num, rhs: Num) #pub -> Num {
 	}
 }
 
-func max = (lhs: $Num, rhs: Num) #pub -> Num {
+func max = (lhs: $Num, rhs: Num)  -> Num {
 	@comptimeAssert(std.types.isIntegral<{Num}>() || std.types.isFloatingPoint<{Num}>(), "Invalid type");
 
 	if(lhs > rhs){

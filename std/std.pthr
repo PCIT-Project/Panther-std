@@ -13,29 +13,29 @@
 //////////////////////////////////////////////////////////////////////
 // atomic
 
-type AtomicOrdering = alias #pub @pthr.AtomicOrdering;
-type Atomic         = alias #pub @import("atomic/Atomic.pthr").Atomic;
-type AtomicRef      = alias #pub @import("atomic/AtomicRef.pthr").AtomicRef;
+type AtomicOrdering = alias @pthr.AtomicOrdering;
+type Atomic         = alias @import("atomic/Atomic.pthr").Atomic;
+type AtomicRef      = alias @import("atomic/AtomicRef.pthr").AtomicRef;
 
 
 
 //////////////////////////////////////////////////////////////////////
 // bit
 
-def bit #pub = @import("bit.pthr");
+def bit = @import("bit.pthr");
 
-func asBuffer   = alias #pub bit.asBuffer;
-func bitCast    = alias #pub bit.bitCast;
-func bitCeil    = alias #pub bit.bitCeil;
-func bitFloor   = alias #pub bit.bitFloor;
-func bitReverse = alias #pub bit.bitReverse;
-func bitWidth   = alias #pub bit.bitWidth;
-func byteSwap   = alias #pub bit.byteSwap;
-func countLZero = alias #pub bit.countLZero;
-func countRZero = alias #pub bit.countRZero;
-func countLOne  = alias #pub bit.countLOne;
-func countROne  = alias #pub bit.countROne;
-func popCount   = alias #pub bit.popCount;
+func asBuffer   = alias bit.asBuffer;
+func bitCast    = alias bit.bitCast;
+func bitCeil    = alias bit.bitCeil;
+func bitFloor   = alias bit.bitFloor;
+func bitReverse = alias bit.bitReverse;
+func bitWidth   = alias bit.bitWidth;
+func byteSwap   = alias bit.byteSwap;
+func countLZero = alias bit.countLZero;
+func countRZero = alias bit.countRZero;
+func countLOne  = alias bit.countLOne;
+func countROne  = alias bit.countROne;
+func popCount   = alias bit.popCount;
 
 
 
@@ -43,130 +43,130 @@ func popCount   = alias #pub bit.popCount;
 // build
 
 when(@config.compilerMode == @pthr.CompilerMode.BUILD){
-	def build #pub = @import("building.pthr");
+	def build = @import("building.pthr");
 }else{
-	def build #pub = delete("Current compiler mode is not `build`");
+	def build = delete("Current compiler mode is not `build`");
 }
 
 
 //////////////////////////////////////////////////////////////////////
 // debug
 
-def debug #pub = @import("debug.pthr");
+def debug = @import("debug.pthr");
 
 
 
 //////////////////////////////////////////////////////////////////////
 // heap
 
-def heap #pub = @import("./heap/heap.pthr");
+def heap = @import("./heap/heap.pthr");
 
 
 
 //////////////////////////////////////////////////////////////////////
 // math
 
-def math #pub = @import("math.pthr");
+def math = @import("math.pthr");
 
 
 
 //////////////////////////////////////////////////////////////////////
 // mem
 
-def mem #pub = @import("mem/mem.pthr");
+def mem = @import("mem/mem.pthr");
 
 
 
 //////////////////////////////////////////////////////////////////////
 // platform
 
-def platform #pub = @import("platform/platform.pthr");
+def platform = @import("platform/platform.pthr");
 
 
 
 //////////////////////////////////////////////////////////////////////
 // ptrMath
 
-def ptrMath #pub = @import("ptrMath.pthr");
+def ptrMath = @import("ptrMath.pthr");
 
-func advancePointer  = alias #pub ptrMath.advancePointer;
-func pointerDistance = alias #pub ptrMath.pointerDistance;
+func advancePointer  = alias ptrMath.advancePointer;
+func pointerDistance = alias ptrMath.pointerDistance;
 
 
 
 //////////////////////////////////////////////////////////////////////
 // types
 
-def types #pub = @import("types.pthr");
+def types = @import("types.pthr");
 
 
 
 //////////////////////////////////////////////////////////////////////
 // containers
 
-def iterators        = @import("containers/iterators.pthr");
-type ArrayRefIter    = alias #pub iterators.ArrayRefIter;
-type MutArrayRefIter = alias #pub iterators.MutArrayRefIter;
+def iterators #priv = @import("containers/iterators.pthr");
+type ArrayRefIter    = alias iterators.ArrayRefIter;
+type MutArrayRefIter = alias iterators.MutArrayRefIter;
 
-type ManualLifetime  = alias #pub @import("containers/ManualLifetime.pthr").ManualLifetime;
-type StaticArrayList = alias #pub @import("containers/StaticArrayList.pthr").StaticArrayList;
+type ManualLifetime  = alias @import("containers/ManualLifetime.pthr").ManualLifetime;
+type StaticArrayList = alias @import("containers/StaticArrayList.pthr").StaticArrayList;
 
 
 
 //////////////////////////////////////////////////////////////////////
 // misc
 
-def range_for                         = @import("misc/rangeFor.pthr");
-func rangeFor                         = alias #pub range_for.rangeFor;
-func reverseRangeFor                  = alias #pub range_for.reverseRangeFor;
+def range_for #priv = @import("misc/rangeFor.pthr");
+func rangeFor        = alias range_for.rangeFor;
+func reverseRangeFor = alias range_for.reverseRangeFor;
 
 
 
 //////////////////////////////////////////////////////////////////////
 // writer
 
-type IWriter             = alias #pub @import("writer/Writer.pthr").IWriter;
-type Writer              = alias #pub @import("writer/Writer.pthr").Writer;
-type PmWriter            = alias #pub @import("writer/Writer.pthr").PmWriter;
+type IWriter             = alias @import("writer/Writer.pthr").IWriter;
+type Writer              = alias @import("writer/Writer.pthr").Writer;
+type PmWriter            = alias @import("writer/Writer.pthr").PmWriter;
 
-type ComptimeStdoutWriter = alias #pub @import("writer/ComptimeStdoutWriter.pthr").ComptimeStdoutWriter;
+type ComptimeStdoutWriter = alias @import("writer/ComptimeStdoutWriter.pthr").ComptimeStdoutWriter;
 when(platform.SUPPORTS_CMD){
-	type FileWriter           = alias #pub @import("writer/FileWriter.pthr").FileWriter;
-	type DebugStdoutWriter    = alias #pub @import("writer/DebugStdoutWriter.pthr").DebugStdoutWriter;
+	type FileWriter           = alias @import("writer/FileWriter.pthr").FileWriter;
+	type DebugStdoutWriter    = alias @import("writer/DebugStdoutWriter.pthr").DebugStdoutWriter;
 }
 
-type BufferedWriter       = alias #pub @import("writer/BufferedWriter.pthr").BufferedWriter;
-type PmBufferedWriter     = alias #pub @import("writer/BufferedWriter.pthr").PmBufferedWriter;
+type BufferedWriter       = alias @import("writer/BufferedWriter.pthr").BufferedWriter;
+type PmBufferedWriter     = alias @import("writer/BufferedWriter.pthr").PmBufferedWriter;
 
-def fmt #pub = @import("writer/fmt.pthr");
+def fmt = @import("writer/fmt.pthr");
 
 
 
 //////////////////////////////////////////////////////////////////////
 // builtins
 
-type CallingConvention = alias #pub @pthr.CallingConvention;
-type Language          = alias #pub @pthr.Language;
-type Architecture      = alias #pub @pthr.Architecture;
-type Platform          = alias #pub @pthr.Platform;
-type WindowsSubsystem  = alias #pub @pthr.WindowsSubsystem;
-type Mode              = alias #pub @pthr.Mode;
-type OptMode           = alias #pub @pthr.OptMode;
-type CompilerMode      = alias #pub @pthr.CompilerMode;
+type CallingConvention = alias @pthr.CallingConvention;
+type Language          = alias @pthr.Language;
+type Architecture      = alias @pthr.Architecture;
+type Platform          = alias @pthr.Platform;
+type WindowsSubsystem  = alias @pthr.WindowsSubsystem;
+type Mode              = alias @pthr.Mode;
+type OptMode           = alias @pthr.OptMode;
+type CompilerMode      = alias @pthr.CompilerMode;
 
 
-type IIterable         = alias #pub @pthr.IIterable;
-type IIterableRT       = alias #pub @pthr.IIterableRT;
-type IIterableCT       = alias #pub @pthr.IIterableCT;
-type IIterableRef      = alias #pub @pthr.IIterableRef;
-type IIterableRefRT    = alias #pub @pthr.IIterableRefRT;
-type IIterableRefCT    = alias #pub @pthr.IIterableRefCT;
-type IIterableMutRef   = alias #pub @pthr.IIterableMutRef;
-type IIterableMutRefRT = alias #pub @pthr.IIterableMutRefRT;
-type IIterableMutRefCT = alias #pub @pthr.IIterableMutRefCT;
-type IIterator         = alias #pub @pthr.IIterator;
-type IIteratorRT       = alias #pub @pthr.IIteratorRT;
-type IIteratorCT       = alias #pub @pthr.IIteratorCT;
-type IMutIterator      = alias #pub @pthr.IMutIterator;
-type IMutIteratorRT    = alias #pub @pthr.IMutIteratorRT;
-type IMutIteratorCT    = alias #pub @pthr.IMutIteratorCT;
+type IIterable         = alias @pthr.IIterable;
+type IIterableRT       = alias @pthr.IIterableRT;
+type IIterableCT       = alias @pthr.IIterableCT;
+type IIterableRef      = alias @pthr.IIterableRef;
+type IIterableRefRT    = alias @pthr.IIterableRefRT;
+type IIterableRefCT    = alias @pthr.IIterableRefCT;
+type IIterableMutRef   = alias @pthr.IIterableMutRef;
+type IIterableMutRefRT = alias @pthr.IIterableMutRefRT;
+type IIterableMutRefCT = alias @pthr.IIterableMutRefCT;
+type IIterator         = alias @pthr.IIterator;
+type IIteratorRT       = alias @pthr.IIteratorRT;
+type IIteratorCT       = alias @pthr.IIteratorCT;
+type IMutIterator      = alias @pthr.IMutIterator;
+type IMutIteratorRT    = alias @pthr.IMutIteratorRT;
+type IMutIteratorCT    = alias @pthr.IMutIteratorCT;

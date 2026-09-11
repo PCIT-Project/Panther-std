@@ -11,42 +11,42 @@
 
 def std = @import("std");
 
-def native #pub = @import("./native.pthr");
+def native = @import("./native.pthr");
 
 
 //////////////////////////////////////////////////////////////////////
 // types
 
-type Handle = alias #pub #distinct RawPtr;
+type Handle = alias #distinct RawPtr;
 
 
 //////////////////////////////////////////////////////////////////////
 // enums
 
-type NtStatus = alias #pub @import("./NtStatus.pthr").NtStatus;
+type NtStatus = alias @import("./NtStatus.pthr").NtStatus;
 
-type StdHandle = enum(UI32) #pub {
+type StdHandle = enum(UI32) {
 	INPUT  = native.STD_INPUT_HANDLE,
 	OUTPUT = native.STD_OUTPUT_HANDLE,
 	ERROR  = native.STD_ERROR_HANDLE,
 }
 
 
-type HeapAllocFlags = enum(UI32) #pub {
+type HeapAllocFlags = enum(UI32) {
 	NONE                = 0x0,
 	NO_SERIALIZE        = 0x1,
 	GENERATE_EXCEPTIONS = 0x4,
 	ZERO_MEMORY         = 0x8,
 }
 
-type HeapFreeFlags = enum(UI32) #pub {
+type HeapFreeFlags = enum(UI32) {
 	NONE         = 0x0,
 	NO_SERIALIZE = 0x1,
 }
 
 
 
-type AllocationTypeFlags = enum(UI32) #pub {
+type AllocationTypeFlags = enum(UI32) {
 	COMMIT     = 0x00001000,
 	RESERVE    = 0x00002000,
 	RESET      = 0x00080000,
@@ -54,7 +54,7 @@ type AllocationTypeFlags = enum(UI32) #pub {
 }
 
 
-type AllocationProtectionFlags = enum(UI32) #pub {
+type AllocationProtectionFlags = enum(UI32) {
 	NOACCESS     = 0x001,
 	READONLY     = 0x002,
 	READWRITE    = 0x004,
@@ -65,7 +65,7 @@ type AllocationProtectionFlags = enum(UI32) #pub {
 	WRITECOMBINE = 0x400,
 }
 
-type FreeTypeFlags = enum(UI32) #pub {
+type FreeTypeFlags = enum(UI32) {
 	DECOMMIT = 0x4000,
 	RELEASE  = 0x8000,
 }
@@ -82,7 +82,7 @@ func ntAllocateVirtualMemory = (
 	region_size     : USize,
 	allocation_type : AllocationTypeFlags,
 	protection      : AllocationProtectionFlags,
-) #pub #rt -> (address: RawPtr, size: USize) <NtStatus> {
+) #rt -> (address: RawPtr, size: USize) <NtStatus> {
 	std.debug.assert(region_size != 0, "Cannot request 0 bytes");
 	std.debug.assert(
 		(allocation_type & AllocationTypeFlags.COMMIT) as UI32 != 0
@@ -107,11 +107,11 @@ func ntAllocateVirtualMemory = (
 	error copy status;
 }
 
-func ntCurrentProcess = () #pub #rt -> Handle {
+func ntCurrentProcess = () #rt -> Handle {
 	return native.NtCurrentProcess() as Handle;
 }
 
-func ntCurrentThread = () #pub #rt -> Handle {
+func ntCurrentThread = () #rt -> Handle {
 	return native.NtCurrentThread() as Handle;
 }
 
@@ -120,7 +120,7 @@ func ntFreeVirtualMemory = (
 	base_address   : RawPtr,
 	region_size    : USize, // 0 to free the entire region allocated by `ntAllocateVirtualMemory`
 	free_type      : FreeTypeFlags,
-) #pub #rt -> (address: RawPtr, size: USize) <NtStatus> {
+) #rt -> (address: RawPtr, size: USize) <NtStatus> {
 	std.debug.assert(
 		(free_type & FreeTypeFlags.RELEASE) as UI32 == 0 || region_size == 0,
 		"if REALEASE is set, `region_size` must be 0"
@@ -141,7 +141,7 @@ func ntFreeVirtualMemory = (
 }
 
 
-func ntWriteFile = (handle: Handle, buffer: [Char:*]) #pub #rt -> Void <NtStatus> {
+func ntWriteFile = (handle: Handle, buffer: [Char:*]) #rt -> Void <NtStatus> {
 	unsafe{
 		var io_status_block = new std.ManualLifetime<{native.IO_STATUS_BLOCK}>();
 
@@ -167,43 +167,43 @@ func ntWriteFile = (handle: Handle, buffer: [Char:*]) #pub #rt -> Void <NtStatus
 //////////////////////////////////////////////////////////////////////
 // kernel32
 
-func exitProcess = (exit_code: CUInt) #pub #rt #noReturn -> Void {
+func exitProcess = (exit_code: CUInt) #rt #noReturn -> Void {
 	native.ExitProcess(exit_code);
 }
 
 
-func getLastError = () #pub #rt -> UI32 {
+func getLastError = () #rt -> UI32 {
 	return native.GetLastError();
 }
 
 
-func getStdHandle = (std_handle: StdHandle) #pub #rt -> Handle {
+func getStdHandle = (std_handle: StdHandle) #rt -> Handle {
 	return native.GetStdHandle(std_handle as native.DWORD) as Handle;
 }
 
-func getProcessHeap = () #pub #rt -> Handle {
+func getProcessHeap = () #rt -> Handle {
 	return native.GetProcessHeap() as Handle;
 }
 
 
-func heapAlloc = <{T: Type}> (heap: Handle, flags: HeapAllocFlags) #pub #rt -> T*mut {
+func heapAlloc = <{T: Type}> (heap: Handle, flags: HeapAllocFlags) #rt -> T*mut {
 	const raw_ptr: RawPtr = native.HeapAlloc(heap as native.HANDLE, flags as UI32, std.types.numBytes<{T}>());
 	unsafe{ return std.bitCast<{T*mut}>(raw_ptr); }
 }
 
-func heapAlloc = <{T: Type}> (heap: Handle, flags: HeapAllocFlags, num_elems: USize) #pub #rt -> [T:*mut] {
+func heapAlloc = <{T: Type}> (heap: Handle, flags: HeapAllocFlags, num_elems: USize) #rt -> [T:*mut] {
 	const raw_ptr: RawPtr =
 		native.HeapAlloc(heap as native.HANDLE, flags as UI32, std.types.numBytes<{T}>() * num_elems);
 	unsafe{ return new [T:*mut](std.bitCast<{T*mut}>(raw_ptr), copy num_elems); }
 }
 
 
-func heapFree = (heap: Handle, flags: HeapFreeFlags, mem: $$*) #pub #rt -> Void {
+func heapFree = (heap: Handle, flags: HeapFreeFlags, mem: $$*) #rt -> Void {
 	native.HeapFree(heap as native.HANDLE, flags as UI32, mem as RawPtr);
 }
 
 
-func outputDebugStringA = (string: [Char:*;'\0']) #pub #rt -> Void {
+func outputDebugStringA = (string: [Char:*;'\0']) #rt -> Void {
 	if(string.size() == 0){ return; }
 	native.OutputDebugStringA(string.data().?);
 }

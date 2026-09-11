@@ -13,7 +13,7 @@ def std = @import("std");
 
 
 
-type AtomicRef = struct <{T: Type}> #pub
+type AtomicRef = struct <{T: Type}>
 	#comptimeAssert(std.types.numBytes<{T}>() <= 8, "`T` must be lock-free atomic")
 	#comptimeAssert(std.types.isTriviallyCopyable<{T}>(), "`T` must be trivially copyable")
 {

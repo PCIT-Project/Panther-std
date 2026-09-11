@@ -12,9 +12,9 @@
 def std = @import("std");
 
 
-type PmBufferedWriter = alias #pub BufferedWriter<{impl(*mut:std.IWriter)}>;
+type PmBufferedWriter = alias BufferedWriter<{impl(*mut:std.IWriter)}>;
 
-type BufferedWriter = struct <{TargetWriter: Type}> #pub {
+type BufferedWriter = struct <{TargetWriter: Type}> {
 	func new = (writer_backend: impl*mut(TargetWriter:std.IWriter), buffer: [Char:*mut]) -> (output: This) {
 		std.debug.assert(buffer.size() != 0, "std.BufferedWriter cannot have an empty buffer");
 

@@ -13,16 +13,16 @@ def std = @import("std");
 
 
 
-type IWriter = interface #pub {
+type IWriter = interface {
 	func write = (this mut, bytes: [Char:*]) -> Void;
 	func flush = (this mut) -> Void;
 }
 
 
 
-type PmWriter = alias #pub Writer<{impl(*mut:std.IWriter)}>;
+type PmWriter = alias Writer<{impl(*mut:std.IWriter)}>;
 
-type Writer = struct <{TargetWriter: Type}> #pub {
+type Writer = struct <{TargetWriter: Type}> {
 	func new = (writer_impl: impl*mut(TargetWriter:std.IWriter)) -> (output: This) {
 		output.writer_impl = copy writer_impl;
 		return...;

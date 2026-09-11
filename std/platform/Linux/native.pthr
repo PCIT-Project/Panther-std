@@ -15,7 +15,7 @@ def std = @import("std");
 //////////////////////////////////////////////////////////////////////
 // syscalls
 
-type SyscallCode = enum(USize) #pub {
+type SyscallCode = enum(USize) {
 	READ                    = 0,
 	WRITE                   = 1,
 	OPEN                    = 2,
@@ -404,7 +404,7 @@ type SyscallCode = enum(USize) #pub {
 
 
 
-func syscall = (syscall_code: SyscallCode) #rt #pub -> UI64 {
+func syscall = (syscall_code: SyscallCode) #rt -> UI64 {
 	return asm (
 		syscall_code : UI64 in "{rax}" = syscall_code as UI64,
 	) #sideEffect #clobber("rcx") #clobber("r11") #clobber("memory")
@@ -413,7 +413,7 @@ func syscall = (syscall_code: SyscallCode) #rt #pub -> UI64 {
 	};
 }
 
-func syscall = (syscall_code: SyscallCode, arg1: UI64) #rt #pub -> UI64 {
+func syscall = (syscall_code: SyscallCode, arg1: UI64) #rt -> UI64 {
 	return asm (
 		syscall_code : UI64 in "{rax}" = syscall_code as UI64,
 		arg1         : UI64 in "{rdi}" = copy arg1
@@ -423,7 +423,7 @@ func syscall = (syscall_code: SyscallCode, arg1: UI64) #rt #pub -> UI64 {
 	};
 }
 
-func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64) #rt #pub -> UI64 {
+func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64) #rt -> UI64 {
 	return asm (
 		syscall_code : UI64 in "{rax}" = syscall_code as UI64,
 		arg1         : UI64 in "{rdi}" = copy arg1,
@@ -434,7 +434,7 @@ func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64) #rt #pub -> U
 	};
 }
 
-func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64, arg3: UI64) #rt #pub -> UI64 {
+func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64, arg3: UI64) #rt -> UI64 {
 	return asm (
 		syscall_code : UI64 in "{rax}" = syscall_code as UI64,
 		arg1         : UI64 in "{rdi}" = copy arg1,
@@ -446,7 +446,7 @@ func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64, arg3: UI64) #
 	};
 }
 
-func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64, arg3: UI64, arg4: UI64) #rt #pub -> UI64 {
+func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64, arg3: UI64, arg4: UI64) #rt -> UI64 {
 	return asm (
 		syscall_code : UI64 in "{rax}" = syscall_code as UI64,
 		arg1         : UI64 in "{rdi}" = copy arg1,
@@ -459,7 +459,7 @@ func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64, arg3: UI64, a
 	};
 }
 
-func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64, arg3: UI64, arg4: UI64, arg5: UI64) #rt #pub
+func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64, arg3: UI64, arg4: UI64, arg5: UI64) #rt
 -> UI64 {
 	return asm (
 		syscall_code : UI64 in "{rax}" = syscall_code as UI64,
@@ -476,7 +476,7 @@ func syscall = (syscall_code: SyscallCode, arg1: UI64, arg2: UI64, arg3: UI64, a
 
 func syscall = (
 	syscall_code: SyscallCode, arg1: UI64, arg2: UI64, arg3: UI64, arg4: UI64, arg5: UI64, arg6: UI64
-) #rt #pub -> UI64 {
+) #rt -> UI64 {
 	return asm (
 		syscall_code : UI64 in "{rax}" = syscall_code as UI64,
 		arg1         : UI64 in "{rdi}" = copy arg1,
@@ -495,7 +495,7 @@ func syscall = (
 //////////////////////////////////////////////////////////////////////
 // errno
 
-type Errno = enum(CInt) #pub {
+type Errno = enum(CInt) {
 	SUCCESS        = 0,
 	PERM           = 1,
 	NOENT          = 2,
@@ -633,7 +633,7 @@ type Errno = enum(CInt) #pub {
 }
 
 
-func calcErrno = (return_code: UI64) #pub -> Errno {
+func calcErrno = (return_code: UI64) -> Errno {
 	unsafe{
 		const signed_ret_code: I64 = std.bitCast<{I64}>(return_code);
 

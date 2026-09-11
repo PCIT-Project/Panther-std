@@ -12,7 +12,7 @@
 def std = @import("std");
 
 
-type FileWriter = struct #pub {
+type FileWriter = struct {
 	when switch(@config.platform){
 		case(std.Platform.FREESTANDING){
 			@comptimeError("`std.FileWriter` is not supported in frestanding platform target");

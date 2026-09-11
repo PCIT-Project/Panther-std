@@ -13,27 +13,27 @@ def std = @import("std");
 
 
 
-def iallocator = @import("./IAllocator.pthr");
-type IAllocator   = alias #pub iallocator.IAllocator;
-type IAllocatorRT = alias #pub iallocator.IAllocatorRT;
-type IAllocatorCT = alias #pub iallocator.IAllocatorCT;
+def iallocator #priv = @import("./IAllocator.pthr");
+type IAllocator   = alias iallocator.IAllocator;
+type IAllocatorRT = alias iallocator.IAllocatorRT;
+type IAllocatorCT = alias iallocator.IAllocatorCT;
 
 
 
-def allocator = @import("./allocator.pthr");
-type Allocator   = alias #pub allocator.Allocator;
-type PmAllocator = alias #pub Allocator<{impl(*mut:IAllocator)}>;
+def allocator #priv = @import("./allocator.pthr");
+type Allocator   = alias allocator.Allocator;
+type PmAllocator = alias Allocator<{impl(*mut:IAllocator)}>;
 
-type AllocatorRT   = alias #pub allocator.AllocatorRT;
-type PmAllocatorRT = alias #pub AllocatorRT<{impl(*mut:IAllocatorRT)}>;
+type AllocatorRT   = alias allocator.AllocatorRT;
+type PmAllocatorRT = alias AllocatorRT<{impl(*mut:IAllocatorRT)}>;
 
-type AllocatorCT   = alias #pub allocator.AllocatorCT;
-type PmAllocatorCT = alias #pub AllocatorCT<{impl(*mut:IAllocatorCT)}>;
-
-
+type AllocatorCT   = alias allocator.AllocatorCT;
+type PmAllocatorCT = alias AllocatorCT<{impl(*mut:IAllocatorCT)}>;
 
 
-def buffers = @import("./buffers.pthr");
-func copyBuffer = alias #pub buffers.copyBuffer;
-func moveBuffer = alias #pub buffers.moveBuffer;
+
+
+def buffers #priv = @import("./buffers.pthr");
+func copyBuffer = alias buffers.copyBuffer;
+func moveBuffer = alias buffers.moveBuffer;
 

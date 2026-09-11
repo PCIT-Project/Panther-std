@@ -12,7 +12,7 @@
 def std = @import("std");
 
 
-type StaticArrayList = struct <{T: Type, CAPACITY: USize}> #pub 
+type StaticArrayList = struct <{T: Type, CAPACITY: USize}> 
 	#comptimeAssert(CAPACITY != 0, "`CAPACITY` cannot be 0") 
 {
 	func new = () -> (output: This) {

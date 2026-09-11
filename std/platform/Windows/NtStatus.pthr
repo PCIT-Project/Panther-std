@@ -13,7 +13,7 @@
 // codes: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
 // facilities: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/1714a7aa-8e53-4076-8f8d-75073b780a41#Appendix_A_5
 
-type NtStatus = enum(UI32) #pub {
+type NtStatus = enum(UI32) {
 	type Severity = enum(UI32) {
 		SUCCESS       = 0x0,
 		INFORMATIONAL = 0x1,

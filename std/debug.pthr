@@ -11,11 +11,11 @@
 
 def std = @import("std");
 
-func assert = (cond: Bool, message: [Char:*]) #pub -> Void {
+func assert = (cond: Bool, message: [Char:*]) -> Void {
 	if(cond == false){
 		when(@config.mode == std.Mode.DEBUG){
 			when(std.platform.SUPPORTS_CMD){
-				print("\e[37m\e[41m");
+				print("\e[37m\e[41mPCIT Panther Language - `std.debug.assert`: \"");
 				print(message);
 				print("\e[0m\n");
 			}
@@ -29,11 +29,11 @@ func assert = (cond: Bool, message: [Char:*]) #pub -> Void {
 }
 
 
-func assert = (cond: Bool) #pub -> Void {
+func assert = (cond: Bool) -> Void {
 	if(cond == false){
 		when(@config.mode == std.Mode.DEBUG){
 			when(std.platform.SUPPORTS_CMD){
-				println("\e[37m\e[41mFailed assert\e[0m");
+				print("\e[37m\e[41mPCIT Panther Language - `std.debug.assert`: Failed assert\e[0m\n");
 			}
 
 			@breakpoint();
@@ -48,7 +48,7 @@ func assert = (cond: Bool) #pub -> Void {
 
 
 when(std.platform.SUPPORTS_CMD){
-	func print = (str: [Char:*]) #pub #rtDiff -> Void {
+	func print = (str: [Char:*]) #rtDiff -> Void {
 		when(@isComptime()){
 			@ctPrint(str);
 
@@ -95,7 +95,7 @@ when(std.platform.SUPPORTS_CMD){
 	}
 
 
-	func print = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void {
+	func print = (format_str: std.fmt.FmtString, args: $$...) -> Void {
 		var debug_writer = new std.DebugStdoutWriter();
 		var writer = new std.Writer<{std.DebugStdoutWriter}>(debug_writer);
 		writer.write(format_str, args...);
@@ -104,7 +104,7 @@ when(std.platform.SUPPORTS_CMD){
 
 
 
-	func println = (str: [Char:*]) #pub #rtDiff -> Void {
+	func println = (str: [Char:*]) #rtDiff -> Void {
 		when(@isComptime()){
 			@ctPrintln(str);
 
@@ -161,7 +161,7 @@ when(std.platform.SUPPORTS_CMD){
 	}
 
 
-	func println = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void {
+	func println = (format_str: std.fmt.FmtString, args: $$...) -> Void {
 		var debug_writer = new std.DebugStdoutWriter();
 		var writer = new std.Writer<{std.DebugStdoutWriter}>(debug_writer);
 
@@ -170,12 +170,12 @@ when(std.platform.SUPPORTS_CMD){
 	}
 
 }else{
-	func print = (str: [Char:*]) #pub #rtDiff -> Void = delete("Not supported in this platform target");
-	func print = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void =
+	func print = (str: [Char:*]) #rtDiff -> Void = delete("Not supported in this platform target");
+	func print = (format_str: std.fmt.FmtString, args: $$...) -> Void =
 		delete("Not supported in this platform target");
 
-	func println = (str: [Char:*]) #pub #rtDiff -> Void = delete("Not supported in this platform target");
-	func println = (format_str: std.fmt.FmtString, args: $$...) #pub -> Void =
+	func println = (str: [Char:*]) #rtDiff -> Void = delete("Not supported in this platform target");
+	func println = (format_str: std.fmt.FmtString, args: $$...) -> Void =
 		delete("Not supported in this platform target");
 
 }

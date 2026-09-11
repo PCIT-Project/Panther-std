@@ -12,12 +12,12 @@
 def std = @import("std");
 
 when(std.platform.SUPPORTS_NON_LINEAR_HEAP){
-	type PageAllocator = alias #pub @import("./PageAllocator.pthr").PageAllocator;
+	type PageAllocator = alias @import("./PageAllocator.pthr").PageAllocator;
 }
 
-type ComptimeAllocator = alias #pub @import("./ComptimeAllocator.pthr").ComptimeAllocator;
+type ComptimeAllocator = alias @import("./ComptimeAllocator.pthr").ComptimeAllocator;
 
 
-func pageSize = () #pub -> USize {
+func pageSize = () -> USize {
 	return 4096;
 }

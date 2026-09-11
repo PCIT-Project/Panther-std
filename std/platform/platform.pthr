@@ -14,43 +14,43 @@ def std = @import("std");
 
 when switch(@config.platform){
 	case(std.Platform.FREESTANDING){
-		def linux #pub = delete("Current target platform is freestanding");
-		def panther #pub = delete("Current target platform is freestanding");
-		def windows #pub = delete("Current target platform is freestanding");
+		def linux = delete("Current target platform is freestanding");
+		def panther = delete("Current target platform is freestanding");
+		def windows = delete("Current target platform is freestanding");
 
-		def SUPPORTS_CMD: Bool #pub = false;
-		def SUPPORTS_NON_CMD_IO: Bool #pub = false;
-		def SUPPORTS_NON_LINEAR_HEAP: Bool #pub = false;
+		def SUPPORTS_CMD: Bool = false;
+		def SUPPORTS_NON_CMD_IO: Bool = false;
+		def SUPPORTS_NON_LINEAR_HEAP: Bool = false;
 	}
 
 	case(std.Platform.LINUX){
-		def linux #pub = @import("./Linux/Linux.pthr");
-		def panther #pub = delete("Current target platform is Linux");
-		def windows #pub = delete("Current target platform is Linux");
+		def linux = @import("./Linux/Linux.pthr");
+		def panther = delete("Current target platform is Linux");
+		def windows = delete("Current target platform is Linux");
 
-		def SUPPORTS_CMD: Bool #pub = true;
-		def SUPPORTS_NON_CMD_IO: Bool #pub = true;
-		def SUPPORTS_NON_LINEAR_HEAP: Bool #pub = true;
+		def SUPPORTS_CMD: Bool = true;
+		def SUPPORTS_NON_CMD_IO: Bool = true;
+		def SUPPORTS_NON_LINEAR_HEAP: Bool = true;
 	}
 
 	case(std.Platform.PANTHER_VM){
-		def linux #pub = delete("Current target platform is PantherVM");
-		def pantherVM #pub = @import("./PantherVM/PantherVM.pthr");
-		def windows #pub = delete("Current target platform is PantherVM");
+		def linux = delete("Current target platform is PantherVM");
+		def pantherVM = @import("./PantherVM/PantherVM.pthr");
+		def windows = delete("Current target platform is PantherVM");
 
-		def SUPPORTS_CMD: Bool #pub = true;
-		def SUPPORTS_NON_CMD_IO: Bool #pub = true;
-		def SUPPORTS_NON_LINEAR_HEAP: Bool #pub = true;
+		def SUPPORTS_CMD: Bool = true;
+		def SUPPORTS_NON_CMD_IO: Bool = true;
+		def SUPPORTS_NON_LINEAR_HEAP: Bool = true;
 	}
 
 	case(std.Platform.WINDOWS){
-		def linux #pub = delete("Current target platform is Windows");
-		def panther #pub = delete("Current target platform is Windows");
-		def windows #pub = @import("./Windows/Windows.pthr");
+		def linux = delete("Current target platform is Windows");
+		def panther = delete("Current target platform is Windows");
+		def windows = @import("./Windows/Windows.pthr");
 
-		def SUPPORTS_CMD: Bool #pub = true;
-		def SUPPORTS_NON_CMD_IO: Bool #pub = true;
-		def SUPPORTS_NON_LINEAR_HEAP: Bool #pub = true;
+		def SUPPORTS_CMD: Bool = true;
+		def SUPPORTS_NON_CMD_IO: Bool = true;
+		def SUPPORTS_NON_LINEAR_HEAP: Bool = true;
 	}
 }
 

@@ -12,7 +12,7 @@
 def std = @import("std");
 
 
-type DebugStdoutWriter = struct #pub {
+type DebugStdoutWriter = struct {
 	func write = (this mut, str: [Char:*]) -> Void {
 		std.debug.print(str);
 	}

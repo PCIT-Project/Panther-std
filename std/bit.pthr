@@ -13,25 +13,25 @@ def std = @import("std");
 
 
 
-func asBuffer = (from: $From*) #pub -> [Byte:*] {
+func asBuffer = (from: $From*) -> [Byte:*] {
 	unsafe{
 		return new [Byte:*](bitCast<{Byte*}>(from as RawPtr), std.types.numBytes<{From}>());
 	}
 }
-func asBuffer = (from: $From*mut) #pub -> [Byte:*mut] {
+func asBuffer = (from: $From*mut) -> [Byte:*mut] {
 	unsafe{
 		return new [Byte:*mut](bitCast<{Byte*mut}>(from as RawPtr), std.types.numBytes<{From}>());
 	}
 }
 
 
-func bitCast = <{To: Type}> (from: $From) #pub #unsafe -> To {
+func bitCast = <{To: Type}> (from: $From) #unsafe -> To {
 	return @bitCast<{From, To}>(from);
 }
 
 
 
-func bitCeil = (num: $Integral) #pub -> Integral {
+func bitCeil = (num: $Integral) -> Integral {
 	@comptimeAssert(std.types.isUnsignedIntegral<{Integral}>(), "std.bit.bitWidth only accepts unsigned integrals");
 
 	if(num != 0){
@@ -41,7 +41,7 @@ func bitCeil = (num: $Integral) #pub -> Integral {
 	}
 }
 
-func bitFloor = (num: $Integral) #pub -> Integral {
+func bitFloor = (num: $Integral) -> Integral {
 	@comptimeAssert(std.types.isUnsignedIntegral<{Integral}>(), "std.bit.bitWidth only accepts unsigned integrals");
 
 	if(num != 0){
@@ -52,38 +52,38 @@ func bitFloor = (num: $Integral) #pub -> Integral {
 }
 
 
-func bitReverse = (num: $Integral) #pub -> Integral {
+func bitReverse = (num: $Integral) -> Integral {
 	return @bitReverse<{Integral}>(num);
 }
 
-func bitWidth = (num: $Integral) #pub -> Integral {
+func bitWidth = (num: $Integral) -> Integral {
 	@comptimeAssert(std.types.isUnsignedIntegral<{Integral}>(), "std.bit.bitWidth only accepts unsigned integrals");
 	return std.types.numBits<{Integral, false}>() - countLZero(num);
 }
 
-func byteSwap = (num: $Integral) #pub -> Integral {
+func byteSwap = (num: $Integral) -> Integral {
 	return @byteSwap<{Integral}>(num);
 }
 
 
-func countLZero = (num: $Integral) #pub -> Integral {
+func countLZero = (num: $Integral) -> Integral {
 	return @ctlz<{Integral}>(num);
 }
 
-func countRZero = (num: $Integral) #pub -> Integral {
+func countRZero = (num: $Integral) -> Integral {
 	return @cttz<{Integral}>(num);
 }
 
-func countLOne = (num: $Integral) #pub -> Integral {
+func countLOne = (num: $Integral) -> Integral {
 	return @ctlz<{Integral}>(~num);
 }
 
-func countROne = (num: $Integral) #pub -> Integral {
+func countROne = (num: $Integral) -> Integral {
 	return @cttz<{Integral}>(~num);
 }
 
 
-func popCount = (num: $Integral) #pub -> Integral {
+func popCount = (num: $Integral) -> Integral {
 	return @ctPop<{Integral}>(num);
 }
 

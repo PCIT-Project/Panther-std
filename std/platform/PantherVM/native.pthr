@@ -12,18 +12,18 @@
 def std = @import("std");
 
 
-type FileHandle = alias #pub UI32;
+type FileHandle = alias UI32;
 
 
 
-func pantherVMMemPageAlloc = (size: USize, alignment: UI32) #pub #callConv(@pthr.CallingConvention.C) -> RawPtr =
+func pantherVMMemPageAlloc = (size: USize, alignment: UI32) #callConv(@pthr.CallingConvention.C) -> RawPtr =
 	extern(@pthr.Language.C);
 
 func pantherVMMemPageDealloc = (
 	buffer_data: Byte*, buffer_size: USize, ERR: UI32*mut
-) #pub #callConv(@pthr.CallingConvention.C) -> Bool = extern(@pthr.Language.C);
+) #callConv(@pthr.CallingConvention.C) -> Bool = extern(@pthr.Language.C);
 
 
 func pantherVMFileWrite = (
 	file_handle: FileHandle, str_data: Char*, str_size: USize, ERR: UI32*mut
-) #pub #callConv(@pthr.CallingConvention.C) -> Bool = extern(@pthr.Language.C);
+) #callConv(@pthr.CallingConvention.C) -> Bool = extern(@pthr.Language.C);

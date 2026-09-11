@@ -13,7 +13,7 @@ def std = @import("std");
 
 
 
-func panic = (message: [Char:*]) #noReturn #builtin("panic") #rtDiff -> Void {
+func panic = (message: [Char:*]) #priv #noReturn #builtin("panic") #rtDiff -> Void {
 	when(@config.mode == std.Mode.DEBUG){
 		when(std.platform.SUPPORTS_CMD){
 			std.debug.print("\e[37m\e[41mPCIT Panther Language - `@panic`: \"");

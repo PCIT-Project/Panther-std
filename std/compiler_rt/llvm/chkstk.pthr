@@ -16,7 +16,7 @@ when(
 	&& @config.compilerMode != std.CompilerMode.SCRIPT
 ){
 
-	func __chkstk = () #export #naked -> Void {
+	func __chkstk = () #priv #export #naked -> Void {
 		asm () #sideEffect -> Void {"
 			push rax
 			push rcx

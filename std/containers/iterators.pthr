@@ -13,7 +13,7 @@ def std = @import("std");
 
 
 
-type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
+type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
 	type ELEM_TYPE = alias type(@arrayRefElementTypeID<{ARRAY_REF_TYPE}>());
 
 	func new = (arr_ref_ptr: ARRAY_REF_TYPE) -> (output: This) {
@@ -72,7 +72,7 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
 
 
 
-type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> #pub {
+type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
 	type ELEM_TYPE = alias type(@arrayRefElementTypeID<{ARRAY_REF_TYPE}>());
 
 	func new = (arr_ref_ptr: ARRAY_REF_TYPE) -> (output: This) {

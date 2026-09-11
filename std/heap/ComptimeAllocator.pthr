@@ -12,7 +12,7 @@
 def std = @import("std");
 
 
-type ComptimeAllocator = struct #pub {
+type ComptimeAllocator = struct {
 	func alloc = (this mut, size: USize, alignment: UI32) #ct -> [Byte:*mut] {
 		const ptr: RawPtr = @ctAlloc(size, alignment);
 

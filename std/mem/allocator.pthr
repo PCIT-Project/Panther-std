@@ -17,7 +17,7 @@ def std = @import("std");
 // Allocator
 
 
-type Allocator = struct <{TargetAllocatorType: Type}> #pub {
+type Allocator = struct <{TargetAllocatorType: Type}> {
 	func new = (allocator_impl: impl*mut(TargetAllocatorType:std.mem.IAllocator)) -> (output: This) {
 		output.allocator_impl = copy allocator_impl;
 		return...;
@@ -128,7 +128,7 @@ type Allocator = struct <{TargetAllocatorType: Type}> #pub {
 //////////////////////////////////////////////////////////////////////
 // AllocatorRT
 
-type AllocatorRT = struct <{TargetAllocatorRTType: Type}> #pub {
+type AllocatorRT = struct <{TargetAllocatorRTType: Type}> {
 	func new = (allocator_impl: impl*mut(TargetAllocatorRTType:std.mem.IAllocatorRT)) #rt -> (output: This) {
 		output.allocator_impl = copy allocator_impl;
 		return...;
@@ -239,7 +239,7 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type}> #pub {
 //////////////////////////////////////////////////////////////////////
 // AllocatorCT
 
-type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAllocatorCT)}> #pub {
+type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAllocatorCT)}> {
 	func new = (allocator_impl: impl*mut(TargetAllocatorCTType:std.mem.IAllocatorCT)) -> (output: This) {
 		output.allocator_impl = copy allocator_impl;
 		return...;

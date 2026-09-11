@@ -12,7 +12,7 @@
 def std = @import("std");
 
 
-type ComptimeStdoutWriter = struct #pub {
+type ComptimeStdoutWriter = struct {
 	func write = (this mut, str: [Char:*]) #ct -> Void {
 		@ctPrint(str);
 	}

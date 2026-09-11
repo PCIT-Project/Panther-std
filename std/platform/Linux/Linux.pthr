@@ -11,27 +11,27 @@
 
 def std = @import("std");
 
-def native #pub = @import("./native.pthr");
+def native = @import("./native.pthr");
 
 
 ///////////////////////////////////
 // types
 
-type FileDescriptor = alias #pub #distinct CInt;
-type Offset = alias #pub #distinct I64; // off_t
+type FileDescriptor = alias #distinct CInt;
+type Offset = alias #distinct I64; // off_t
 
 
 
 //////////////////////////////////////////////////////////////////////
 // enums / vars
 
-def STDIN  #pub = 0 as FileDescriptor;
-def STDOUT #pub = 1 as FileDescriptor;
-def STDERR #pub = 2 as FileDescriptor;
+def STDIN  = 0 as FileDescriptor;
+def STDOUT = 1 as FileDescriptor;
+def STDERR = 2 as FileDescriptor;
 
-type Errno = alias #pub native.Errno;
+type Errno = alias native.Errno;
 
-type ProtectionFlags = enum(CInt) #pub {
+type ProtectionFlags = enum(CInt) {
 	NONE  = 0x0,
 	READ  = 0x1,
 	WRITE = 0x2,
@@ -39,7 +39,7 @@ type ProtectionFlags = enum(CInt) #pub {
 }
 
 def MAP_HUGE_SHIFT = 26;
-type MapFlags = enum(CInt) #pub {
+type MapFlags = enum(CInt) {
 	SHARED            = 0x01,
 	PRIVATE           = 0x02,
 	SHARED_VALIDATE   = 0x03,
@@ -79,7 +79,7 @@ type MapFlags = enum(CInt) #pub {
 
 func mmap = (
 	addr: RawPtr, length: USize, prot: ProtectionFlags, flags: MapFlags, fd: FileDescriptor, offset: Offset
-) #pub #rt -> RawPtr <Errno> {
+) #rt -> RawPtr <Errno> {
 	std.debug.assert(
 		(flags & MapFlags.PRIVATE) == MapFlags.PRIVATE
 		|| (flags & MapFlags.SHARED) == MapFlags.SHARED
@@ -104,7 +104,7 @@ func mmap = (
 	}
 }
 
-func munmap = (addr: RawPtr, length: USize) #pub #rt -> Void <Errno> {
+func munmap = (addr: RawPtr, length: USize) #rt -> Void <Errno> {
 	unsafe{
 		const res: UI64 = native.syscall(native.SyscallCode.MUNMAP, std.bitCast<{UI64}>(addr), length as UI64);
 
@@ -116,11 +116,11 @@ func munmap = (addr: RawPtr, length: USize) #pub #rt -> Void <Errno> {
 
 
 
-func exit = (exit_code: CInt) #pub #rt #noReturn -> Void {
+func exit = (exit_code: CInt) #rt #noReturn -> Void {
 	_ = native.syscall(native.SyscallCode.EXIT, exit_code as UI64);
 }
 
-func write = (fd: FileDescriptor, str: [Char:*]) #pub #rt -> ISize {
+func write = (fd: FileDescriptor, str: [Char:*]) #rt -> ISize {
 	unsafe{
 		return native.syscall(
 			native.SyscallCode.WRITE, fd as CInt as UI64, std.bitCast<{UI64}>(str.data()), str.size() as UI64

@@ -13,23 +13,23 @@ def std = @import("std");
 
 
 
-func write = (writer: std.Writer<{$$}> mut, str: [Char:*], format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, str: [Char:*], format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type ([Char:*])");
 	writer.write(str);
 }
 
-func write = (writer: std.Writer<{$$}> mut, str: [Char:$$;'\0']*, format_info: [Char:*] = new [Char:*]()) #pub
+func write = (writer: std.Writer<{$$}> mut, str: [Char:$$;'\0']*, format_info: [Char:*] = new [Char:*]())
 -> Void { // string literals
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type ([Char:$$;'\0']*)");
 	writer.write(str.* as [Char:*]);
 }
 
-func write = (writer: std.Writer<{$$}> mut, char: Char, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, char: Char, format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type (Char)");
 	writer.write(new [Char:*](&char, 1));
 }
 
-func write = (writer: std.Writer<{$$}> mut, char: CWChar, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, char: CWChar, format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(format_info.size() <= 1, "Invalid format info for this type (CWChar)");
 
 	const is_capital: Bool = {->expr:Bool
@@ -54,7 +54,7 @@ func write = (writer: std.Writer<{$$}> mut, char: CWChar, format_info: [Char:*] 
 	}
 }
 
-func write = (writer: std.Writer<{$$}> mut, byte: Byte, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, byte: Byte, format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(format_info.size() <= 1, "Invalid format info for this type (Byte)");
 
 	const is_capital: Bool = {->expr:Bool
@@ -71,7 +71,7 @@ func write = (writer: std.Writer<{$$}> mut, byte: Byte, format_info: [Char:*] = 
 }
 
 
-func write = (writer: std.Writer<{$$}> mut, bool: Bool, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, bool: Bool, format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type (Bool)");
 	if(bool){
 		writer.write("true");
@@ -80,7 +80,7 @@ func write = (writer: std.Writer<{$$}> mut, bool: Bool, format_info: [Char:*] = 
 	}
 }
 
-func write = (writer: std.Writer<{$$}> mut, bool: Bool32, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, bool: Bool32, format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type (Bool32)");
 	if(bool){
 		writer.write("true");
@@ -92,7 +92,7 @@ func write = (writer: std.Writer<{$$}> mut, bool: Bool32, format_info: [Char:*] 
 
 
 
-func parse_pointer_format_info = (format_info: [Char:*]) -> Bool {
+func parse_pointer_format_info = (format_info: [Char:*]) #priv -> Bool {
 	std.debug.assert(format_info.size() == 1, "Invalid format info for this type (pointer)");
 
 	switch(format_info[0].*){
@@ -102,7 +102,7 @@ func parse_pointer_format_info = (format_info: [Char:*]) -> Bool {
 	}
 }
 
-func write = (writer: std.Writer<{$$}> mut, arg: $$*, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: $$*, format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(
 		format_info.size() == 1, "Invalid format info for this type ($$*) - did you mean to dereference?"
 	);
@@ -118,7 +118,7 @@ func write = (writer: std.Writer<{$$}> mut, arg: $$*, format_info: [Char:*] = ne
 	}
 }
 
-func write = (writer: std.Writer<{$$}> mut, arg: $$*mut, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: $$*mut, format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(
 		format_info.size() == 1, "Invalid format info for this type ($$*mut) - did you mean to dereference?"
 	);
@@ -134,7 +134,7 @@ func write = (writer: std.Writer<{$$}> mut, arg: $$*mut, format_info: [Char:*] =
 	}
 }
 
-func write = (writer: std.Writer<{$$}> mut, arg: $$*?, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: $$*?, format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(
 		format_info.size() == 1, "Invalid format info for this type ($$*?) - did you mean to dereference?"
 	);
@@ -154,7 +154,7 @@ func write = (writer: std.Writer<{$$}> mut, arg: $$*?, format_info: [Char:*] = n
 	}
 }
 
-func write = (writer: std.Writer<{$$}> mut, arg: $$*mut?, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: $$*mut?, format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(
 		format_info.size() == 1, "Invalid format info for this type ($$*mut?) - did you mean to dereference?"
 	);
@@ -175,7 +175,7 @@ func write = (writer: std.Writer<{$$}> mut, arg: $$*mut?, format_info: [Char:*] 
 }
 
 
-func write = (writer: std.Writer<{$$}> mut, arg: RawPtr, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: RawPtr, format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(format_info.size() == 1, "Invalid format info for this type (RawPtr)");
 
 	const is_capital: Bool = parse_pointer_format_info(format_info);
@@ -198,7 +198,7 @@ func write = (writer: std.Writer<{$$}> mut, arg: RawPtr, format_info: [Char:*] =
 
 
 
-func write = (writer: std.Writer<{$$}> mut, arg: $Arg, format_info: [Char:*] = new [Char:*]()) #pub -> Void {
+func write = (writer: std.Writer<{$$}> mut, arg: $Arg, format_info: [Char:*] = new [Char:*]()) -> Void {
 	when(std.types.isIntegral<{Arg}>()){
 		write_integral(writer, arg, format_info);
 		
@@ -212,7 +212,7 @@ func write = (writer: std.Writer<{$$}> mut, arg: $Arg, format_info: [Char:*] = n
 
 func write_integral = (
 	writer: std.Writer<{$$}> mut, integral: $Integral, format_info: [Char:*] = new [Char:*]()
-) -> Void {
+) #priv -> Void {
 	@comptimeAssert(std.types.isIntegral<{Integral}>(), "Must be integral");
 
 	std.debug.assert(format_info.size() < 2, "Invalid format info for this type");
@@ -233,9 +233,9 @@ func write_integral = (
 
 
 
-func write_integral_detail =
-	<{Integral: Type, BASE: Integral, IS_CAPITAL: Bool}> (writer: std.Writer<{$$}> mut, integral: Integral)
--> Void {
+func write_integral_detail = <{Integral: Type, BASE: Integral, IS_CAPITAL: Bool}> (
+	writer: std.Writer<{$$}> mut, integral: Integral
+) #priv -> Void {
 	@comptimeAssert(BASE == 2 || BASE == 8 || BASE == 10 || BASE == 16, "Invalid base");
 
 
@@ -343,7 +343,7 @@ func write_integral_detail =
 
 
 
-type FmtString = struct #pub {
+type FmtString = struct {
 	func new = (fmt_str: [Char:*]) #implicit -> (output: This) {
 		std.debug.assert(fmt_str.size() != 0, "Format string cannot be empty");
 

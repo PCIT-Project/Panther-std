@@ -12,28 +12,28 @@
 def std = @import("std");
 
 
-func rangeFor = (num_elements: $T) #pub -> RangeForIter<{T}> {
+func rangeFor = (num_elements: $T) -> RangeForIter<{T}> {
 	if(num_elements != 0){
 		return new RangeForIter<{T}>(0, num_elements - 1, 1);
 	}else{
 		return new RangeForIter<{T}>(1, 0, 1);
 	}
 }
-func rangeFor = <{T: Type}> (num_elements: T) #pub -> RangeForIter<{T}> {
+func rangeFor = <{T: Type}> (num_elements: T) -> RangeForIter<{T}> {
 	if(num_elements != 0){
 		return new RangeForIter<{T}>(0, num_elements - 1, 1);
 	}else{
 		return new RangeForIter<{T}>(1, 0, 1);
 	}
 }
-func rangeFor = (first: $T, last: T, stride: T = 1 as T) #pub -> RangeForIter<{T}> {
+func rangeFor = (first: $T, last: T, stride: T = 1 as T) -> RangeForIter<{T}> {
 	std.debug.assert(
 		first <= last, "First must be less than or equal to last - did you mean `std.reverseRangeFor` instead?"
 	);
 
 	return new RangeForIter<{T}>(first, last, stride);
 }
-func rangeFor = <{T: Type}> (first: T, last: T, stride: T = 1 as T) #pub -> RangeForIter<{T}> {
+func rangeFor = <{T: Type}> (first: T, last: T, stride: T = 1 as T) -> RangeForIter<{T}> {
 	std.debug.assert(
 		first <= last, "First must be less than or equal to last - did you mean `std.reverseRangeFor` instead?"
 	);
@@ -42,28 +42,28 @@ func rangeFor = <{T: Type}> (first: T, last: T, stride: T = 1 as T) #pub -> Rang
 }
 
 
-func reverseRangeFor = (first: $T) #pub -> ReverseRangeForIter<{T}> {
+func reverseRangeFor = (first: $T) -> ReverseRangeForIter<{T}> {
 	if(first != 0){
 		return new ReverseRangeForIter<{T}>(first, 0, 1);
 	}else{
 		return new ReverseRangeForIter<{T}>(first, 0, 1);
 	}
 }
-func reverseRangeFor = <{T: Type}> (first: T) #pub -> ReverseRangeForIter<{T}> {
+func reverseRangeFor = <{T: Type}> (first: T) -> ReverseRangeForIter<{T}> {
 	if(first != 0){
 		return new ReverseRangeForIter<{T}>(first, 0, 1);
 	}else{
 		return new ReverseRangeForIter<{T}>(first, 0, 1);
 	}
 }
-func reverseRangeFor = (first: $T, last: T, stride: T = 1 as T) #pub -> ReverseRangeForIter<{T}> {
+func reverseRangeFor = (first: $T, last: T, stride: T = 1 as T) -> ReverseRangeForIter<{T}> {
 	std.debug.assert(
 		first >= last, "First must be greater than or equal to last - did you mean `std.rangeFor` instead?"
 	);
 
 	return new ReverseRangeForIter<{T}>(first, last, stride);
 }
-func reverseRangeFor = <{T: Type}> (first: T, last: T, stride: T = 1 as T) #pub -> ReverseRangeForIter<{T}> {
+func reverseRangeFor = <{T: Type}> (first: T, last: T, stride: T = 1 as T) -> ReverseRangeForIter<{T}> {
 	std.debug.assert(
 		first >= last, "First must be greater than or equal to last - did you mean `std.rangeFor` instead?"
 	);
