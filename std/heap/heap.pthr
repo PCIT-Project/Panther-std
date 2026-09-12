@@ -9,7 +9,7 @@
 
 @setModuleName("std.heap");
 
-def std = @import("std");
+def std #priv = @import("std");
 
 when(std.platform.SUPPORTS_NON_LINEAR_HEAP){
 	type PageAllocator = alias @import("./PageAllocator.pthr").PageAllocator;

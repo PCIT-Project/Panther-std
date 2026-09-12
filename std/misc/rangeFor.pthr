@@ -9,7 +9,7 @@
 
 @setModuleName("std");
 
-def std = @import("std");
+def std #priv = @import("std");
 
 
 func rangeFor = (num_elements: $T) -> RangeForIter<{T}> {

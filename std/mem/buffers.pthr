@@ -9,7 +9,7 @@
 
 @setModuleName("std.mem");
 
-def std = @import("std");
+def std #priv = @import("std");
 
 
 func mem_copy = (dst: [Byte:*mut], src: [Byte:*]) #priv -> Void {

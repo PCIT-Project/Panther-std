@@ -9,7 +9,7 @@
 
 @setModuleName("std.platform");
 
-def std = @import("std");
+def std #priv = @import("std");
 
 
 when switch(@config.platform){

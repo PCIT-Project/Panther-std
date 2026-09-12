@@ -9,7 +9,7 @@
 
 @setModuleName("std.bit");
 
-def std = @import("std");
+def std #priv = @import("std");
 
 
 

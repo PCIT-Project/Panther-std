@@ -8,7 +8,7 @@
 
 @setModuleName("std.compiler_rt");
 
-def std = @import("std");
+def std #priv = @import("std");
 
 
 when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode != std.CompilerMode.COMPILE_RUN){

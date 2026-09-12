@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.58.1"></a>
+## v0.0.58.1
+- Fixed out-of-bounds read in `FmtString.new`
+
+
+<!---------------------------------->
 <a name="v0.0.58.0"></a>
 ## v0.0.58.0
 - Updated reflect updates to [PCIT-CPP v0.0.386.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.386.0)

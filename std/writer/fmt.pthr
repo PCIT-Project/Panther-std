@@ -9,7 +9,7 @@
 
 @setModuleName("std");
 
-def std = @import("std");
+def std #priv = @import("std");
 
 
 
@@ -367,7 +367,7 @@ type FmtString = struct {
 				current_start = copy i;
 
 			}else{
-				while(fmt_str[i].* != '{' && i < fmt_str.size()){
+				while(i < fmt_str.size() && fmt_str[i].* != '{'){
 					i += 1;
 				}
 

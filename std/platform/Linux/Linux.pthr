@@ -9,7 +9,7 @@
 
 @setModuleName("std.platform.linux");
 
-def std = @import("std");
+def std #priv = @import("std");
 
 def native = @import("./native.pthr");
 

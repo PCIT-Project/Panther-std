@@ -9,7 +9,7 @@
 
 @setModuleName("std.platform.pantherVM");
 
-def std = @import("std");
+def std #priv = @import("std");
 
 
 type FileHandle = alias UI32;
