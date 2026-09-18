@@ -105,7 +105,7 @@ type PageAllocator = struct {
 					std.platform.linux.MapFlags.PRIVATE | std.platform.linux.MapFlags.ANONYMOUS,
 					-1 as std.platform.linux.FileDescriptor,
 					0
-				) else<errno> {->expr:RawPtr
+				) else<errno> {
 					switch(errno){
 						case(std.platform.linux.Errno.ACCES){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.ACCES");
@@ -175,7 +175,7 @@ type PageAllocator = struct {
 					size,
 					std.platform.windows.AllocationTypeFlags.COMMIT | std.platform.windows.AllocationTypeFlags.RESERVE,
 					std.platform.windows.AllocationProtectionFlags.READWRITE
-				) else<nt_status> {->expr:(_base_addr: RawPtr, _size: USize)
+				) else<nt_status> {
 					switch(nt_status){
 						case(std.platform.windows.NtStatus.ACCESS_DENIED){
 							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.ACCESS_DENIED");
@@ -296,7 +296,7 @@ type PageAllocator = struct {
 					buffer.data() as RawPtr,
 					0,
 					std.platform.windows.FreeTypeFlags.RELEASE
-				) else<nt_status> {->expr:(_base_addr: RawPtr, _size: USize)
+				) else<nt_status> {
 					switch(nt_status){
 						case(std.platform.windows.NtStatus.ACCESS_DENIED){
 							unreachable("std.heap.PageAllocator failed to deallocate - NtStatus.ACCESS_DENIED");
