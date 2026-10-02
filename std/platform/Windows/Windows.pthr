@@ -23,7 +23,7 @@ type Handle = alias #distinct RawPtr;
 //////////////////////////////////////////////////////////////////////
 // enums
 
-type NtStatus = alias @import("./NtStatus.pthr").NtStatus;
+type NTStatus = alias @import("./NTStatus.pthr").NTStatus;
 
 type StdHandle = enum(UI32) {
 	INPUT  = native.STD_INPUT_HANDLE,
@@ -82,7 +82,7 @@ func ntAllocateVirtualMemory = (
 	region_size     : USize,
 	allocation_type : AllocationTypeFlags,
 	protection      : AllocationProtectionFlags,
-) #rt -> (address: RawPtr, size: USize) <NtStatus> {
+) #rt -> (address: RawPtr, size: USize) <NTStatus> {
 	std.debug.assert(region_size != 0, "Cannot request 0 bytes");
 	std.debug.assert(
 		(allocation_type & AllocationTypeFlags.COMMIT) as UI32 != 0
@@ -94,16 +94,16 @@ func ntAllocateVirtualMemory = (
 	address = copy base_address;
 	size = copy region_size;
 
-	const status: NtStatus = native.NtAllocateVirtualMemory(
+	const status: NTStatus = native.NtAllocateVirtualMemory(
 		process_handle as native.HANDLE,
 		&address,
 		copy zero_bits,
 		&size,
 		allocation_type as native.ULONG,
 		protection as native.ULONG,
-	) as NtStatus;
+	) as NTStatus;
 
-	if(status == NtStatus.SUCCESS){ return...; }
+	if(status == NTStatus.SUCCESS){ return...; }
 	error copy status;
 }
 
@@ -120,7 +120,7 @@ func ntFreeVirtualMemory = (
 	base_address   : RawPtr,
 	region_size    : USize, // 0 to free the entire region allocated by `ntAllocateVirtualMemory`
 	free_type      : FreeTypeFlags,
-) #rt -> (address: RawPtr, size: USize) <NtStatus> {
+) #rt -> (address: RawPtr, size: USize) <NTStatus> {
 	std.debug.assert(
 		(free_type & FreeTypeFlags.RELEASE) as UI32 == 0 || region_size == 0,
 		"if REALEASE is set, `region_size` must be 0"
@@ -129,23 +129,23 @@ func ntFreeVirtualMemory = (
 	address = copy base_address;
 	size = copy region_size;
 
-	const status: NtStatus = native.NtFreeVirtualMemory(
+	const status: NTStatus = native.NtFreeVirtualMemory(
 		process_handle as native.HANDLE,
 		&address,
 		&size,
 		free_type as native.ULONG,
-	) as NtStatus;
+	) as NTStatus;
 
-	if(status == NtStatus.SUCCESS){ return...; }
+	if(status == NTStatus.SUCCESS){ return...; }
 	error copy status;
 }
 
 
-func ntWriteFile = (handle: Handle, buffer: [Char:*]) #rt -> Void <NtStatus> {
+func ntWriteFile = (handle: Handle, buffer: [Char:*]) #rt -> Void <NTStatus> {
 	unsafe{
 		var io_status_block = new std.ManualLifetime<{native.IO_STATUS_BLOCK}>();
 
-		const status : NtStatus = native.NtWriteFile(
+		const status : NTStatus = native.NtWriteFile(
 			FileHandle    : handle as native.HANDLE,
 			Event         : null,
 			ApcRoutine    : null,
@@ -155,9 +155,9 @@ func ntWriteFile = (handle: Handle, buffer: [Char:*]) #rt -> Void <NtStatus> {
 			Length        : buffer.size() as native.ULONG,
 			ByteOffset    : null,
 			Key           : null
-		) as NtStatus;
+		) as NTStatus;
 
-		if(status == NtStatus.SUCCESS){ return; }
+		if(status == NTStatus.SUCCESS){ return; }
 		error copy status;
 	}
 }

@@ -74,11 +74,13 @@ type FileWriter = struct {
 			}
 
 			case(std.Platform.PANTHER_VM){
-				try std.platform.pantherVM.fileWrite(this.handle, str) else<err> {};
+				try std.platform.pantherVM.fileWrite(this.handle, str)
+					else<err: std.platform.pantherVM.FileWriteError> {};
 			}
 
 			case(std.Platform.WINDOWS){
-				try std.platform.windows.ntWriteFile(this.handle, str) else<nt_status> {};
+				try std.platform.windows.ntWriteFile(this.handle, str)
+					else<nt_status: std.platform.windows.NTStatus> {};
 			}
 		}
 	}

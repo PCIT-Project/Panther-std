@@ -105,7 +105,7 @@ type PageAllocator = struct {
 					std.platform.linux.MapFlags.PRIVATE | std.platform.linux.MapFlags.ANONYMOUS,
 					-1 as std.platform.linux.FileDescriptor,
 					0
-				) else<errno> {
+				) else<errno: std.platform.linux.Errno> {
 					switch(errno){
 						case(std.platform.linux.Errno.ACCES){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.ACCES");
@@ -175,46 +175,46 @@ type PageAllocator = struct {
 					size,
 					std.platform.windows.AllocationTypeFlags.COMMIT | std.platform.windows.AllocationTypeFlags.RESERVE,
 					std.platform.windows.AllocationProtectionFlags.READWRITE
-				) else<nt_status> {
+				) else<nt_status: std.platform.windows.NTStatus> {
 					switch(nt_status){
-						case(std.platform.windows.NtStatus.ACCESS_DENIED){
-							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.ACCESS_DENIED");
+						case(std.platform.windows.NTStatus.ACCESS_DENIED){
+							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.ACCESS_DENIED");
 						}
 
-						case(std.platform.windows.NtStatus.ALREADY_COMMITTED){
-							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.ALREADY_COMMITTED");
+						case(std.platform.windows.NTStatus.ALREADY_COMMITTED){
+							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.ALREADY_COMMITTED");
 						}
 
-						case(std.platform.windows.NtStatus.COMMITMENT_LIMIT){
-							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.COMMITMENT_LIMIT");
+						case(std.platform.windows.NTStatus.COMMITMENT_LIMIT){
+							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.COMMITMENT_LIMIT");
 						}
 
-						case(std.platform.windows.NtStatus.CONFLICTING_ADDRESSES){
-							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.CONFLICTING_ADDRESSES");
+						case(std.platform.windows.NTStatus.CONFLICTING_ADDRESSES){
+							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.CONFLICTING_ADDRESSES");
 						}
 
-						case(std.platform.windows.NtStatus.INSUFFICIENT_RESOURCES){
-							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.INSUFFICIENT_RESOURCES");
+						case(std.platform.windows.NTStatus.INSUFFICIENT_RESOURCES){
+							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.INSUFFICIENT_RESOURCES");
 						}
 
-						case(std.platform.windows.NtStatus.INVALID_HANDLE){
-							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.INVALID_HANDLE");
+						case(std.platform.windows.NTStatus.INVALID_HANDLE){
+							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.INVALID_HANDLE");
 						}
 
-						case(std.platform.windows.NtStatus.INVALID_PAGE_PROTECTION){
-							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.INVALID_PAGE_PROTECTION");
+						case(std.platform.windows.NTStatus.INVALID_PAGE_PROTECTION){
+							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.INVALID_PAGE_PROTECTION");
 						}
 
-						case(std.platform.windows.NtStatus.NO_MEMORY){
-							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.NO_MEMORY");
+						case(std.platform.windows.NTStatus.NO_MEMORY){
+							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.NO_MEMORY");
 						}
 
-						case(std.platform.windows.NtStatus.OBJECT_TYPE_MISMATCH){
-							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.OBJECT_TYPE_MISMATCH");
+						case(std.platform.windows.NTStatus.OBJECT_TYPE_MISMATCH){
+							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.OBJECT_TYPE_MISMATCH");
 						}
 
-						case(std.platform.windows.NtStatus.PROCESS_IS_TERMINATING){
-							unreachable("std.heap.PageAllocator failed to allocate - NtStatus.PROCESS_IS_TERMINATING");
+						case(std.platform.windows.NTStatus.PROCESS_IS_TERMINATING){
+							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.PROCESS_IS_TERMINATING");
 						}
 
 						else{
@@ -261,7 +261,9 @@ type PageAllocator = struct {
 			case(std.Platform.LINUX){
 				const allocation_size: USize = std.math.ceilToMultiple(buffer.size(), std.heap.pageSize());
 
-				try std.platform.linux.munmap(buffer.data() as RawPtr, allocation_size) else<errno> {
+				try std.platform.linux.munmap(buffer.data() as RawPtr, allocation_size)
+					else<errno: std.platform.linux.Errno>
+				{
 					switch(errno){
 						case(std.platform.linux.Errno.INVAL){
 							unreachable("std.heap.PageAllocator failed to allocate - Errno.INVAL");
@@ -275,7 +277,7 @@ type PageAllocator = struct {
 			}
 
 			case(std.Platform.PANTHER_VM){
-				try std.platform.pantherVM.memPageDealloc(buffer) else<err> {
+				try std.platform.pantherVM.memPageDealloc(buffer) else<err: std.platform.pantherVM.DeallocError> {
 					switch(err){
 						case(std.platform.pantherVM.DeallocError.NOT_ALLOCATED){
 							unreachable("std.heap.PageAllocator failed to deallocate - DeallocError.NOT_ALLOCATED");
@@ -296,26 +298,26 @@ type PageAllocator = struct {
 					buffer.data() as RawPtr,
 					0,
 					std.platform.windows.FreeTypeFlags.RELEASE
-				) else<nt_status> {
+				) else<nt_status: std.platform.windows.NTStatus> {
 					switch(nt_status){
-						case(std.platform.windows.NtStatus.ACCESS_DENIED){
-							unreachable("std.heap.PageAllocator failed to deallocate - NtStatus.ACCESS_DENIED");
+						case(std.platform.windows.NTStatus.ACCESS_DENIED){
+							unreachable("std.heap.PageAllocator failed to deallocate - NTStatus.ACCESS_DENIED");
 						}
 
-						case(std.platform.windows.NtStatus.INVALID_HANDLE){
-							unreachable("std.heap.PageAllocator failed to deallocate - NtStatus.INVALID_HANDLE");
+						case(std.platform.windows.NTStatus.INVALID_HANDLE){
+							unreachable("std.heap.PageAllocator failed to deallocate - NTStatus.INVALID_HANDLE");
 						}
 
-						case(std.platform.windows.NtStatus.OBJECT_TYPE_MISMATCH){
-							unreachable("std.heap.PageAllocator failed to deallocate - NtStatus.OBJECT_TYPE_MISMATCH");
+						case(std.platform.windows.NTStatus.OBJECT_TYPE_MISMATCH){
+							unreachable("std.heap.PageAllocator failed to deallocate - NTStatus.OBJECT_TYPE_MISMATCH");
 						}
 
-						case(std.platform.windows.NtStatus.MEMORY_NOT_ALLOCATED){
-							unreachable("std.heap.PageAllocator failed to deallocate - NtStatus.MEMORY_NOT_ALLOCATED");
+						case(std.platform.windows.NTStatus.MEMORY_NOT_ALLOCATED){
+							unreachable("std.heap.PageAllocator failed to deallocate - NTStatus.MEMORY_NOT_ALLOCATED");
 						}
 
-						case(std.platform.windows.NtStatus.FREE_VM_NOT_AT_BASE){
-							unreachable("std.heap.PageAllocator failed to deallocate - NtStatus.FREE_VM_NOT_AT_BASE");
+						case(std.platform.windows.NTStatus.FREE_VM_NOT_AT_BASE){
+							unreachable("std.heap.PageAllocator failed to deallocate - NTStatus.FREE_VM_NOT_AT_BASE");
 						}
 
 						else{

@@ -63,7 +63,8 @@ when(std.platform.SUPPORTS_CMD){
 				}
 
 				case(std.Platform.PANTHER_VM){
-					try std.platform.pantherVM.fileWrite(std.platform.pantherVM.STDOUT, str) else<err> {};
+					try std.platform.pantherVM.fileWrite(std.platform.pantherVM.STDOUT, str)
+						else<err: std.platform.pantherVM.FileWriteError> {};
 				}
 
 				case(std.Platform.WINDOWS){
@@ -85,7 +86,9 @@ when(std.platform.SUPPORTS_CMD){
 						std.platform.windows.StdHandle.OUTPUT
 					);
 
-					try std.platform.windows.ntWriteFile(stdout, str) else <nt_status> {}; // TODO(FUTURE): error handling
+					try std.platform.windows.ntWriteFile(stdout, str) else<nt_status: std.platform.windows.NTStatus> {
+						// TODO(FUTURE): error handling	
+					};
 					std.platform.windows.outputDebugStringA(
 						new [Char:*mut;'\0'](copy alloc_buffer.data().?, str.size())
 					);
@@ -122,12 +125,13 @@ when(std.platform.SUPPORTS_CMD){
 				}
 
 				case(std.Platform.PANTHER_VM){
-					try std.platform.pantherVM.fileWrite(std.platform.pantherVM.STDOUT, str) else<err> {};
+					try std.platform.pantherVM.fileWrite(std.platform.pantherVM.STDOUT, str)
+						else<err: std.platform.pantherVM.FileWriteError> {};
 
 					const newline: Char = '\n';
 					try std.platform.pantherVM.fileWrite(
 						std.platform.pantherVM.STDOUT, new [Char:*](&newline, 1)
-					) else<err> {};
+					) else<err: std.platform.pantherVM.FileWriteError> {};
 				}
 
 				case(std.Platform.WINDOWS){
@@ -153,7 +157,8 @@ when(std.platform.SUPPORTS_CMD){
 					const created_str = new [Char:*mut;'\0'](copy alloc_buffer.data().?, str.size() + 1);
 
 					// TODO(FUTURE): error handling
-					try std.platform.windows.ntWriteFile(stdout, created_str) else <nt_status> {};
+					try std.platform.windows.ntWriteFile(stdout, created_str)
+						else <nt_status: std.platform.windows.NTStatus> {};
 					std.platform.windows.outputDebugStringA(created_str);
 				}
 			}
