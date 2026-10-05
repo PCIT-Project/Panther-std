@@ -14,7 +14,7 @@ def std #priv = @import("std");
 
 
 type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
-	type ELEM_TYPE = alias type(@arrayRefElementTypeID<{ARRAY_REF_TYPE}>());
+	type ELEM_TYPE = alias type(@_arrayRefElementTypeID<{ARRAY_REF_TYPE}>());
 
 	func new = (arr_ref_ptr: ARRAY_REF_TYPE) -> (output: This) {
 		if(arr_ref_ptr.size() != 0){
@@ -73,7 +73,7 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
 
 
 type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
-	type ELEM_TYPE = alias type(@arrayRefElementTypeID<{ARRAY_REF_TYPE}>());
+	type ELEM_TYPE = alias type(@_arrayRefElementTypeID<{ARRAY_REF_TYPE}>());
 
 	func new = (arr_ref_ptr: ARRAY_REF_TYPE) -> (output: This) {
 		if(arr_ref_ptr.size() != 0){

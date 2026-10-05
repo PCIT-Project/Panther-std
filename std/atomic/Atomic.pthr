@@ -26,16 +26,16 @@ type Atomic = struct <{T: Type}>
 
 
 	func load = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this) -> T {
-		return @atomicLoad<{T*, T, ORDERING}>(&this.value);
+		return @_atomicLoad<{T*, T, ORDERING}>(&this.value);
 	}
 
 	func store = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this mut, new_val: T in) -> Void {
-		@atomicStore<{T*mut, T, ORDERING}>(&this.value, forward new_val);
+		@_atomicStore<{T*mut, T, ORDERING}>(&this.value, forward new_val);
 	}
 
 
 
-	when(std.types.isIntegral<{T}>() || std.types.isPointer<{T}>() || @getTypeID<{Bool}>() == @getTypeID<{T}>()){
+	when(std.types.isIntegral<{T}>() || std.types.isPointer<{T}>() || std.types.id<{Bool}>() == std.types.id<{T}>()){
 		func compareExchange = 
 			<{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> 
 			(this mut, expected: T, desired: T in)
@@ -43,7 +43,7 @@ type Atomic = struct <{T: Type}>
 			(loaded: T, succeeded: Bool)
 		{
 			[loaded, succeeded] = 
-				@cmpxchg<{T*mut, T, false, SUCCESS_ORDERING, FAILURE_ORDERING}>(&this.value, expected, forward desired);
+				@_cmpxchg<{T*mut, T, false, SUCCESS_ORDERING, FAILURE_ORDERING}>(&this.value, expected, forward desired);
 			return...;
 		}
 
@@ -54,7 +54,7 @@ type Atomic = struct <{T: Type}>
 			(loaded: T, succeeded: Bool)
 		{
 			[loaded, succeeded] =
-				@cmpxchg<{T*mut, T, false, ORDERING, ORDERING}>(&this.value, expected, forward desired);
+				@_cmpxchg<{T*mut, T, false, ORDERING, ORDERING}>(&this.value, expected, forward desired);
 			return...;
 		}
 
@@ -67,7 +67,7 @@ type Atomic = struct <{T: Type}>
 			(loaded: T, succeeded: Bool)
 		{
 			[loaded, succeeded] = 
-				@cmpxchg<{T*mut, T, true, SUCCESS_ORDERING, FAILURE_ORDERING}>(&this.value, expected, forward desired);
+				@_cmpxchg<{T*mut, T, true, SUCCESS_ORDERING, FAILURE_ORDERING}>(&this.value, expected, forward desired);
 			return...;
 		}
 
@@ -79,43 +79,43 @@ type Atomic = struct <{T: Type}>
 			(loaded: T, succeeded: Bool)
 		{
 			[loaded, succeeded] =
-				@cmpxchg<{T*mut, T, true, ORDERING, ORDERING}>(&this.value, expected, forward desired);
+				@_cmpxchg<{T*mut, T, true, ORDERING, ORDERING}>(&this.value, expected, forward desired);
 			return...;
 		}
 
 
 
 		func exchange = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this mut, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.XCHG, ORDERING}>(&this.value, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr._AtomicRMWOp.XCHG, ORDERING}>(&this.value, forward value);
 		}
 
 
 		func fetchAdd = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this mut, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.ADD, ORDERING}>(&this.value, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr._AtomicRMWOp.ADD, ORDERING}>(&this.value, forward value);
 		}
 
 		func fetchSub = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this mut, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.SUB, ORDERING}>(&this.value, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr._AtomicRMWOp.SUB, ORDERING}>(&this.value, forward value);
 		}
 
 		func fetchAnd = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this mut, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.AND, ORDERING}>(&this.value, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr._AtomicRMWOp.AND, ORDERING}>(&this.value, forward value);
 		}
 
 		func fetchOr = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this mut, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.OR, ORDERING}>(&this.value, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr._AtomicRMWOp.OR, ORDERING}>(&this.value, forward value);
 		}
 
 		func fetchXor = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this mut, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.XOR, ORDERING}>(&this.value, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr._AtomicRMWOp.XOR, ORDERING}>(&this.value, forward value);
 		}
 
 		func fetchMin = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this mut, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.MIN, ORDERING}>(&this.value, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr._AtomicRMWOp.MIN, ORDERING}>(&this.value, forward value);
 		}
 
 		func fetchMax = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this mut, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.MAX, ORDERING}>(&this.value, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr._AtomicRMWOp.MAX, ORDERING}>(&this.value, forward value);
 		}
 
 

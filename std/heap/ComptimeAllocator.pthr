@@ -14,7 +14,7 @@ def std #priv = @import("std");
 
 type ComptimeAllocator = struct {
 	func alloc = (this mut, size: USize, alignment: UI32) #ct -> [Byte:*mut] {
-		const ptr: RawPtr = @ctAlloc(size, alignment);
+		const ptr: RawPtr = @_ctAlloc(size, alignment);
 
 		unsafe{
 			return new [Byte:*mut](std.bitCast<{Byte*mut}>(ptr), copy size);
@@ -29,7 +29,7 @@ type ComptimeAllocator = struct {
 
 
 	func dealloc = (this mut, buffer: [Byte:*]) #ct -> Void {
-		@ctDealloc(buffer.data() as RawPtr);
+		@_ctDealloc(buffer.data() as RawPtr);
 	}
 
 

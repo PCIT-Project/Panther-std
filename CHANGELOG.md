@@ -1,6 +1,13 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.61.0"></a>
+## v0.0.61.0
+- Added `types.id`
+- Updated reflect updates to [PCIT-CPP v0.0.402.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.402.0)
+
+
+<!---------------------------------->
 <a name="v0.0.60.0"></a>
 ## v0.0.60.0
 - Updated reflect updates to [PCIT-CPP v0.0.399.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.399.0)

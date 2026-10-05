@@ -10,67 +10,72 @@
 @setModuleName("std.types");
 
 
+func id = <{T: Type}> () -> TypeID {
+	return @_getTypeID<{T}>();
+}
+
 func numBytes = <{T: Type, INCLUDE_PADDING: Bool = true}> () -> USize {
-	return @numBytes<{T, INCLUDE_PADDING}>();
+	return @_numBytes<{T, INCLUDE_PADDING}>();
 }
 
 func numAlignBytes = <{T: Type}> () -> UI32 {
-	return @numAlignBytes<{T}>();
+	return @_numAlignBytes<{T}>();
 }
 
 func numBits = <{T: Type, INCLUDE_PADDING: Bool = true}> () -> USize {
-	return @numBits<{T, INCLUDE_PADDING}>();
+	return @_numBits<{T, INCLUDE_PADDING}>();
 }
 
 
 func getIntegerTypeID = (width: UI32, is_unsigned: Bool) #ct -> TypeID {
-	return @ctGetIntegerTypeID(width, is_unsigned);
+	return @_ctGetIntegerTypeID(width, is_unsigned);
 }
 
 func getIntegerTypeID = <{WIDTH: UI32, IS_UNSIGNED: Bool}> () -> TypeID {
-	return @getIntegerTypeID<{WIDTH, IS_UNSIGNED}>();
+	return @_getIntegerTypeID<{WIDTH, IS_UNSIGNED}>();
 }
 
 
 func getShiftValueTypeID = <{T: Type}> () -> TypeID {
-	return @getIntegerTypeID<{std.bitWidth(@numBits<{T, false}>()), true}>();
+	return @_getIntegerTypeID<{std.bitWidth(@_numBits<{T, false}>()), true}>();
 }
 
 
-func isDefaultInitializable          = <{T: Type}> () -> Bool { return @isDefaultInitializable<{T}>();          }
-func isTriviallyDefaultInitializable = <{T: Type}> () -> Bool { return @isTriviallyDefaultInitializable<{T}>(); }
-func isComptimeDefaultInitializable  = <{T: Type}> () -> Bool { return @isComptimeDefaultInitializable<{T}>();  }
-func isRuntimeDefaultInitializable   = <{T: Type}> () -> Bool { return @isRuntimeDefaultInitializable<{T}>();   }
-func isNoErrorDefaultInitializable   = <{T: Type}> () -> Bool { return @isNoErrorDefaultInitializable<{T}>();   }
-func isSafeDefaultInitializable      = <{T: Type}> () -> Bool { return @isSafeDefaultInitializable<{T}>();      }
 
-func isTriviallyDeletable            = <{T: Type}> () -> Bool { return @isTriviallyDeletable<{T}>();            }
-func isComptimeDeletable             = <{T: Type}> () -> Bool { return @isComptimeDeletable<{T}>();             }
-func isRuntimeDeletable              = <{T: Type}> () -> Bool { return @isRuntimeDeletable<{T}>();              }
+func isDefaultInitializable          = <{T: Type}> () -> Bool { return @_isDefaultInitializable<{T}>();          }
+func isTriviallyDefaultInitializable = <{T: Type}> () -> Bool { return @_isTriviallyDefaultInitializable<{T}>(); }
+func isComptimeDefaultInitializable  = <{T: Type}> () -> Bool { return @_isComptimeDefaultInitializable<{T}>();  }
+func isRuntimeDefaultInitializable   = <{T: Type}> () -> Bool { return @_isRuntimeDefaultInitializable<{T}>();   }
+func isNoErrorDefaultInitializable   = <{T: Type}> () -> Bool { return @_isNoErrorDefaultInitializable<{T}>();   }
+func isSafeDefaultInitializable      = <{T: Type}> () -> Bool { return @_isSafeDefaultInitializable<{T}>();      }
 
-func isCopyable                      = <{T: Type}> () -> Bool { return @isCopyable<{T}>();                      }
-func isTriviallyCopyable             = <{T: Type}> () -> Bool { return @isTriviallyCopyable<{T}>();             }
-func isComptimeCopyable              = <{T: Type}> () -> Bool { return @isComptimeCopyable<{T}>();              }
-func isRuntimeCopyable               = <{T: Type}> () -> Bool { return @isRuntimeCopyable<{T}>();               }
-func isNoErrorCopyable               = <{T: Type}> () -> Bool { return @isNoErrorCopyable<{T}>();               }
-func isSafeCopyable                  = <{T: Type}> () -> Bool { return @isSafeCopyable<{T}>();                  }
+func isTriviallyDeletable            = <{T: Type}> () -> Bool { return @_isTriviallyDeletable<{T}>();            }
+func isComptimeDeletable             = <{T: Type}> () -> Bool { return @_isComptimeDeletable<{T}>();             }
+func isRuntimeDeletable              = <{T: Type}> () -> Bool { return @_isRuntimeDeletable<{T}>();              }
 
-func isMovable                       = <{T: Type}> () -> Bool { return @isMovable<{T}>();                       }
-func isTriviallyMovable              = <{T: Type}> () -> Bool { return @isTriviallyMovable<{T}>();              }
-func isComptimeMovable               = <{T: Type}> () -> Bool { return @isComptimeMovable<{T}>();               }
-func isRuntimeMovable                = <{T: Type}> () -> Bool { return @isRuntimeMovable<{T}>();                }
-func isNoErrorMovable                = <{T: Type}> () -> Bool { return @isNoErrorMovable<{T}>();                }
-func isSafeMovable                   = <{T: Type}> () -> Bool { return @isSafeMovable<{T}>();                   }
-func isComparable                    = <{T: Type}> () -> Bool { return @isComparable<{T}>();                    }
+func isCopyable                      = <{T: Type}> () -> Bool { return @_isCopyable<{T}>();                      }
+func isTriviallyCopyable             = <{T: Type}> () -> Bool { return @_isTriviallyCopyable<{T}>();             }
+func isComptimeCopyable              = <{T: Type}> () -> Bool { return @_isComptimeCopyable<{T}>();              }
+func isRuntimeCopyable               = <{T: Type}> () -> Bool { return @_isRuntimeCopyable<{T}>();               }
+func isNoErrorCopyable               = <{T: Type}> () -> Bool { return @_isNoErrorCopyable<{T}>();               }
+func isSafeCopyable                  = <{T: Type}> () -> Bool { return @_isSafeCopyable<{T}>();                  }
 
-func isTriviallyComparable           = <{T: Type}> () -> Bool { return @isTriviallyComparable<{T}>();           }
-func isComptimeComparable            = <{T: Type}> () -> Bool { return @isComptimeComparable<{T}>();            }
-func isRuntimeComparable             = <{T: Type}> () -> Bool { return @isRuntimeComparable<{T}>();             }
-func isNoErrorComparable             = <{T: Type}> () -> Bool { return @isNoErrorComparable<{T}>();             }
-func isSafeComparable                = <{T: Type}> () -> Bool { return @isSafeComparable<{T}>();                }
+func isMovable                       = <{T: Type}> () -> Bool { return @_isMovable<{T}>();                       }
+func isTriviallyMovable              = <{T: Type}> () -> Bool { return @_isTriviallyMovable<{T}>();              }
+func isComptimeMovable               = <{T: Type}> () -> Bool { return @_isComptimeMovable<{T}>();               }
+func isRuntimeMovable                = <{T: Type}> () -> Bool { return @_isRuntimeMovable<{T}>();                }
+func isNoErrorMovable                = <{T: Type}> () -> Bool { return @_isNoErrorMovable<{T}>();                }
+func isSafeMovable                   = <{T: Type}> () -> Bool { return @_isSafeMovable<{T}>();                   }
+func isComparable                    = <{T: Type}> () -> Bool { return @_isComparable<{T}>();                    }
 
-func isIntegral                      = <{T: Type}> () -> Bool { return @isIntegral<{T}>();                      }
-func isUnsignedIntegral              = <{T: Type}> () -> Bool { return @isUnsignedIntegral<{T}>();              }
-func isSignedIntegral                = <{T: Type}> () -> Bool { return @isSignedIntegral<{T}>();                }
-func isFloatingPoint                 = <{T: Type}> () -> Bool { return @isFloatingPoint<{T}>();                 }
-func isPointer                       = <{T: Type}> () -> Bool { return @isPointer<{T}>();                       }
+func isTriviallyComparable           = <{T: Type}> () -> Bool { return @_isTriviallyComparable<{T}>();           }
+func isComptimeComparable            = <{T: Type}> () -> Bool { return @_isComptimeComparable<{T}>();            }
+func isRuntimeComparable             = <{T: Type}> () -> Bool { return @_isRuntimeComparable<{T}>();             }
+func isNoErrorComparable             = <{T: Type}> () -> Bool { return @_isNoErrorComparable<{T}>();             }
+func isSafeComparable                = <{T: Type}> () -> Bool { return @_isSafeComparable<{T}>();                }
+
+func isIntegral                      = <{T: Type}> () -> Bool { return @_isIntegral<{T}>();                      }
+func isUnsignedIntegral              = <{T: Type}> () -> Bool { return @_isUnsignedIntegral<{T}>();              }
+func isSignedIntegral                = <{T: Type}> () -> Bool { return @_isSignedIntegral<{T}>();                }
+func isFloatingPoint                 = <{T: Type}> () -> Bool { return @_isFloatingPoint<{T}>();                 }
+func isPointer                       = <{T: Type}> () -> Bool { return @_isPointer<{T}>();                       }

@@ -13,7 +13,7 @@
 //////////////////////////////////////////////////////////////////////
 // atomic
 
-type AtomicOrdering = alias @pthr.AtomicOrdering;
+type AtomicOrdering = alias @pthr._AtomicOrdering;
 type Atomic         = alias @import("atomic/Atomic.pthr").Atomic;
 type AtomicRef      = alias @import("atomic/AtomicRef.pthr").AtomicRef;
 
@@ -155,18 +155,18 @@ type OptMode           = alias @pthr.OptMode;
 type CompilerMode      = alias @pthr.CompilerMode;
 
 
-type IIterable         = alias @pthr.IIterable;
-type IIterableRT       = alias @pthr.IIterableRT;
-type IIterableCT       = alias @pthr.IIterableCT;
-type IIterableRef      = alias @pthr.IIterableRef;
-type IIterableRefRT    = alias @pthr.IIterableRefRT;
-type IIterableRefCT    = alias @pthr.IIterableRefCT;
-type IIterableMutRef   = alias @pthr.IIterableMutRef;
-type IIterableMutRefRT = alias @pthr.IIterableMutRefRT;
-type IIterableMutRefCT = alias @pthr.IIterableMutRefCT;
-type IIterator         = alias @pthr.IIterator;
-type IIteratorRT       = alias @pthr.IIteratorRT;
-type IIteratorCT       = alias @pthr.IIteratorCT;
-type IMutIterator      = alias @pthr.IMutIterator;
-type IMutIteratorRT    = alias @pthr.IMutIteratorRT;
-type IMutIteratorCT    = alias @pthr.IMutIteratorCT;
+type IIterable         = alias @pthr._IIterable;
+type IIterableRT       = alias @pthr._IIterableRT;
+type IIterableCT       = alias @pthr._IIterableCT;
+type IIterableRef      = alias @pthr._IIterableRef;
+type IIterableRefRT    = alias @pthr._IIterableRefRT;
+type IIterableRefCT    = alias @pthr._IIterableRefCT;
+type IIterableMutRef   = alias @pthr._IIterableMutRef;
+type IIterableMutRefRT = alias @pthr._IIterableMutRefRT;
+type IIterableMutRefCT = alias @pthr._IIterableMutRefCT;
+type IIterator         = alias @pthr._IIterator;
+type IIteratorRT       = alias @pthr._IIteratorRT;
+type IIteratorCT       = alias @pthr._IIteratorCT;
+type IMutIterator      = alias @pthr._IMutIterator;
+type IMutIteratorRT    = alias @pthr._IMutIteratorRT;
+type IMutIteratorCT    = alias @pthr._IMutIteratorCT;

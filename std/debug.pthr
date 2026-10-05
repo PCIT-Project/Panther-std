@@ -50,7 +50,7 @@ func assert = (cond: Bool) -> Void {
 when(std.platform.SUPPORTS_CMD){
 	func print = (str: [Char:*]) #rtDiff -> Void {
 		when(@isComptime()){
-			@ctPrint(str);
+			@_ctPrint(str);
 
 		}else{
 			when switch(@config.platform){
@@ -109,7 +109,7 @@ when(std.platform.SUPPORTS_CMD){
 
 	func println = (str: [Char:*]) #rtDiff -> Void {
 		when(@isComptime()){
-			@ctPrintln(str);
+			@_ctPrintln(str);
 
 		}else{
 			when switch(@config.platform){

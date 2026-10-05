@@ -30,7 +30,7 @@ type PageAllocator = struct {
 
 	func alloc = (this mut, size: USize, alignment: UI32) #rtDiff -> [Byte:*mut] {
 		when(@isComptime()){
-			const ptr: RawPtr = @ctAlloc(std.math.ceilToMultiple(size, std.heap.pageSize()), alignment);
+			const ptr: RawPtr = @_ctAlloc(std.math.ceilToMultiple(size, std.heap.pageSize()), alignment);
 
 			unsafe{
 				return new [Byte:*mut](std.bitCast<{Byte*mut}>(ptr), copy size);
@@ -53,7 +53,7 @@ type PageAllocator = struct {
 
 	func dealloc = (this mut, buffer: [Byte:*]) #rtDiff -> Void {
 		when(@isComptime()){
-			@ctDealloc(buffer.data() as RawPtr);
+			@_ctDealloc(buffer.data() as RawPtr);
 		}else{
 			this.rt_dealloc(buffer);
 		}

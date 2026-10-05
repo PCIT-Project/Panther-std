@@ -26,12 +26,12 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 			lpCmdLine     : std.platform.windows.native.LPCSTR,
 			nShowCmd      : CInt
 		) #rt #export #callConv(std.CallingConvention.C) -> CInt {
-			return @entry() as CInt;
+			return @_entry() as CInt;
 		}
 		
 	}else{
 		func main = (argc: CInt, argv: Char**) #priv #rt #export #callConv(std.CallingConvention.C) -> CInt {
-			return @entry() as CInt;
+			return @_entry() as CInt;
 		}
 	}
 
@@ -43,7 +43,7 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 
 		case(std.Platform.LINUX){
 			func main = (argc: CInt, argv: Char**) #priv #rt #export #callConv(std.CallingConvention.C) -> CInt {
-				return @entry() as CInt;
+				return @_entry() as CInt;
 			}
 
 			func exit = (exit_code: CInt) #priv #rt #export #noReturn #callConv(std.CallingConvention.C) -> Void {
@@ -70,14 +70,14 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 		case(std.Platform.WINDOWS){
 			when(@config.windowsSubsystem == null){
 				func mainCRTStartup = () #priv #rt #export #callConv(std.CallingConvention.C) -> CInt {
-					return @entry() as CInt;
+					return @_entry() as CInt;
 				}
 
 			}else{
 				when switch(@config.windowsSubsystem.?){
 					case(std.WindowsSubsystem.CONSOLE){
 						func mainCRTStartup = () #priv #rt #export #callConv(std.CallingConvention.C) -> CInt {
-							return @entry() as CInt;
+							return @_entry() as CInt;
 						}
 					}
 
