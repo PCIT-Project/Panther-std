@@ -57,6 +57,18 @@ def debug = @import("debug.pthr");
 
 
 //////////////////////////////////////////////////////////////////////
+// fs
+
+
+when(platform.SUPPORTS_NON_CMD_FILE_IO){
+	def fs = @import("./fs/fs.pthr");
+}else{
+	def fs = delete("This platform doesn't support non-cmd file IO");
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
 // heap
 
 def heap = @import("./heap/heap.pthr");
@@ -131,8 +143,7 @@ type PmWriter            = alias @import("writer/Writer.pthr").PmWriter;
 
 type ComptimeStdoutWriter = alias @import("writer/ComptimeStdoutWriter.pthr").ComptimeStdoutWriter;
 when(platform.SUPPORTS_CMD){
-	type FileWriter           = alias @import("writer/FileWriter.pthr").FileWriter;
-	type DebugStdoutWriter    = alias @import("writer/DebugStdoutWriter.pthr").DebugStdoutWriter;
+	type DebugStdoutWriter = alias @import("writer/DebugStdoutWriter.pthr").DebugStdoutWriter;
 }
 
 type BufferedWriter       = alias @import("writer/BufferedWriter.pthr").BufferedWriter;

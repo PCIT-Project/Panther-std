@@ -1,0 +1,605 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std.fs");
+
+def std #priv = @import("std");
+
+
+
+
+type File = struct {
+	when switch(@config.platform){
+		case(std.Platform.FREESTANDING){
+			@comptimeError("`std.fs.File` is not supported in frestanding platform target");
+		}
+
+		case(std.Platform.LINUX){
+			type Handle = alias std.platform.linux.FileDescriptor;
+		}
+
+		case(std.Platform.PANTHER_VM){
+			type Handle = alias std.platform.pantherVM.FileHandle;
+		}
+
+		case(std.Platform.WINDOWS){
+			type Handle = alias std.platform.windows.Handle;
+		}
+	}
+
+
+	func new = (handle: Handle in) -> (output: This) {
+		output.handle = forward handle;
+		return...;
+	}
+
+
+	func delete = (this mut) #rt -> Void {
+		if(this.isOpen()){ this.close(); }
+	}
+
+
+	func createStdout = () #rt -> (output: File) {
+		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				@comptimeError("`std.fs.File` is not supported in freestanding platform target");
+			}
+
+			case(std.Platform.LINUX){
+				output = new File(std.platform.linux.STDOUT);
+			}
+
+			case(std.Platform.PANTHER_VM){
+				output = new File(std.platform.pantherVM.STDOUT);
+			}
+
+			case(std.Platform.WINDOWS){
+				output = new File(std.platform.windows.getStdHandle(std.platform.windows.StdHandle.OUTPUT));
+			}
+		}
+		return...;
+	}
+
+
+
+
+	type OpenError = enum {
+		ACCESS_DENIED,
+		ANTIVIRUS_INTERFERENCE,
+		CANCELLED,
+		DEVICE_BUSY,
+		FILE_BUSY,
+		FILE_NOT_FOUND,
+		FILE_TOO_BIG,
+		INVALID_PATH,
+		NETWORK_NOT_FOUND,
+		NO_DEVICE,
+		NO_MEMORY,
+		NO_SPACE,
+		NOT_A_DIRECTORY,
+		NOT_A_FILE,
+		PERMISSION_DENIED,
+		PIPE_BUSY,
+		PROCESS_FD_LIMIT_REACHED,
+		READ_ONLY_FILE_SYSTEM,
+		SYM_LINK_LOOP,
+		SYSTEM_FD_LIMIT_REACHED,
+		TEMP_FILES_NOT_SUPPORTED,
+
+		UNKNOWN,
+
+
+		type Simple = enum {
+			ACCESS_DENIED,
+			FILE_NOT_FOUND,
+			INVALID_PATH,
+			SYSTEM_ERROR,
+		}
+
+		func simplify = (this) -> Simple {
+			switch(this){
+				case(OpenError.ACCESS_DENIED)            { return Simple.ACCESS_DENIED;  }
+				case(OpenError.ANTIVIRUS_INTERFERENCE)   { return Simple.ACCESS_DENIED;  }
+				case(OpenError.CANCELLED)                { return Simple.SYSTEM_ERROR;   }
+				case(OpenError.DEVICE_BUSY)              { return Simple.SYSTEM_ERROR;   }
+				case(OpenError.FILE_BUSY)                { return Simple.ACCESS_DENIED;  }
+				case(OpenError.FILE_NOT_FOUND)           { return Simple.FILE_NOT_FOUND; }
+				case(OpenError.FILE_TOO_BIG)             { return Simple.ACCESS_DENIED;  }
+				case(OpenError.INVALID_PATH)             { return Simple.INVALID_PATH;   }
+				case(OpenError.NETWORK_NOT_FOUND)        { return Simple.INVALID_PATH;   }
+				case(OpenError.NOT_A_FILE)               { return Simple.INVALID_PATH;   }
+				case(OpenError.NO_DEVICE)                { return Simple.SYSTEM_ERROR;   }
+				case(OpenError.NO_MEMORY)                { return Simple.SYSTEM_ERROR;   }
+				case(OpenError.NO_SPACE)                 { return Simple.SYSTEM_ERROR;   }
+				case(OpenError.NOT_A_DIRECTORY)          { return Simple.INVALID_PATH;   }
+				case(OpenError.PERMISSION_DENIED)        { return Simple.ACCESS_DENIED;  }
+				case(OpenError.PIPE_BUSY)                { return Simple.ACCESS_DENIED;  }
+				case(OpenError.PROCESS_FD_LIMIT_REACHED) { return Simple.SYSTEM_ERROR;   }
+				case(OpenError.READ_ONLY_FILE_SYSTEM)    { return Simple.SYSTEM_ERROR;   }
+				case(OpenError.SYM_LINK_LOOP)            { return Simple.INVALID_PATH;   }
+				case(OpenError.SYSTEM_FD_LIMIT_REACHED)  { return Simple.SYSTEM_ERROR;   }
+				case(OpenError.TEMP_FILES_NOT_SUPPORTED) { return Simple.SYSTEM_ERROR;   }
+				case(OpenError.UNKNOWN)                  { return Simple.SYSTEM_ERROR;   }
+			}
+		}
+	}
+
+	func open = (path: [Char:*;'\0'], may_create: Bool) #rt -> This <OpenError> {
+		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				@comptimeError("`std.fs.File` is not supported in frestanding platform target");
+			}
+
+
+
+			case(std.Platform.LINUX){
+				def linux = std.platform.linux;
+
+				const flags: linux.O = uninit;
+				const openat_mode: linux.Mode = uninit;
+
+
+				if(may_create){
+					flags = linux.O.RDWR | linux.O.CREAT;
+					openat_mode = (linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode;
+				}else{
+					flags = linux.O.RDWR;
+					openat_mode = (linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode;
+				}
+
+
+				var file_descriptor: Handle = try linux.openat(linux.AT_FDCWD, path, flags, openat_mode)
+					else<errno: linux.Errno>
+				{
+					switch(errno){
+						case(linux.Errno.ACCES)       { error OpenError.ACCESS_DENIED;            }
+						case(linux.Errno.BADF)        {
+							unreachable("`std.fs.File` - handle is invalid to std.platform.linux.openat");
+						}
+						case(linux.Errno.BUSY)        { error OpenError.DEVICE_BUSY;              }
+						case(linux.Errno.FAULT)       { error OpenError.INVALID_PATH;             }
+						case(linux.Errno.FBIG)        { error OpenError.FILE_TOO_BIG;             }
+						case(linux.Errno.INVAL)       { error OpenError.INVALID_PATH;             }
+						case(linux.Errno.ISDIR)       { error OpenError.NOT_A_FILE;               }
+						case(linux.Errno.LOOP)        { error OpenError.SYM_LINK_LOOP;            }
+						case(linux.Errno.MFILE)       { error OpenError.PROCESS_FD_LIMIT_REACHED; }
+						case(linux.Errno.NAMETOOLONG) { error OpenError.INVALID_PATH;             }
+						case(linux.Errno.NFILE)       { error OpenError.SYSTEM_FD_LIMIT_REACHED;  }
+						case(linux.Errno.NODEV)       { error OpenError.NO_DEVICE;                }
+						case(linux.Errno.NOENT)       { error OpenError.FILE_NOT_FOUND;           }
+						case(linux.Errno.NOMEM)       { error OpenError.NO_MEMORY;                }
+						case(linux.Errno.NOSPC)       { error OpenError.NO_SPACE;                 }
+						case(linux.Errno.NOTDIR)      { error OpenError.NOT_A_DIRECTORY;          }
+						case(linux.Errno.NXIO)        { error OpenError.NO_DEVICE;                }
+						case(linux.Errno.OPNOTSUPP)   { error OpenError.TEMP_FILES_NOT_SUPPORTED; }
+						case(linux.Errno.OVERFLOW)    { error OpenError.FILE_TOO_BIG;             }
+						case(linux.Errno.PERM)        { error OpenError.PERMISSION_DENIED;        }
+						case(linux.Errno.ROFS)        { error OpenError.READ_ONLY_FILE_SYSTEM;    }
+						case(linux.Errno.SRCH)        { error OpenError.FILE_NOT_FOUND;           }
+						case(linux.Errno.TXTBSY)      { error OpenError.FILE_BUSY;                }
+						else {
+							when(@config.mode == std.Mode.DEBUG){
+								unreachable(
+									"std.fs.File - unknown error when calling std.platform.linux.openat"
+								);
+							}else{
+								error CreateError.UNKNOWN;
+							}
+						}
+					}
+				};
+
+				return new File(move file_descriptor);
+			}
+
+			case(std.Platform.PANTHER_VM){
+				unreachable("std.fs.File - open is not currently supported");
+			}
+
+			case(std.Platform.WINDOWS){
+				std.debug.assert(path.size() < 260, "Path is too large");
+				var wpath_buffer = new [CWChar:266]();
+				const wpath: [CWChar:*mut;'\0' as CWChar] = make_wpath(path, wpath_buffer);
+
+				def windows = std.platform.windows;
+
+				const disposition: windows.FileCreateDisposition = {->expr:windows.FileCreateDisposition
+					if(may_create){
+						return->expr windows.FileCreateDisposition.OVERWRITE_IF;
+					}else{
+						return->expr windows.FileCreateDisposition.OVERWRITE;
+					}
+				};
+
+				var file_handle: std.platform.windows.Handle = try std.platform.windows.ntCreateFile(
+					wpath,
+					windows.FileAccess.GENERIC_WRITE,
+					windows.FileAttribute.NORMAL,
+					windows.FileShareAccess.READ | windows.FileShareAccess.WRITE | windows.FileShareAccess.DELETE,
+					disposition,
+					windows.FileCreateOptions.RANDOM_ACCESS
+						| windows.FileCreateOptions.SYNCHRONOUS_IO_NONALERT
+						| windows.FileCreateOptions.NON_DIRECTORY_FILE
+				) else<nt_status: windows.NTStatus> {
+					switch(nt_status){
+						case(windows.NTStatus.ACCESS_DENIED)    { error OpenError.ACCESS_DENIED;     }
+						case(windows.NTStatus.BAD_NETWORK_PATH) { error OpenError.NETWORK_NOT_FOUND; }
+						case(windows.NTStatus.BAD_NETWORK_NAME) { error OpenError.NETWORK_NOT_FOUND; }
+
+						case(windows.NTStatus.CANCELLED){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							error OpenError.CANCELLED;
+						}
+
+						case(windows.NTStatus.DELETE_PENDING)      { error OpenError.FILE_BUSY;  }
+						case(windows.NTStatus.DISK_FULL)           { error OpenError.NO_SPACE;   }
+						case(windows.NTStatus.FILE_IS_A_DIRECTORY) { error OpenError.NOT_A_FILE; }
+
+						case(windows.NTStatus.INVALID_HANDLE){
+							unreachable("std.fs.File - invalid handle to std.platform.windows.ntCreateFile");
+						}
+						case(windows.NTStatus.INVALID_PARAMETER){
+							unreachable("std.fs.File - Invalid parameter to std.platform.windows.ntCreateFile");
+						}
+
+						case(windows.NTStatus.NO_MEDIA_IN_DEVICE)     { error OpenError.NO_DEVICE;              }
+						case(windows.NTStatus.NOT_A_DIRECTORY)        { error OpenError.NOT_A_DIRECTORY;        }
+						case(windows.NTStatus.OBJECT_NAME_INVALID)    { error OpenError.INVALID_PATH;           }
+						case(windows.NTStatus.OBJECT_NAME_NOT_FOUND)  { error OpenError.FILE_NOT_FOUND;         }
+						case(windows.NTStatus.OBJECT_PATH_NOT_FOUND)  { error OpenError.FILE_NOT_FOUND;         }
+						case(windows.NTStatus.OBJECT_PATH_SYNTAX_BAD) { error OpenError.INVALID_PATH;           }
+						case(windows.NTStatus.PIPE_BUSY)              { error OpenError.PIPE_BUSY;              }
+						case(windows.NTStatus.PIPE_NOT_AVAILABLE)     { error OpenError.NO_DEVICE;              }
+						case(windows.NTStatus.SHARING_VIOLATION)      { error OpenError.FILE_BUSY;              }
+						case(windows.NTStatus.USER_MAPPED_FILE)       { error OpenError.ACCESS_DENIED;          }
+						case(windows.NTStatus.VIRUS_INFECTED)         { error OpenError.ANTIVIRUS_INTERFERENCE; }
+						case(windows.NTStatus.VIRUS_DELETED)          { error OpenError.ANTIVIRUS_INTERFERENCE; }
+						else {
+							when(@config.mode == std.Mode.DEBUG){
+								unreachable(
+									"std.fs.File - unknown error when calling std.platform.windows.ntCreateFile"
+								);
+							}else{
+								error CreateError.UNKNOWN;
+							}
+						}
+					}
+				};
+
+				return new File(move file_handle);
+			}
+		}
+	}
+
+
+
+	type CreateError = enum {
+		ACCESS_DENIED,
+		ANTIVIRUS_INTERFERENCE,
+		CANCELLED,
+		DEVICE_BUSY,
+		FILE_TOO_BIG,
+		INVALID_PATH,
+		NETWORK_NOT_FOUND,
+		NO_DEVICE,
+		NO_MEMORY,
+		NO_SPACE,
+		NOT_A_DIRECTORY,
+		PATH_ALREADY_EXISTS,
+		PERMISSION_DENIED,
+		PIPE_BUSY,
+		PROCESS_FD_LIMIT_REACHED,
+		READ_ONLY_FILE_SYSTEM,
+		SYM_LINK_LOOP,
+		SYSTEM_FD_LIMIT_REACHED,
+		TEMP_FILES_NOT_SUPPORTED,
+
+		UNKNOWN,
+
+
+		type Simple = enum {
+			ACCESS_DENIED,
+			INVALID_PATH,
+			PATH_ALREADY_EXISTS,
+			SYSTEM_ERROR,
+		}
+
+
+		func simplify = (this) -> Simple {
+			switch(this){
+				case(CreateError.ACCESS_DENIED)            { return Simple.ACCESS_DENIED;       }
+				case(CreateError.ANTIVIRUS_INTERFERENCE)   { return Simple.ACCESS_DENIED;       }
+				case(CreateError.DEVICE_BUSY)              { return Simple.SYSTEM_ERROR;        }
+				case(CreateError.CANCELLED)                { return Simple.SYSTEM_ERROR;        }
+				case(CreateError.FILE_TOO_BIG)             { return Simple.ACCESS_DENIED;       }
+				case(CreateError.INVALID_PATH)             { return Simple.INVALID_PATH;        }
+				case(CreateError.NETWORK_NOT_FOUND)        { return Simple.INVALID_PATH;        }
+				case(CreateError.NO_DEVICE)                { return Simple.SYSTEM_ERROR;        }
+				case(CreateError.NO_MEMORY)                { return Simple.SYSTEM_ERROR;        }
+				case(CreateError.NO_SPACE)                 { return Simple.SYSTEM_ERROR;        }
+				case(CreateError.NOT_A_DIRECTORY)          { return Simple.INVALID_PATH;        }
+				case(CreateError.PATH_ALREADY_EXISTS)      { return Simple.PATH_ALREADY_EXISTS; }
+				case(CreateError.PERMISSION_DENIED)        { return Simple.ACCESS_DENIED;       }
+				case(CreateError.PIPE_BUSY)                { return Simple.ACCESS_DENIED;       }
+				case(CreateError.PROCESS_FD_LIMIT_REACHED) { return Simple.SYSTEM_ERROR;        }
+				case(CreateError.READ_ONLY_FILE_SYSTEM)    { return Simple.SYSTEM_ERROR;        }
+				case(CreateError.SYM_LINK_LOOP)            { return Simple.INVALID_PATH;        }
+				case(CreateError.SYSTEM_FD_LIMIT_REACHED)  { return Simple.SYSTEM_ERROR;        }
+				case(CreateError.TEMP_FILES_NOT_SUPPORTED) { return Simple.SYSTEM_ERROR;        }
+				case(CreateError.UNKNOWN)                  { return Simple.SYSTEM_ERROR;        }
+			}
+		}
+	}
+
+	func create = (path: [Char:*;'\0']) #rt -> This <CreateError> {
+		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				@comptimeError("`std.fs.File` is not supported in frestanding platform target");
+			}
+
+
+			case(std.Platform.LINUX){
+				def linux = std.platform.linux;
+
+				var file_descriptor: Handle = try linux.openat(
+					linux.AT_FDCWD,
+					path,
+					linux.O.RDWR | linux.O.CREAT | linux.O.EXCL,
+					(linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode
+				) else<errno: linux.Errno> {
+					switch(errno){
+						case(linux.Errno.ACCES)       { error CreateError.ACCESS_DENIED;            }
+						case(linux.Errno.BADF)        {
+							unreachable("std.fs.File - invalid handle to std.platform.linux.openat");
+						}
+						case(linux.Errno.BUSY)        { error CreateError.DEVICE_BUSY;              }
+						case(linux.Errno.EXIST)       { error CreateError.PATH_ALREADY_EXISTS;      }
+						case(linux.Errno.FAULT)       { error CreateError.INVALID_PATH;             }
+						case(linux.Errno.FBIG)        { error CreateError.FILE_TOO_BIG;             }
+						case(linux.Errno.INVAL)       { error CreateError.INVALID_PATH;             }
+						case(linux.Errno.LOOP)        { error CreateError.SYM_LINK_LOOP;            }
+						case(linux.Errno.MFILE)       { error CreateError.PROCESS_FD_LIMIT_REACHED; }
+						case(linux.Errno.NAMETOOLONG) { error CreateError.INVALID_PATH;             }
+						case(linux.Errno.NFILE)       { error CreateError.SYSTEM_FD_LIMIT_REACHED;  }
+						case(linux.Errno.NODEV)       { error CreateError.NO_DEVICE;                }
+						case(linux.Errno.NOENT)       { error CreateError.INVALID_PATH;             }
+						case(linux.Errno.NOMEM)       { error CreateError.NO_MEMORY;                }
+						case(linux.Errno.NOSPC)       { error CreateError.NO_SPACE;                 }
+						case(linux.Errno.NOTDIR)      { error CreateError.NOT_A_DIRECTORY;          }
+						case(linux.Errno.NXIO)        { error CreateError.NO_DEVICE;                }
+						case(linux.Errno.OPNOTSUPP)   { error CreateError.TEMP_FILES_NOT_SUPPORTED; }
+						case(linux.Errno.OVERFLOW)    { error CreateError.FILE_TOO_BIG;             }
+						case(linux.Errno.PERM)        { error CreateError.PERMISSION_DENIED;        }
+						case(linux.Errno.ROFS)        { error CreateError.READ_ONLY_FILE_SYSTEM;    }
+						case(linux.Errno.SRCH)        { error CreateError.INVALID_PATH;             }
+						else {
+							when(@config.mode == std.Mode.DEBUG){
+								unreachable(
+									"std.fs.File - unknown error when calling std.platform.linux.openat"
+								);
+							}else{
+								error CreateError.UNKNOWN;
+							}
+						}
+
+					}
+				};
+
+				return new File(move file_descriptor);
+			}
+
+			case(std.Platform.PANTHER_VM){
+				unreachable("std.fs.File - create is not currently supported");
+			}
+
+			case(std.Platform.WINDOWS){
+				std.debug.assert(path.size() < 260, "Path is too large");
+				var wpath_buffer = new [CWChar:266]();
+				const wpath: [CWChar:*mut;'\0' as CWChar] = make_wpath(path, wpath_buffer);
+
+				def windows = std.platform.windows;
+
+				var file_handle: std.platform.windows.Handle = try std.platform.windows.ntCreateFile(
+					wpath,
+					windows.FileAccess.GENERIC_WRITE,
+					windows.FileAttribute.NORMAL,
+					windows.FileShareAccess.READ | windows.FileShareAccess.WRITE | windows.FileShareAccess.DELETE,
+					windows.FileCreateDisposition.CREATE,
+					windows.FileCreateOptions.RANDOM_ACCESS
+						| windows.FileCreateOptions.SYNCHRONOUS_IO_NONALERT
+						| windows.FileCreateOptions.NON_DIRECTORY_FILE
+				) else<nt_status: windows.NTStatus> {
+					switch(nt_status){
+						case(windows.NTStatus.ACCESS_DENIED)    { error CreateError.ACCESS_DENIED;     }
+						case(windows.NTStatus.BAD_NETWORK_PATH) { error CreateError.NETWORK_NOT_FOUND; }
+						case(windows.NTStatus.BAD_NETWORK_NAME) { error CreateError.NETWORK_NOT_FOUND; }
+
+						case(windows.NTStatus.CANCELLED){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							error CreateError.CANCELLED;
+						}
+
+						case(windows.NTStatus.DISK_FULL)           { error CreateError.NO_SPACE;            }
+						case(windows.NTStatus.FILE_IS_A_DIRECTORY) { error CreateError.PATH_ALREADY_EXISTS; }
+
+						case(windows.NTStatus.INVALID_HANDLE){
+							unreachable("std.fs.File - invalid handle to std.platform.windows.ntCreateFile");
+						}
+						case(windows.NTStatus.INVALID_PARAMETER){
+							unreachable("std.fs.File - invalid parameter to std.platform.windows.ntCreateFile");
+						}
+
+						case(windows.NTStatus.NO_MEDIA_IN_DEVICE)     { error CreateError.NO_DEVICE;              }
+						case(windows.NTStatus.NOT_A_DIRECTORY)        { error CreateError.NOT_A_DIRECTORY;        }
+						case(windows.NTStatus.OBJECT_NAME_COLLISION)  { error CreateError.PATH_ALREADY_EXISTS;    }
+						case(windows.NTStatus.OBJECT_NAME_INVALID)    { error CreateError.INVALID_PATH;           }
+						case(windows.NTStatus.OBJECT_NAME_NOT_FOUND)  { error CreateError.INVALID_PATH;           }
+						case(windows.NTStatus.OBJECT_PATH_SYNTAX_BAD) { error CreateError.INVALID_PATH;           }
+						case(windows.NTStatus.PIPE_BUSY)              { error CreateError.PIPE_BUSY;              }
+						case(windows.NTStatus.PIPE_NOT_AVAILABLE)     { error CreateError.NO_DEVICE;              }
+						case(windows.NTStatus.USER_MAPPED_FILE)       { error CreateError.ACCESS_DENIED;          }
+						case(windows.NTStatus.VIRUS_INFECTED)         { error CreateError.ANTIVIRUS_INTERFERENCE; }
+						case(windows.NTStatus.VIRUS_DELETED)          { error CreateError.ANTIVIRUS_INTERFERENCE; }
+						else{
+							when(@config.mode == std.Mode.DEBUG){
+								unreachable(
+									"std.fs.File - unknown error when calling std.platform.windows.ntCreateFile"
+								);
+							}else{
+								error CreateError.UNKNOWN;
+							}
+						}
+					}
+				};
+
+				return new File(move file_handle);
+			}
+		}
+	}
+
+
+
+
+	func write = (this mut, str: [Char:*]) #rt -> Void {
+		std.debug.assert(this.isOpen(), "std.fs.File cannot write as it is closed");
+
+		// TODO(FUTURE): error handling
+		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				@comptimeError("`std.fs.File` is not supported in freestanding platform target");
+			}
+
+			case(std.Platform.LINUX){
+				_ = std.platform.linux.write(this.handle.?, str);
+			}
+
+			case(std.Platform.PANTHER_VM){
+				try std.platform.pantherVM.fileWrite(this.handle.?, str)
+					else<err: std.platform.pantherVM.FileWriteError> {};
+			}
+
+			case(std.Platform.WINDOWS){
+				try std.platform.windows.ntWriteFile(this.handle.?, str)
+					else<nt_status: std.platform.windows.NTStatus>
+				{
+					switch(nt_status){
+						case(std.platform.windows.NTStatus.PENDING){
+							unreachable("std.fs.File failed to write - NTStatus.PENDING");
+
+						}case(std.platform.windows.NTStatus.CANCELLED){
+							unreachable("std.fs.File failed to write - NTStatus.CANCELLED");
+							
+						}else{
+							unreachable("std.fs.File failed to write - Unexpected Error");
+						}
+					}
+				};
+			}
+		}
+	}
+
+
+
+
+	func close = (this mut) #rt -> Void {
+		std.debug.assert(this.isOpen(), "std.fs.File was already closed");
+
+		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				@comptimeError("`std.fs.File` is not supported in frestanding platform target");
+			}
+
+			case(std.Platform.LINUX){
+				try std.platform.linux.close(this.handle.?) else <errno: std.platform.linux.Errno> {
+					switch(errno){
+						case(std.platform.linux.Errno.BADF){
+							unreachable("std.fs.File failed to close - handle is invalid to std.platform.linux.close");
+						}else{
+							unreachable("std.fs.File failed to close - Unexpected Error");
+						}
+						
+					}
+				};
+			}
+
+			case(std.Platform.PANTHER_VM){
+				std.debug.unimplemented();
+			}
+
+			case(std.Platform.WINDOWS){
+				try std.platform.windows.ntClose(this.handle.?) else<nt_status: std.platform.windows.NTStatus> {
+					switch(nt_status){
+						case(std.platform.windows.NTStatus.INVALID_HANDLE){
+							unreachable("std.fs.File failed to close - NTStatus.INVALID_HANDLE");
+
+						}case(std.platform.windows.NTStatus.HANDLE_NOT_CLOSABLE){
+							unreachable("std.fs.File failed to close - NTStatus.HANDLE_NOT_CLOSABLE");
+
+						}else{
+							unreachable("std.fs.File failed to close - Unexpected Error");
+						}
+					}
+				};
+
+				this.handle = null;
+			}
+		}
+	}
+
+
+	func isOpen = (this) -> Bool { return this.handle != null; }
+
+	func internalHandle = (this) -> Handle {
+		std.debug.assert(this.isOpen(), "std.fs.File isn't open");
+		return copy this.handle.?;
+	}
+
+
+
+
+	impl std.IWriter {
+		write = (this mut, str: [Char:*]) #rtDiff -> Void {
+			when(@isComptime()){
+				unreachable("`std.fs.File` cannot write at comptime");
+			}else{
+				this.write(str);
+			}
+		},
+
+		flush = (this mut) -> Void {},
+	}
+
+
+	///////////////////////////////////
+	// priv
+
+	var handle: Handle? #priv;
+}
+
+
+
+when(@config.platform == std.Platform.WINDOWS){
+	
+	func make_wpath = (path: [Char:*], target_buffer: [CWChar:*mut]) #priv -> [CWChar:*mut;'\0' as CWChar] {
+		target_buffer[0].* = '\\' as CWChar;
+		target_buffer[1].* = '?' as CWChar;
+		target_buffer[2].* = '?' as CWChar;
+		target_buffer[3].* = '\\' as CWChar;
+
+
+		for(path) [i: USize; char: Char] {
+			target_buffer[i + 4].* = char as CWChar;
+		}
+
+		target_buffer[path.size() + 4].* = '\0' as CWChar;
+
+		return new [CWChar:*mut;'\0' as CWChar](copy target_buffer.data().?, path.size() + 4);
+	}
+
+}

@@ -266,11 +266,11 @@ type PageAllocator = struct {
 				{
 					switch(errno){
 						case(std.platform.linux.Errno.INVAL){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.INVAL");
+							unreachable("std.heap.PageAllocator failed to deallocate - Errno.INVAL");
 						}
 
 						else{
-							unreachable("std.heap.PageAllocator failed to allocate - Unexpected error");
+							unreachable("std.heap.PageAllocator failed to deallocate - Unexpected error");
 						}
 					}
 				};

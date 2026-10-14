@@ -20,14 +20,16 @@ def native = @import("./native.pthr");
 type FileDescriptor = alias #distinct CInt;
 type Offset = alias #distinct I64; // off_t
 
+type Mode = alias #distinct CInt;
 
 
 //////////////////////////////////////////////////////////////////////
 // enums / vars
 
-def STDIN  = 0 as FileDescriptor;
-def STDOUT = 1 as FileDescriptor;
-def STDERR = 2 as FileDescriptor;
+def STDIN    = 0 as FileDescriptor;
+def STDOUT   = 1 as FileDescriptor;
+def STDERR   = 2 as FileDescriptor;
+def AT_FDCWD = -100 as FileDescriptor;
 
 type Errno = alias native.Errno;
 
@@ -38,8 +40,9 @@ type ProtectionFlags = enum(CInt) {
 	EXEC  = 0x4,
 }
 
-def MAP_HUGE_SHIFT = 26;
 type MapFlags = enum(CInt) {
+	def MAP_HUGE_SHIFT #priv = 26;
+
 	SHARED            = 0x01,
 	PRIVATE           = 0x02,
 	SHARED_VALIDATE   = 0x03,
@@ -72,9 +75,67 @@ type MapFlags = enum(CInt) {
 }
 
 
+type O = enum(CInt) {
+	NONE = 0,
+
+	RDONLY = 0o00000000, // readonly
+	WRONLY = 0o00000001, // writeonly
+	RDWR   = 0o00000002, // read/write
+
+	CREAT     = 0o00000100,
+	EXCL      = 0o00000200,
+	NOCTTY    = 0o00000400,
+	TRUNC     = 0o00001000,
+	DIRECTORY = 0o00200000, // must be a directory
+	NOFOLLOW  = 0o00400000, // don't follow links
+	CLOEXEC   = 0o02000000, // enable the close-on-exec flag
+	TMPFILE   = 0o020000000 | DIRECTORY,
+
+}
+
+type Permissions = enum(CInt) {
+	IRWXU = 0o00700, // user (file owner) has read, write, and execute permission
+	IRUSR = 0o00400, // user has read permission
+	IWUSR = 0o00200, // user has write permission
+	IXUSR = 0o00100, // user has execute permission
+
+	IRWXG = 0o00070, // group has read, write, and execute permission
+	IRGRP = 0o00040, // group has read permission
+	IWGRP = 0o00020, // group has write permission
+	IXGRP = 0o00010, // group has execute permission
+
+	IRWXO = 0o00007, // others have read, write, and execute permission
+	IROTH = 0o00004, // others have read permission
+	IWOTH = 0o00002, // others have write permission
+	IXOTH = 0o00001, // others have execute permission
+
+	// According to POSIX, the effect when other bits are set in
+	// mode is unspecified.  On Linux, the following bits are also
+	// honored in mode:
+
+	ISUID = 0o0004000, // set-user-ID bit
+	ISGID = 0o0002000, // set-group-ID bit (see inode(7)).
+	ISVTX = 0o0001000, // sticky bit (see inode(7)).
+}
+
+
 
 //////////////////////////////////////////////////////////////////////
 // functions
+
+
+func close = (file_descriptor: FileDescriptor) #rt -> Void <Errno> {
+	const res: UI64 = native.syscall(native.SyscallCode.CLOSE, file_descriptor as UI64);
+
+	const e: Errno = native.calcErrno(res);
+	if(e == Errno.SUCCESS){ return; }
+	error copy e;	
+}
+
+
+func exit = (exit_code: CInt) #rt #noReturn -> Void {
+	_ = native.syscall(native.SyscallCode.EXIT, exit_code as UI64);
+}
 
 
 func mmap = (
@@ -115,10 +176,29 @@ func munmap = (addr: RawPtr, length: USize) #rt -> Void <Errno> {
 }
 
 
+func openat = (dirfd: FileDescriptor, path: [Char:*;'\0'], flags: O, mode: Mode) #rt -> FileDescriptor <Errno> {
+	std.debug.assert((flags as CInt & 0b11) != 0b11, "Flags must have one of RDONLY, WRONLY, or RDWR");
+	std.debug.assert(
+		mode != 0 as Mode || ((flags & O.CREAT) != O.CREAT && (flags & O.TMPFILE) != O.TMPFILE),
+		"If flags has O.CREAT or O.TMPFILE, mode must be set"
+	);
 
-func exit = (exit_code: CInt) #rt #noReturn -> Void {
-	_ = native.syscall(native.SyscallCode.EXIT, exit_code as UI64);
+	unsafe{
+		const res: UI64 = native.syscall(
+			native.SyscallCode.OPENAT,
+			dirfd as UI64,
+			std.bitCast<{UI64}>(path.data()),
+			flags as UI64,
+			mode as UI64
+		);
+
+		const e: Errno = native.calcErrno(res);
+		if(e == Errno.SUCCESS){ return res as FileDescriptor; }
+		error copy e;
+	}
 }
+
+
 
 func write = (fd: FileDescriptor, str: [Char:*]) #rt -> ISize {
 	unsafe{

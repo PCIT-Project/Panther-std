@@ -1,6 +1,16 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.62.0"></a>
+## v0.0.62.0
+- Added module `fs`
+- Added `fs.File`
+	- Replaces `FileWriter`
+- Added `debug.unimplemented`
+- Added opening / closing files to `platform.linux` and `platform.windows`
+
+
+<!---------------------------------->
 <a name="v0.0.61.0"></a>
 ## v0.0.61.0
 - Added `types.id`

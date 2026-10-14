@@ -46,6 +46,94 @@ type HeapFreeFlags = enum(UI32) {
 
 
 
+type FileAccess = enum(UI32) {
+	DELETE       = 0x00010000, // The caller can delete the object.
+	READ_CONTROL = 0x00020000, // The caller can read the access control list (ACL) and ownership information for the file.
+	WRITE_DAC    = 0x00040000, // The caller can change the discretionary access control list (DACL) information for the object.
+	WRITE_OWNER  = 0x00080000, // The caller can change the ownership information for the file.
+	SYNCHRONIZE  = 0x00100000, // The caller can perform a wait operation on the object. For example, the object can be passed to KeWaitForMultipleObjects.
+	
+	STANDARD_RIGHTS_READ     = READ_CONTROL, // Standard specific rights that correspond to GENERIC_READ.
+	STANDARD_RIGHTS_WRITE    = READ_CONTROL, // Standard specific rights that correspond to GENERIC_WRITE.
+	STANDARD_RIGHTS_EXECUTE  = READ_CONTROL, // Standard specific rights that correspond to GENERIC_EXECUTE.
+	STANDARD_RIGHTS_REQUIRED = 0x000F0000,   // Standard specific rights that correspond to GENERIC_ALL. This includes DELETE, but not SYNCHRONIZE.
+	STANDARD_RIGHTS_ALL      = 0x001F0000,   // All standard access rights.
+
+	FILE_READ_DATA        = 0x0001, // Read data from the file.
+	FILE_WRITE_DATA       = 0x0002, // Write data to the file.
+	FILE_APPEND_DATA      = 0x0004, // Append data to the file.
+	FILE_READ_EA          = 0x0008, // Read the extended attributes (EAs) of the file. This flag is irrelevant for device and intermediate drivers.
+	FILE_WRITE_EA         = 0x0010, // Change the extended attributes (EAs) of the file. This flag is irrelevant for device and intermediate drivers.
+	FILE_EXECUTE          = 0x0020, // Use system paging I/O to read data from the file into memory. This flag is irrelevant for device and intermediate drivers.
+	FILE_READ_ATTRIBUTES  = 0x0080, // Read the attributes of the file. For more information, see the description of the FileAttributes parameter.
+	FILE_WRITE_ATTRIBUTES = 0x0100, // Write the attributes of the file. For more information, see the description of the FileAttributes parameter.
+
+	GENERIC_ALL     = STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0x1FF,
+	GENERIC_EXECUTE = STANDARD_RIGHTS_EXECUTE | FILE_READ_ATTRIBUTES | FILE_EXECUTE | SYNCHRONIZE,
+	GENERIC_WRITE   = STANDARD_RIGHTS_WRITE | FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA | FILE_APPEND_DATA | SYNCHRONIZE,
+	GENERIC_READ    = STANDARD_RIGHTS_READ | FILE_READ_DATA | FILE_READ_ATTRIBUTES | FILE_READ_EA | SYNCHRONIZE,
+
+	// Directory only
+	FILE_LIST_DIRECTORY = 0x0001, // List the files in the directory.
+	FILE_TRAVERSE       = 0x0020, // Traverse the directory, in other words, include the directory in the path of a file.
+}
+
+type FileAttribute = enum(UI32) {
+	READONLY  = 0x0001,
+	HIDDEN    = 0x0002,
+	SYSTEM    = 0x0004,
+	ARCHIVE   = 0x0020,
+	NORMAL    = 0x0080,
+	TEMPORARY = 0x0100,
+	OFFLINE   = 0x1000,
+	ENCRYPTED = 0x4000,
+}
+
+type FileShareAccess = enum(UI32) {
+	READ   = 0x1,
+	WRITE  = 0x2,
+	DELETE = 0x4,
+}
+
+type FileCreateDisposition = enum(UI32) {
+	                  // Action if file exists              Action if file does not exist
+	SUPERSEDE    = 0, // Replace the file.                  Create the file.
+	OPEN         = 1, // Open the file.                     Return an error.
+	CREATE       = 2, // Return an error.                   Create the file.
+	OPEN_IF      = 3, // Open the file.                     Create the file.
+	OVERWRITE    = 4, // Open the file, and overwrite it.   Return an error.
+	OVERWRITE_IF = 5, // Open the file, and overwrite it.   Create the file.
+}
+
+type FileCreateOptions = enum(UI32) {
+	DIRECTORY_FILE                       = 0x00000001,
+	WRITE_THROUGH                        = 0x00000002,
+	SEQUENTIAL_ONLY                      = 0x00000004,
+	NO_INTERMEDIATE_BUFFERING            = 0x00000008,
+	SYNCHRONOUS_IO_ALERT                 = 0x00000010,
+	SYNCHRONOUS_IO_NONALERT              = 0x00000020,
+	NON_DIRECTORY_FILE                   = 0x00000040,
+	CREATE_TREE_CONNECTION               = 0x00000080,
+	COMPLETE_IF_OPLOCKED                 = 0x00000100,
+	NO_EA_KNOWLEDGE                      = 0x00000200,
+	OPEN_REMOTE_INSTANCE                 = 0x00000400,
+	RANDOM_ACCESS                        = 0x00000800,
+	DELETE_ON_CLOSE                      = 0x00001000,
+	OPEN_BY_FILE_ID                      = 0x00002000,
+	OPEN_FOR_BACKUP_INTENT               = 0x00004000,
+	NO_COMPRESSION                       = 0x00008000,
+	OPEN_REQUIRING_OPLOCK                = 0x00010000,
+	DISALLOW_EXCLUSIVE                   = 0x00020000,
+	SESSION_AWARE                        = 0x00040000,
+	RESERVE_OPFILTER                     = 0x00100000,
+	OPEN_REPARSE_POINT                   = 0x00200000,
+	OPEN_NO_RECALL                       = 0x00400000,
+	OPEN_FOR_FREE_SPACE_QUERY            = 0x00800000,
+	CONTAINS_EXTENDED_CREATE_INFORMATION = 0x10000000,
+}
+
+
+
 type AllocationTypeFlags = enum(UI32) {
 	COMMIT     = 0x00001000,
 	RESERVE    = 0x00002000,
@@ -105,6 +193,55 @@ func ntAllocateVirtualMemory = (
 
 	if(status == NTStatus.SUCCESS){ return...; }
 	error copy status;
+}
+
+func ntClose = (handle: Handle) #rt -> Void <NTStatus> {
+	// const status: NTStatus = native.NtClose(handle as native.HANDLE) as NTStatus;
+	// if(status == NTStatus.SUCCESS){ return; }
+	// error copy status;
+}
+
+func ntCreateFile = (
+	path: [CWChar:*mut;'\0' as CWChar],
+	file_access: FileAccess,
+	file_attributes: FileAttribute,
+	file_share_access: FileShareAccess,
+	file_create_disposition: FileCreateDisposition,
+	file_create_options: FileCreateOptions,
+) #rt -> Handle <NTStatus> {
+	unsafe{
+		var handle: native.HANDLE = null;
+
+
+		var unicode_path_string: native.UNICODE_STRING = native.UNICODE_STRING.create(path);
+
+		var object_attributes = new native.OBJECT_ATTRIBUTES{
+			Length        = std.types.numBytes<{native.OBJECT_ATTRIBUTES}>() as CULong,
+			RootDirectory = null,
+			ObjectName    = &unicode_path_string,
+			Attributes    = native.OBJECT_ATTRIBUTES.ATTRIBUTE.CASE_INSENSITIVE as native.ULONG,
+		};
+
+		var io_status_block = new std.ManualLifetime<{native.IO_STATUS_BLOCK}>();
+
+		const status: NTStatus = native.NtCreateFile(
+			&handle,
+			file_access as CULong,
+			&object_attributes,
+			io_status_block.get(),
+			null,
+			file_attributes as native.ULONG,
+			file_share_access as native.ULONG,
+			file_create_disposition as native.ULONG,
+			file_create_options as native.ULONG,
+			null,
+			0
+		) as NTStatus;
+
+		if(status == NTStatus.SUCCESS){ return handle as Handle; }
+		error copy status;
+	}
+
 }
 
 func ntCurrentProcess = () #rt -> Handle {

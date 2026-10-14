@@ -26,13 +26,34 @@ type LPCSTR    = alias Char*; // null terminated string
 type LPDWORD   = alias DWORD*mut;
 type LPVOID    = alias RawPtr;
 type LPCVOID   = alias RawPtr;
+type PCWSTR    = alias CWChar*;
+type PHANDLE   = alias HANDLE*mut;
 type PSIZE_T   = alias SIZE_T*mut;
 type PULONG    = alias ULONG*mut;
 type PVOID     = alias RawPtr;
+type PWSTR     = alias CWChar*mut;
 type SIZE_T    = alias USize;
 type UINT      = alias CUInt;
 type ULONG     = alias CULong;
 type ULONG_PTR = alias USize;
+type USHORT    = alias CUShort;
+
+
+
+type UNICODE_STRING = struct #ordered {
+	var Length        : USHORT;
+	var MaximumLength : USHORT;
+	var Buffer        : PWSTR;
+
+	func create = (str: [CWChar:*mut;'\0' as CWChar]) -> UNICODE_STRING {
+		return new UNICODE_STRING{
+			Length        = (str.size() * std.types.numBytes<{CWChar}>()) as USHORT,
+			MaximumLength = ((str.size() + 1) * std.types.numBytes<{CWChar}>()) as USHORT,
+			Buffer        = copy str.data().?,
+		};
+	}
+}
+type PUNICODE_STRING = alias UNICODE_STRING*mut;
 
 
 
@@ -85,9 +106,41 @@ type PIO_APC_ROUTINE = alias IO_APC_ROUTINE?;
 
 
 //////////////////
+// object
+
+type OBJECT_ATTRIBUTES = struct #ordered {
+	var Length                   : ULONG;
+	var RootDirectory            : HANDLE;
+	var ObjectName               : PUNICODE_STRING;
+	var Attributes               : ULONG;
+	var SecurityDescriptor       : PVOID = null;
+	var SecurityQualityOfService : PVOID = null;
+
+	type ATTRIBUTE = enum(UI32) {
+		INHERIT                       = 0x00000002,
+		PERMANENT                     = 0x00000010,
+		EXCLUSIVE                     = 0x00000020,
+		CASE_INSENSITIVE              = 0x00000040,
+		OPENIF                        = 0x00000080,
+		OPENLINK                      = 0x00000100,
+		KERNEL_HANDLE                 = 0x00000200,
+		FORCE_ACCESS_CHECK            = 0x00000400,
+		IGNORE_IMPERSONATED_DEVICEMAP = 0x00000800,
+		DONT_REPARSE                  = 0x00001000,
+		VALID_ATTRIBUTES              = 0x00001FF2,
+	}
+}
+
+type POBJECT_ATTRIBUTES = alias OBJECT_ATTRIBUTES*mut;
+
+
+
+
+//////////////////
 // misc
 
 type NTSTATUS = alias UI32;
+type ACCESS_MASK = alias ULONG;
 
 
 
@@ -117,6 +170,22 @@ func NtAllocateVirtualMemory = (
 	Protect        : ULONG,
 ) #callConv(@pthr.CallingConvention.WIN_API) -> NTSTATUS = extern(@pthr.Language.C);
 
+func NtClose = (Handle: HANDLE) #callConv(@pthr.CallingConvention.C) -> NTSTATUS = extern(@pthr.Language.C);
+
+func NtCreateFile = (
+	FileHandle        : PHANDLE,
+	DesiredAccess     : ACCESS_MASK,
+	ObjectAttributes  : POBJECT_ATTRIBUTES,
+	IoStatusBlock     : PIO_STATUS_BLOCK,
+	AllocationSize    : PLARGE_INTEGER?,
+	FileAttributes    : ULONG,
+	ShareAccess       : ULONG,
+	CreateDisposition : ULONG,
+	CreateOptions     : ULONG,
+	EaBuffer          : PVOID = null,
+	EaLength          : ULONG = 0,
+) #callConv(@pthr.CallingConvention.C) -> NTSTATUS = extern(@pthr.Language.C);
+
 func NtCurrentProcess = () #rt -> HANDLE {
 	unsafe{
 		return std.bitCast<{HANDLE}>(-1 as LONG_PTR);
@@ -138,15 +207,15 @@ func NtFreeVirtualMemory = (
 
 
 func NtWriteFile = (
-	FileHandle: HANDLE,
-	Event: HANDLE,
-	ApcRoutine: PIO_APC_ROUTINE,
-	ApcContext: PVOID,
-	IoStatusBlock: PIO_STATUS_BLOCK,
-	Buffer: PVOID,
-	Length: ULONG,
-	ByteOffset: PLARGE_INTEGER?,
-	Key: PULONG?,
+	FileHandle    : HANDLE,
+	Event         : HANDLE,
+	ApcRoutine    : PIO_APC_ROUTINE,
+	ApcContext    : PVOID,
+	IoStatusBlock : PIO_STATUS_BLOCK,
+	Buffer        : PVOID,
+	Length        : ULONG,
+	ByteOffset    : PLARGE_INTEGER?,
+	Key           : PULONG?,
 ) #callConv(@pthr.CallingConvention.WIN_API) -> NTSTATUS = extern(@pthr.Language.C);
 
 

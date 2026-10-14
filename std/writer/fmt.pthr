@@ -18,6 +18,11 @@ func write = (writer: std.Writer<{$$}> mut, str: [Char:*], format_info: [Char:*]
 	writer.write(str);
 }
 
+func write = (writer: std.Writer<{$$}> mut, str: [Char:*;'\0'], format_info: [Char:*] = new [Char:*]()) -> Void {
+	std.debug.assert(format_info.size() == 0, "Invalid format info for this type ([Char:*])");
+	writer.write(str);
+}
+
 func write = (writer: std.Writer<{$$}> mut, str: [Char:$$;'\0']*, format_info: [Char:*] = new [Char:*]())
 -> Void { // string literals
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type ([Char:$$;'\0']*)");

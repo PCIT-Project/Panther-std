@@ -174,6 +174,7 @@ when(std.platform.SUPPORTS_CMD){
 		writer.write('\n');
 	}
 
+
 }else{
 	func print = (str: [Char:*]) #rtDiff -> Void = delete("Not supported in this platform target");
 	func print = (format_str: std.fmt.FmtString, args: $$...) -> Void =
@@ -185,4 +186,9 @@ when(std.platform.SUPPORTS_CMD){
 
 }
 
+
+
+func unimplemented = () #noReturn -> Void {
+	unreachable("Unimplemented");
+}
 
