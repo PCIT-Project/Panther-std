@@ -21,11 +21,13 @@ def std #priv = @import("std");
 type DWORD     = alias UI32;
 type HANDLE    = alias RawPtr;
 type HINSTANCE = alias RawPtr;
+type LONG      = alias CLong;
 type LONG_PTR  = alias ISize;
 type LPCSTR    = alias Char*; // null terminated string
 type LPDWORD   = alias DWORD*mut;
 type LPVOID    = alias RawPtr;
 type LPCVOID   = alias RawPtr;
+type PCHAR     = alias Char*;
 type PCWSTR    = alias CWChar*;
 type PHANDLE   = alias HANDLE*mut;
 type PSIZE_T   = alias SIZE_T*mut;
@@ -33,10 +35,12 @@ type PULONG    = alias ULONG*mut;
 type PVOID     = alias RawPtr;
 type PWSTR     = alias CWChar*mut;
 type SIZE_T    = alias USize;
+type UCHAR     = alias Byte;
 type UINT      = alias CUInt;
 type ULONG     = alias CULong;
 type ULONG_PTR = alias USize;
 type USHORT    = alias CUShort;
+type WORD      = alias CUShort;
 
 
 
@@ -54,6 +58,22 @@ type UNICODE_STRING = struct #ordered {
 	}
 }
 type PUNICODE_STRING = alias UNICODE_STRING*mut;
+
+
+type STRING = struct #ordered {
+	var Length        : USHORT;
+	var MaximumLength : USHORT;
+	var Buffer        : PCHAR;
+
+	func create = (str: [Char:*mut;'\0' as Char]) -> STRING {
+		return new STRING{
+			Length        = str.size() as USHORT,
+			MaximumLength = (str.size() + 1) as USHORT,
+			Buffer        = copy str.data().?,
+		};
+	}
+}
+type PSTRING = alias STRING*mut;
 
 
 
@@ -74,7 +94,7 @@ type OVERLAPPED = struct #ordered {
 	var DUMMYUNIONNAME : _DUMMYUNIONNAME;
 	var hEvent         : HANDLE;
 
-	type _DUMMYUNIONNAME = union {
+	type _DUMMYUNIONNAME = union #untagged {
 		type _DUMMYSTRUCTNAME = struct {
 			var Offset     : DWORD;
 			var OffsetHigh : DWORD;
@@ -142,6 +162,181 @@ type POBJECT_ATTRIBUTES = alias OBJECT_ATTRIBUTES*mut;
 type NTSTATUS = alias UI32;
 type ACCESS_MASK = alias ULONG;
 
+type LIST_ENTRY = struct {
+	var Flink: LIST_ENTRY*mut;
+	var Blink: LIST_ENTRY*mut;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// PEB / TEB
+
+
+// https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/api/pebteb/teb/index.htm
+type TEB = struct #ordered {
+	var NtTib                        : NT_TIB;
+	var EnvironmentPointer           : PVOID;
+	var ClientId                     : CLIENT_ID;
+	var ActiveRpcHandle              : PVOID;
+	var ThreadLocalStoragePointer    : PVOID;
+	var ProcessEnvironmentBlock      : PEB*;
+	var LastErrorValue               : ULONG;
+	// var CountOfOwnedCriticalSections : ULONG;
+}
+
+type NT_TIB = struct #ordered {
+	var ExceptionList        : EXCEPTION_REGISTRATION_RECORD*?;
+	var StackBase            : PVOID;
+	var StackLimit           : PVOID;
+	var SubSystemTib         : PVOID;
+	var anonymous            : AnonymousUnion;
+	var ArbitraryUserPointer : PVOID;
+	var Self                 : TEB*?;
+
+	type AnonymousUnion = union #untagged {
+		fiberData : PVOID,
+		version   : DWORD,
+	}
+}
+
+type EXCEPTION_REGISTRATION_RECORD = struct #ordered {
+	var next    : EXCEPTION_REGISTRATION_RECORD*?;
+	var handler : EXCEPTION_DISPOSITION*?;
+}
+
+type EXCEPTION_DISPOSITION = alias #distinct CInt;
+
+
+type CLIENT_ID = struct #ordered {
+	var UniqueProcess: HANDLE;
+	var UniqueThread: HANDLE;
+}
+
+
+
+// https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/api/pebteb/peb/index.htm
+type PEB = struct #ordered {
+	var InheritedAddressSpace    : Bool;
+	var ReadImageFileExecOptions : Bool;
+	var BeingDebugged            : Bool;
+	var BitField                 : UCHAR; // TODO(FUTURE): make actual bitfield when supported
+	var Mutant                   : HANDLE;
+	var ImageBaseAddress         : PVOID;
+	var Ldr                      : PEB_LDR_DATA*;
+	var ProcessParameters        : RTL_USER_PROCESS_PARAMETERS*;
+	var SubsystemData            : PVOID;
+	var ProcessHeap              : PVOID;
+	var FastPebLock              : RTL_CRITICAL_SECTION*;
+	var AtlThunkSListPtr         : PVOID;
+	var IFEOKey                  : PVOID;
+	var CrossProcessFlags        : ULONG; // TODO(FUTURE): make actual bitfield when supported
+	var anonymous                : AnonymousUnion;
+	var SystemReserved           : ULONG;
+	var AtlThunkSListPtr32       : ULONG;
+	var ApiSetMap                : PVOID;
+	var TlsExpansionCounter      : ULONG;
+	var TlsBitmap                : PVOID;
+	var TlsBitmapBits            : [ULONG:2];
+	var ReadOnlySharedMemoryBase : PVOID;
+	var SharedData               : PVOID;
+	var ReadOnlyStaticServerData : PVOID*;
+	var AnsiCodePageData         : PVOID;
+	var OemCodePageData          : PVOID;
+	var UnicodeCaseTableData     : PVOID;
+	var NumberOfProcessors       : ULONG;
+	var NtGlobalFlag             : ULONG;
+	var CriticalSectionTimeout   : LARGE_INTEGER;
+
+
+	type AnonymousUnion = union #untagged {
+		KernelCallbackTable : PVOID,
+		UserSharedInfoPtr   : PVOID,
+	}
+}
+
+
+// https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/api/ntpsapi_x/peb_ldr_data.htm
+type PEB_LDR_DATA = struct #ordered {
+	var Length                          : ULONG;
+	var Initialized                     : Bool;
+	var SsHandle                        : PVOID;
+	var InLoadOrderModuleList           : LIST_ENTRY;
+	var InMemoryOrderModuleList         : LIST_ENTRY;
+	var InInitializationOrderModuleList : LIST_ENTRY;
+	var EntryInProgress                 : PVOID;
+	var ShutdownInProgress              : Bool;
+	var ShutdownThreadId                : HANDLE;
+}
+
+// https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/api/pebteb/rtl_user_process_parameters.htm
+type RTL_USER_PROCESS_PARAMETERS = struct #ordered {
+	var MaximumLength     : ULONG;
+	var Length            : ULONG;
+	var Flags             : ULONG;
+	var DebugFlags        : ULONG;
+	var ConsoleHandle     : HANDLE;
+	var ConsoleFlags      : ULONG;
+	var StandardInput     : HANDLE;
+	var StandardOutput    : HANDLE;
+	var StandardError     : HANDLE;
+	var CurrentDirectory  : CURDIR;
+	var DllPath           : UNICODE_STRING;
+	var ImagePathName     : UNICODE_STRING;
+	var CommandLine       : UNICODE_STRING;
+	var Environment       : PVOID;
+	var StartingX         : ULONG;
+	var StartingY         : ULONG;
+	var CountX            : ULONG;
+	var CountY            : ULONG;
+	var CountCharsX       : ULONG;
+	var CountCharsY       : ULONG;
+	var FillAttribute     : ULONG;
+	var WindowFlags       : ULONG;
+	var ShowWindowFlags   : ULONG;
+	var WindowTitle       : UNICODE_STRING;
+	var DesktopInfo       : UNICODE_STRING;
+	var ShellInfo         : UNICODE_STRING;
+	var RuntimeData       : UNICODE_STRING;
+	var CurrentDirectores : [RTL_DRIVE_LETTER_CURDIR:0x20];
+}
+
+// https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/api/pebteb/curdir.htm
+type CURDIR = struct #ordered {
+	var DosPath : UNICODE_STRING;
+	var Handle  : HANDLE;
+}
+
+// https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/api/pebteb/rtl_drive_letter_curdir.htm
+type RTL_DRIVE_LETTER_CURDIR = struct #ordered {
+	var Flags     : USHORT;
+	var Length    : USHORT;
+	var TimeStamp : ULONG;
+	var DosPath   : STRING;
+}
+
+
+type RTL_CRITICAL_SECTION = struct {
+	var DebugInfo      : RTL_CRITICAL_SECTION_DEBUG*;
+	var LockCount      : LONG;
+	var RecursionCount : LONG;
+	var OwningThread   : HANDLE;
+	var LockSemaphore  : HANDLE;
+	var SpinCount      : ULONG_PTR;
+}
+
+type RTL_CRITICAL_SECTION_DEBUG = struct {
+	var \"Type"                   : WORD;
+	var CreatorBackTraceIndex     : WORD;
+	var CriticalSection           : RTL_CRITICAL_SECTION*;
+	var ProcessLocksList          : LIST_ENTRY;
+	var EntryCount                : DWORD;
+	var ContentionCount           : DWORD;
+	var Flags                     : DWORD;
+	var CreatorBackTraceIndexHigh : WORD;
+	var SpareWORD                 : WORD;
+}
+
+
 
 
 
@@ -186,9 +381,25 @@ func NtCreateFile = (
 	EaLength          : ULONG = 0,
 ) #callConv(@pthr.CallingConvention.C) -> NTSTATUS = extern(@pthr.Language.C);
 
+
+func NtCurrentPeb = () #rt -> PEB* {
+	// unsafe{
+	// 	return copy NtCurrentTeb().ProcessEnvironmentBlock;
+	// }
+	unsafe{
+		return std.bitCast<{PEB*}>(__readgsqword(0x60));
+	}
+}
+
 func NtCurrentProcess = () #rt -> HANDLE {
 	unsafe{
 		return std.bitCast<{HANDLE}>(-1 as LONG_PTR);
+	}
+}
+
+func NtCurrentTeb = () #rt -> TEB* {
+	unsafe{
+		return std.bitCast<{TEB*}>(__readgsqword(0x30));
 	}
 }
 
@@ -226,12 +437,8 @@ func NtWriteFile = (
 func ExitProcess = 
 	(uExitCode: UINT) #noReturn #callConv(@pthr.CallingConvention.WIN_API) -> Void = extern(@pthr.Language.C);
 
-func GetLastError = () #callConv(@pthr.CallingConvention.WIN_API) -> DWORD = extern(@pthr.Language.C);
 
-func GetStdHandle = 
-	(nStdHandle: DWORD) #callConv(@pthr.CallingConvention.WIN_API) -> HANDLE = extern(@pthr.Language.C);
 
-func GetProcessHeap = () #callConv(@pthr.CallingConvention.WIN_API) -> HANDLE = extern(@pthr.Language.C);
 
 func HeapAlloc = (
 	hHeap: HANDLE, dwFlags: DWORD, dwBytes: SIZE_T
@@ -248,3 +455,12 @@ func OutputDebugStringA =
 
 
 
+
+//////////////////////////////////////////////////////////////////////
+// helpers
+
+func __readgsqword = (offset: UI32) #rt #priv -> I64 {
+	return asm (offset: UI64 in "r" = offset as UI64) #sideEffect -> (output: I64 "r") {
+		"mov %output, qword ptr gs:[%offset]"
+	};
+}

@@ -1,6 +1,19 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.63.0"></a>
+## v0.0.63.0
+- Added relative path lookup for `fs.File.create` and `fs.File.oepn` on windows
+- Added to `platform.windows`:
+	- `cwdHandle`
+	- `getStdinHandle`, `getStdoutHandle`, `getStderrHandle`
+	- `isDebuggerPresent`
+- Removed from `platform.windows`:
+	- `GetStdHandle`
+	- `StdHandle`
+
+
+<!---------------------------------->
 <a name="v0.0.62.0"></a>
 ## v0.0.62.0
 - Added module `fs`

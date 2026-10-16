@@ -60,7 +60,7 @@ type File = struct {
 			}
 
 			case(std.Platform.WINDOWS){
-				output = new File(std.platform.windows.getStdHandle(std.platform.windows.StdHandle.OUTPUT));
+				output = new File(std.platform.windows.getStdoutHandle());
 			}
 		}
 		return...;
@@ -219,6 +219,7 @@ type File = struct {
 
 				var file_handle: std.platform.windows.Handle = try std.platform.windows.ntCreateFile(
 					wpath,
+					windows.cwdHandle(),
 					windows.FileAccess.GENERIC_WRITE,
 					windows.FileAttribute.NORMAL,
 					windows.FileShareAccess.READ | windows.FileShareAccess.WRITE | windows.FileShareAccess.DELETE,
@@ -407,6 +408,7 @@ type File = struct {
 
 				var file_handle: std.platform.windows.Handle = try std.platform.windows.ntCreateFile(
 					wpath,
+					windows.cwdHandle(),
 					windows.FileAccess.GENERIC_WRITE,
 					windows.FileAttribute.NORMAL,
 					windows.FileShareAccess.READ | windows.FileShareAccess.WRITE | windows.FileShareAccess.DELETE,
@@ -587,19 +589,13 @@ type File = struct {
 when(@config.platform == std.Platform.WINDOWS){
 	
 	func make_wpath = (path: [Char:*], target_buffer: [CWChar:*mut]) #priv -> [CWChar:*mut;'\0' as CWChar] {
-		target_buffer[0].* = '\\' as CWChar;
-		target_buffer[1].* = '?' as CWChar;
-		target_buffer[2].* = '?' as CWChar;
-		target_buffer[3].* = '\\' as CWChar;
-
-
 		for(path) [i: USize; char: Char] {
-			target_buffer[i + 4].* = char as CWChar;
+			target_buffer[i].* = char as CWChar;
 		}
 
-		target_buffer[path.size() + 4].* = '\0' as CWChar;
+		target_buffer[path.size()].* = '\0' as CWChar;
 
-		return new [CWChar:*mut;'\0' as CWChar](copy target_buffer.data().?, path.size() + 4);
+		return new [CWChar:*mut;'\0' as CWChar](copy target_buffer.data().?, path.size());
 	}
 
 }

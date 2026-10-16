@@ -14,6 +14,7 @@ def std #priv = @import("std");
 def native = @import("./native.pthr");
 
 
+
 //////////////////////////////////////////////////////////////////////
 // types
 
@@ -24,12 +25,6 @@ type Handle = alias #distinct RawPtr;
 // enums
 
 type NTStatus = alias @import("./NTStatus.pthr").NTStatus;
-
-type StdHandle = enum(UI32) {
-	INPUT  = native.STD_INPUT_HANDLE,
-	OUTPUT = native.STD_OUTPUT_HANDLE,
-	ERROR  = native.STD_ERROR_HANDLE,
-}
 
 
 type HeapAllocFlags = enum(UI32) {
@@ -160,6 +155,28 @@ type FreeTypeFlags = enum(UI32) {
 
 
 
+
+//////////////////////////////////////////////////////////////////////
+// created functions
+
+func cwdHandle = () #rt -> Handle {
+	return native.NtCurrentPeb().ProcessParameters.CurrentDirectory.Handle as Handle;
+}
+
+func getStdinHandle = () #rt -> Handle {
+	return native.NtCurrentPeb().ProcessParameters.StandardInput as Handle;	
+}
+
+func getStdoutHandle = () #rt -> Handle {
+	return native.NtCurrentPeb().ProcessParameters.StandardOutput as Handle;	
+}
+
+func getStderrHandle = () #rt -> Handle {
+	return native.NtCurrentPeb().ProcessParameters.StandardError as Handle;	
+}
+
+
+
 //////////////////////////////////////////////////////////////////////
 // ntdll
 
@@ -196,13 +213,14 @@ func ntAllocateVirtualMemory = (
 }
 
 func ntClose = (handle: Handle) #rt -> Void <NTStatus> {
-	// const status: NTStatus = native.NtClose(handle as native.HANDLE) as NTStatus;
-	// if(status == NTStatus.SUCCESS){ return; }
-	// error copy status;
+	const status: NTStatus = native.NtClose(handle as native.HANDLE) as NTStatus;
+	if(status == NTStatus.SUCCESS){ return; }
+	error copy status;
 }
 
 func ntCreateFile = (
 	path: [CWChar:*mut;'\0' as CWChar],
+	root_directory: Handle?,
 	file_access: FileAccess,
 	file_attributes: FileAttribute,
 	file_share_access: FileShareAccess,
@@ -217,7 +235,13 @@ func ntCreateFile = (
 
 		var object_attributes = new native.OBJECT_ATTRIBUTES{
 			Length        = std.types.numBytes<{native.OBJECT_ATTRIBUTES}>() as CULong,
-			RootDirectory = null,
+			RootDirectory = {->expr:native.HANDLE
+				if(root_directory != null){
+					return->expr root_directory.? as native.HANDLE;
+				}else{
+					return->expr null;
+				}
+			},
 			ObjectName    = &unicode_path_string,
 			Attributes    = native.OBJECT_ATTRIBUTES.ATTRIBUTE.CASE_INSENSITIVE as native.ULONG,
 		};
@@ -247,6 +271,7 @@ func ntCreateFile = (
 func ntCurrentProcess = () #rt -> Handle {
 	return native.NtCurrentProcess() as Handle;
 }
+
 
 func ntCurrentThread = () #rt -> Handle {
 	return native.NtCurrentThread() as Handle;
@@ -310,16 +335,12 @@ func exitProcess = (exit_code: CUInt) #rt #noReturn -> Void {
 
 
 func getLastError = () #rt -> UI32 {
-	return native.GetLastError();
+	return native.NtCurrentTeb().LastErrorValue as UI32;
 }
 
-
-func getStdHandle = (std_handle: StdHandle) #rt -> Handle {
-	return native.GetStdHandle(std_handle as native.DWORD) as Handle;
-}
 
 func getProcessHeap = () #rt -> Handle {
-	return native.GetProcessHeap() as Handle;
+	return native.NtCurrentPeb().ProcessHeap as Handle;
 }
 
 
@@ -337,6 +358,11 @@ func heapAlloc = <{T: Type}> (heap: Handle, flags: HeapAllocFlags, num_elems: US
 
 func heapFree = (heap: Handle, flags: HeapFreeFlags, mem: $$*) #rt -> Void {
 	native.HeapFree(heap as native.HANDLE, flags as UI32, mem as RawPtr);
+}
+
+
+func isDebuggerPresent = () #rt -> Bool {
+	return copy native.NtCurrentPeb().BeingDebugged;
 }
 
 
