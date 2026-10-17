@@ -9,7 +9,7 @@
 
 @setModuleName("std.platform.linux");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 def native = @import("./native.pthr");
 
@@ -41,7 +41,7 @@ type ProtectionFlags = enum(CInt) {
 }
 
 type MapFlags = enum(CInt) {
-	def MAP_HUGE_SHIFT #priv = 26;
+	def MAP_HUGE_SHIFT #private = 26;
 
 	SHARED            = 0x01,
 	PRIVATE           = 0x02,

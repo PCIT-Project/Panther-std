@@ -9,7 +9,7 @@
 
 @setModuleName("std");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 type PmBufferedWriter = alias BufferedWriter<{impl(*mut:std.IWriter)}>;
@@ -51,8 +51,8 @@ type BufferedWriter = struct <{TargetWriter: Type}> {
 	///////////////////////////////////
 	// private
 
-	var writer_backend: impl*mut(TargetWriter:std.IWriter) #priv;
+	var writer_backend: impl*mut(TargetWriter:std.IWriter) #private;
 
-	var buffer: [Char:*mut] #priv;
-	var buffer_index: USize #priv = 0;
+	var buffer: [Char:*mut] #private;
+	var buffer_index: USize #private = 0;
 }

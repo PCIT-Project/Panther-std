@@ -9,7 +9,7 @@
 
 @setModuleName("std");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 func rangeFor = (num_elements: $T) -> RangeForIter<{T}> {
@@ -119,9 +119,9 @@ type RangeForIter = struct <{T: Type}> {
 		}
 
 
-		var current: T #priv;
-		const last: T #priv;
-		const stride: T #priv;
+		var current: T #private;
+		const last: T #private;
+		const stride: T #private;
 	}
 
 
@@ -138,9 +138,9 @@ type RangeForIter = struct <{T: Type}> {
 	}
 
 
-	const first: T #priv;
-	const last: T #priv;
-	const stride: T #priv;
+	const first: T #private;
+	const last: T #private;
+	const stride: T #private;
 }
 
 
@@ -189,9 +189,9 @@ type ReverseRangeForIter = struct <{T: Type}> {
 		}
 
 
-		var current: T #priv;
-		const last: T #priv;
-		const stride: T #priv;
+		var current: T #private;
+		const last: T #private;
+		const stride: T #private;
 	}
 
 
@@ -208,7 +208,7 @@ type ReverseRangeForIter = struct <{T: Type}> {
 	}
 
 
-	const first: T #priv;
-	const last: T #priv;
-	const stride: T #priv;
+	const first: T #private;
+	const last: T #private;
+	const stride: T #private;
 }

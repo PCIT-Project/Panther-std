@@ -9,7 +9,7 @@
 
 @setModuleName("std.heap");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 type PageAllocator = struct {
@@ -334,6 +334,6 @@ type PageAllocator = struct {
 	// private
 
 	when(@config.mode == std.Mode.DEBUG){
-		var num_allocations: std.Atomic<{USize}> #priv;
+		var num_allocations: std.Atomic<{USize}> #private;
 	}
 }

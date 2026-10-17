@@ -9,7 +9,7 @@
 
 @setModuleName("std");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 type Atomic = struct <{T: Type}>
@@ -42,8 +42,9 @@ type Atomic = struct <{T: Type}>
 		->
 			(loaded: T, succeeded: Bool)
 		{
-			[loaded, succeeded] = 
-				@_cmpxchg<{T*mut, T, false, SUCCESS_ORDERING, FAILURE_ORDERING}>(&this.value, expected, forward desired);
+			[loaded, succeeded] = @_cmpxchg<{T*mut, T, false, SUCCESS_ORDERING, FAILURE_ORDERING}>(
+				&this.value, expected, forward desired
+			);
 			return...;
 		}
 
@@ -66,8 +67,9 @@ type Atomic = struct <{T: Type}>
 		-> 
 			(loaded: T, succeeded: Bool)
 		{
-			[loaded, succeeded] = 
-				@_cmpxchg<{T*mut, T, true, SUCCESS_ORDERING, FAILURE_ORDERING}>(&this.value, expected, forward desired);
+			[loaded, succeeded] = @_cmpxchg<{T*mut, T, true, SUCCESS_ORDERING, FAILURE_ORDERING}>(
+				&this.value, expected, forward desired
+			);
 			return...;
 		}
 
@@ -78,8 +80,9 @@ type Atomic = struct <{T: Type}>
 		->
 			(loaded: T, succeeded: Bool)
 		{
-			[loaded, succeeded] =
-				@_cmpxchg<{T*mut, T, true, ORDERING, ORDERING}>(&this.value, expected, forward desired);
+			[loaded, succeeded] = @_cmpxchg<{T*mut, T, true, ORDERING, ORDERING}>(
+				&this.value, expected, forward desired
+			);
 			return...;
 		}
 
@@ -182,6 +185,9 @@ type Atomic = struct <{T: Type}>
 	}
 
 
-	var value: T #priv;
+	///////////////////////////////////
+	// private
+
+	var value: T #private;
 }
 

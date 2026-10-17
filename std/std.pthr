@@ -116,7 +116,7 @@ def types = @import("types.pthr");
 //////////////////////////////////////////////////////////////////////
 // containers
 
-def iterators #priv = @import("containers/iterators.pthr");
+def iterators #private = @import("containers/iterators.pthr");
 type ArrayRefIter    = alias iterators.ArrayRefIter;
 type MutArrayRefIter = alias iterators.MutArrayRefIter;
 
@@ -128,7 +128,7 @@ type StaticArrayList = alias @import("containers/StaticArrayList.pthr").StaticAr
 //////////////////////////////////////////////////////////////////////
 // misc
 
-def range_for #priv = @import("misc/rangeFor.pthr");
+def range_for #private = @import("misc/rangeFor.pthr");
 func rangeFor        = alias range_for.rangeFor;
 func reverseRangeFor = alias range_for.reverseRangeFor;
 

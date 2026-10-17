@@ -9,7 +9,7 @@
 
 @setModuleName("std.debug");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 func assert = (cond: Bool, message: [Char:*]) -> Void {
 	if(cond == false){

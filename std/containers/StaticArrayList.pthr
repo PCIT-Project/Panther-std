@@ -9,7 +9,7 @@
 
 @setModuleName("std");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 type StaticArrayList = struct <{T: Type, CAPACITY: USize}> 
@@ -245,8 +245,8 @@ type StaticArrayList = struct <{T: Type, CAPACITY: USize}>
 
 
 	///////////////////////////////////
-	// member vars
+	// private
 
-	var _data: [std.ManualLifetime<{T}>:CAPACITY] #priv;
-	var _size: USize #priv;
+	var _data: [std.ManualLifetime<{T}>:CAPACITY] #private;
+	var _size: USize #private;
 }

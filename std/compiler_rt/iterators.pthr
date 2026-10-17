@@ -8,7 +8,7 @@
 
 @setModuleName("std.compiler_rt");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 

@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.64.0"></a>
+## v0.0.64.0
+- Updated reflect updates to [PCIT-CPP v0.0.406.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.406.0)
+
+
+<!---------------------------------->
 <a name="v0.0.63.0"></a>
 ## v0.0.63.0
 - Added relative path lookup for `fs.File.create` and `fs.File.oepn` on windows

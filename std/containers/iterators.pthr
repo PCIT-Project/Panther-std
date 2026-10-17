@@ -9,7 +9,7 @@
 
 @setModuleName("std");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 
@@ -66,8 +66,8 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
 		atEnd = atEnd,
 	}
 
-	var current: ELEM_TYPE*? #priv;
-	var last: ELEM_TYPE*? #priv;
+	var current: ELEM_TYPE*? #private;
+	var last: ELEM_TYPE*? #private;
 }
 
 
@@ -126,6 +126,6 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
 		atEnd = atEnd,
 	}
 
-	var current: ELEM_TYPE*mut? #priv;
-	var last: ELEM_TYPE*mut? #priv;
+	var current: ELEM_TYPE*mut? #private;
+	var last: ELEM_TYPE*mut? #private;
 }

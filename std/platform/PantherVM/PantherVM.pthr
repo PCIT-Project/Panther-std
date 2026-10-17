@@ -9,7 +9,7 @@
 
 @setModuleName("std.platform.pantherVM");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 def native = @import("./native.pthr");
 
 

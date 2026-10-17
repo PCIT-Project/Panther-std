@@ -8,7 +8,7 @@
 
 @setModuleName("std.compiler_rt");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 when(
 	@config.platform == std.Platform.WINDOWS
@@ -16,7 +16,7 @@ when(
 	&& @config.compilerMode != std.CompilerMode.SCRIPT
 ){
 
-	func __chkstk = () #priv #export #naked -> Void {
+	func __chkstk = () #private #export #naked -> Void {
 		asm () #sideEffect -> Void {"
 			push rax
 			push rcx

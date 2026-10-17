@@ -9,7 +9,7 @@
 
 @setModuleName("std.platform.windows");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 //////////////////////////////////////////////////////////////////////
@@ -459,7 +459,7 @@ func OutputDebugStringA =
 //////////////////////////////////////////////////////////////////////
 // helpers
 
-func __readgsqword = (offset: UI32) #rt #priv -> I64 {
+func __readgsqword = (offset: UI32) #rt #private -> I64 {
 	return asm (offset: UI64 in "r" = offset as UI64) #sideEffect -> (output: I64 "r") {
 		"mov %output, qword ptr gs:[%offset]"
 	};

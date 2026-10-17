@@ -9,7 +9,7 @@
 
 @setModuleName("std.mem");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 
@@ -120,7 +120,7 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 	//////////////////////////////////////////////////////////////////////
 	// private
 
-	var allocator_impl: impl*mut(TargetAllocatorType:std.mem.IAllocator) #priv;
+	var allocator_impl: impl*mut(TargetAllocatorType:std.mem.IAllocator) #private;
 }
 
 
@@ -231,7 +231,7 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type}> {
 	//////////////////////////////////////////////////////////////////////
 	// private
 
-	var allocator_impl: impl*mut(TargetAllocatorRTType:std.mem.IAllocatorRT) #priv;
+	var allocator_impl: impl*mut(TargetAllocatorRTType:std.mem.IAllocatorRT) #private;
 }
 
 
@@ -342,5 +342,5 @@ type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAll
 	//////////////////////////////////////////////////////////////////////
 	// private
 
-	var allocator_impl: impl*mut(TargetAllocatorCTType:std.mem.IAllocatorCT) #priv;
+	var allocator_impl: impl*mut(TargetAllocatorCTType:std.mem.IAllocatorCT) #private;
 }

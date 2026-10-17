@@ -9,7 +9,7 @@
 
 @setModuleName("std");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 
@@ -180,5 +180,5 @@ type AtomicRef = struct <{T: Type}>
 	}
 
 
-	const ptr: T*mut #priv;
+	const ptr: T*mut #private;
 }

@@ -9,7 +9,7 @@
 
 @setModuleName("std");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 type ManualLifetime = struct <{T: Type}> {
@@ -21,9 +21,9 @@ type ManualLifetime = struct <{T: Type}> {
 	///////////////////////////////////
 	// private
 
-	type Data = union #priv #untagged #manualLifetime {
+	type Data = union #private #untagged #manualLifetime {
 		value: T,
 	}
 
-	var data: Data #priv;
+	var data: Data #private;
 }

@@ -8,7 +8,7 @@
 
 @setModuleName("std.compiler_rt");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode != std.CompilerMode.COMPILE_RUN){
@@ -30,7 +30,7 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 		}
 		
 	}else{
-		func main = (argc: CInt, argv: Char**) #priv #rt #export #callConv(std.CallingConvention.C) -> CInt {
+		func main = (argc: CInt, argv: Char**) #private #rt #export #callConv(std.CallingConvention.C) -> CInt {
 			return @_entry() as CInt;
 		}
 	}
@@ -42,11 +42,11 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 		}
 
 		case(std.Platform.LINUX){
-			func main = (argc: CInt, argv: Char**) #priv #rt #export #callConv(std.CallingConvention.C) -> CInt {
+			func main = (argc: CInt, argv: Char**) #private #rt #export #callConv(std.CallingConvention.C) -> CInt {
 				return @_entry() as CInt;
 			}
 
-			func exit = (exit_code: CInt) #priv #rt #export #noReturn #callConv(std.CallingConvention.C) -> Void {
+			func exit = (exit_code: CInt) #private #rt #export #noReturn #callConv(std.CallingConvention.C) -> Void {
 				std.platform.linux.exit(exit_code);
 			}
 
@@ -69,21 +69,21 @@ when(@config.compilerMode != std.CompilerMode.COMPILE && @config.compilerMode !=
 
 		case(std.Platform.WINDOWS){
 			when(@config.windowsSubsystem == null){
-				func mainCRTStartup = () #priv #rt #export #callConv(std.CallingConvention.C) -> CInt {
+				func mainCRTStartup = () #private #rt #export #callConv(std.CallingConvention.C) -> CInt {
 					return @_entry() as CInt;
 				}
 
 			}else{
 				when switch(@config.windowsSubsystem.?){
 					case(std.WindowsSubsystem.CONSOLE){
-						func mainCRTStartup = () #priv #rt #export #callConv(std.CallingConvention.C) -> CInt {
+						func mainCRTStartup = () #private #rt #export #callConv(std.CallingConvention.C) -> CInt {
 							return @_entry() as CInt;
 						}
 					}
 
 					case(std.WindowsSubsystem.WINDOWS){
-						func WinMainCRTStartup = () #priv #rt #export #callConv(std.CallingConvention.C) -> CInt {
-							std.platform.windows.exitProcess(@entry() as CInt);
+						func WinMainCRTStartup = () #private #rt #export #callConv(std.CallingConvention.C) -> CInt {
+							std.platform.windows.exitProcess(@_entry() as CInt);
 						}
 					}
 				}

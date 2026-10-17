@@ -9,10 +9,10 @@
 
 @setModuleName("std.mem");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
-func mem_copy = (dst: [Byte:*mut], src: [Byte:*]) #priv -> Void {
+func mem_copy = (dst: [Byte:*mut], src: [Byte:*]) #private -> Void {
 	// TODO(PERF): better than just naive approach
 
 	for(dst, src) [_; dst_value: Byte mut, src_value: Byte] {

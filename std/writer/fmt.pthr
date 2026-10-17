@@ -9,7 +9,7 @@
 
 @setModuleName("std");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 
@@ -97,7 +97,7 @@ func write = (writer: std.Writer<{$$}> mut, bool: Bool32, format_info: [Char:*] 
 
 
 
-func parse_pointer_format_info = (format_info: [Char:*]) #priv -> Bool {
+func parse_pointer_format_info = (format_info: [Char:*]) #private -> Bool {
 	std.debug.assert(format_info.size() == 1, "Invalid format info for this type (pointer)");
 
 	switch(format_info[0].*){
@@ -217,7 +217,7 @@ func write = (writer: std.Writer<{$$}> mut, arg: $Arg, format_info: [Char:*] = n
 
 func write_integral = (
 	writer: std.Writer<{$$}> mut, integral: $Integral, format_info: [Char:*] = new [Char:*]()
-) #priv -> Void {
+) #private -> Void {
 	@comptimeAssert(std.types.isIntegral<{Integral}>(), "Must be integral");
 
 	std.debug.assert(format_info.size() < 2, "Invalid format info for this type");
@@ -240,7 +240,7 @@ func write_integral = (
 
 func write_integral_detail = <{Integral: Type, BASE: Integral, IS_CAPITAL: Bool}> (
 	writer: std.Writer<{$$}> mut, integral: Integral
-) #priv -> Void {
+) #private -> Void {
 	@comptimeAssert(BASE == 2 || BASE == 8 || BASE == 10 || BASE == 16, "Invalid base");
 
 
@@ -416,10 +416,10 @@ type FmtString = struct {
 	///////////////////////////////////
 	// private
 
-	type Part = union #priv {
+	type Part = union #private {
 		str: [Char:*],
 		value: [Char:*],
 	}
 
-	var parts: std.StaticArrayList<{Part, 32}> #priv;
+	var parts: std.StaticArrayList<{Part, 32}> #private;
 }

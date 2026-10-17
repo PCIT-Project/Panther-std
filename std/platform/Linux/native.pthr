@@ -9,7 +9,7 @@
 
 @setModuleName("std.platform.linux");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 //////////////////////////////////////////////////////////////////////

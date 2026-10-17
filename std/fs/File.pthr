@@ -9,7 +9,7 @@
 
 @setModuleName("std.fs");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 
@@ -579,16 +579,16 @@ type File = struct {
 
 
 	///////////////////////////////////
-	// priv
+	// private
 
-	var handle: Handle? #priv;
+	var handle: Handle? #private;
 }
 
 
 
 when(@config.platform == std.Platform.WINDOWS){
 	
-	func make_wpath = (path: [Char:*], target_buffer: [CWChar:*mut]) #priv -> [CWChar:*mut;'\0' as CWChar] {
+	func make_wpath = (path: [Char:*], target_buffer: [CWChar:*mut]) #private -> [CWChar:*mut;'\0' as CWChar] {
 		for(path) [i: USize; char: Char] {
 			target_buffer[i].* = char as CWChar;
 		}

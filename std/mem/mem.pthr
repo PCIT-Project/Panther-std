@@ -9,18 +9,18 @@
 
 @setModuleName("std.mem");
 
-def std #priv = @import("std");
+def std #private = @import("std");
 
 
 
-def iallocator #priv = @import("./IAllocator.pthr");
+def iallocator #private = @import("./IAllocator.pthr");
 type IAllocator   = alias iallocator.IAllocator;
 type IAllocatorRT = alias iallocator.IAllocatorRT;
 type IAllocatorCT = alias iallocator.IAllocatorCT;
 
 
 
-def allocator #priv = @import("./allocator.pthr");
+def allocator #private = @import("./allocator.pthr");
 type Allocator   = alias allocator.Allocator;
 type PmAllocator = alias Allocator<{impl(*mut:IAllocator)}>;
 
@@ -33,7 +33,7 @@ type PmAllocatorCT = alias AllocatorCT<{impl(*mut:IAllocatorCT)}>;
 
 
 
-def buffers #priv = @import("./buffers.pthr");
+def buffers #private = @import("./buffers.pthr");
 func copyBuffer = alias buffers.copyBuffer;
 func moveBuffer = alias buffers.moveBuffer;
 
