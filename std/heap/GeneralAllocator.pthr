@@ -1,0 +1,297 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std.heap");
+
+def std #private = @import("std");
+
+
+type GeneralAllocator = struct {
+	
+	func alloc = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] {
+		std.debug.assert(size != 0, "Cannot allocate a size of 0");
+		std.debug.assert(alignment > 0 && std.math.isPowOf2(alignment), "Inavlid alignment");
+		std.debug.assert(
+			alignment as USize <= std.heap.pageSize(),
+			"This alignment is currently unsupported by std.heap.DebugPageAllocator"
+		);
+
+
+		const bucket_index: BucketIndex = calculate_bucket(std.math.max(size, alignment as USize));
+
+		if(is_direct_page_bucket(bucket_index)){
+			return std.heap.PageAllocator.alloc(size, alignment);
+		}
+
+		var selected_bucket: Bucket*mut = this.buckets[bucket_index];
+
+
+		if(selected_bucket.pages_with_free_space != null){
+			var page: Bucket.Page*mut = copy selected_bucket.pages_with_free_space.?.mem_pages.last().*;
+
+			var free_elem: RawPtr*mut = copy page.header.free_elem.?;
+
+			unsafe{
+				page.header.free_elem = std.bitCast<{RawPtr*mut}>(page.header.free_elem.?.*);
+			}
+			page.header.num_free -= 1;
+
+			if(page.header.num_free == 0){
+				selected_bucket.remove_page_with_free_space();
+			}
+
+			unsafe{
+				return new [Byte:*mut](std.bitCast<{Byte*mut}>(free_elem), copy size);
+			}
+		}
+
+
+		const max_elems_in_selected_bucket: USize = calc_num_elems_per_bucket_page(bucket_index);
+
+		if(selected_bucket.current_allocating_page == null){
+			var page_allocator = new std.heap.PageAllocator();
+			var allocator = new std.mem.Allocator<{std.heap.PageAllocator}>(page_allocator);
+
+			const allocated_page: Bucket.Page*uninit = allocator.alloc<{Bucket.Page}>();
+			allocated_page.* = new Bucket.Page(max_elems_in_selected_bucket as UI16);
+
+			selected_bucket.current_allocating_page = @makeInitPtr(allocated_page);
+
+		}else if(selected_bucket.current_allocating_index >= max_elems_in_selected_bucket){
+			var page_allocator = new std.heap.PageAllocator();
+			var allocator = new std.mem.Allocator<{std.heap.PageAllocator}>(page_allocator);
+
+			const allocated_page: Bucket.Page*uninit = allocator.alloc<{Bucket.Page}>();
+			allocated_page.* = new Bucket.Page(max_elems_in_selected_bucket as UI16);
+
+
+			selected_bucket.current_allocating_page.?.header.next_node = @makeInitPtr(allocated_page);
+			@makeInitPtr(allocated_page).header.prev_node = copy selected_bucket.current_allocating_page;
+
+			selected_bucket.current_allocating_page = @makeInitPtr(allocated_page);
+			selected_bucket.current_allocating_index = 0;
+		}
+
+
+
+		const allocated_buffer #movable = new [Byte:*mut](
+			selected_bucket.current_allocating_page.?.data[
+				selected_bucket.current_allocating_index * calc_bucket_elem_size(bucket_index)
+			],
+			copy size
+		);
+
+		selected_bucket.current_allocating_index += 1;
+
+		selected_bucket.current_allocating_page.?.header.num_free -= 1;
+
+		return move allocated_buffer;
+	}
+
+
+	func allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) -> Void <Void> {
+		const bucket_index: BucketIndex = calculate_bucket(std.math.max(buffer.size(), alignment as USize));
+
+		if(is_direct_page_bucket(bucket_index)){
+			try std.heap.PageAllocator.allocResize(buffer, new_size) else { error; };
+			return;
+		}
+
+		if(bucket_index != calculate_bucket(new_size)){
+			error;
+		}
+	}
+
+
+	func dealloc = (this mut, buffer: [Byte:*], alignment: UI32) -> Void {
+		const bucket_index: BucketIndex = calculate_bucket(std.math.max(buffer.size(), alignment as USize));
+
+		if(is_direct_page_bucket(bucket_index)){
+			std.heap.PageAllocator.dealloc(buffer);
+			return;
+		}
+
+
+		var page: Bucket.Page*mut = {->expr:Bucket.Page*mut
+			unsafe{
+				const buffer_ptr_num: USize = std.bitCast<{USize}>(buffer.data());
+				const page_ptr: USize = buffer_ptr_num & ~(std.heap.pageSize() - 1);
+				return->expr std.bitCast<{Bucket.Page*mut}>(page_ptr);
+			}
+		};
+
+
+		page.header.num_free += 1;
+
+		const num_elems_in_page: USize = calc_num_elems_per_bucket_page(bucket_index);
+
+		if(page.header.num_free as USize == num_elems_in_page){
+			if(page.header.prev_node != null){
+				page.header.prev_node.?.header.next_node = copy page.header.next_node;
+			}
+
+			if(page.header.next_node != null){
+				page.header.next_node.?.header.prev_node = copy page.header.prev_node;
+			}
+
+			unsafe{
+				std.heap.PageAllocator.dealloc(std.asBuffer(page));
+			}
+
+
+			var bucket: Bucket*mut = this.buckets[bucket_index];
+			if(bucket.current_allocating_page != null && page == bucket.current_allocating_page.?){
+				bucket.current_allocating_page = null;
+				bucket.current_allocating_index = 0;
+			}
+			
+		}else if(page.header.free_elem == null){
+			unsafe{
+				std.bitCast<{RawPtr*mut}>(buffer.data()).* = null;
+				page.header.free_elem = std.bitCast<{RawPtr*mut}>(buffer.data());
+			}
+
+			var bucket: Bucket*mut = this.buckets[bucket_index];
+			bucket.add_page_with_free_space(page);
+
+		}else{
+			unsafe{
+				std.bitCast<{RawPtr*mut*mut}>(buffer.data()).* = copy page.header.free_elem.?;
+				page.header.free_elem = std.bitCast<{RawPtr*mut}>(buffer.data()); 
+			}
+		}
+	}
+	
+
+
+	impl std.mem.IAllocator {
+		alloc       = alloc,
+		allocResize = allocResize,
+		dealloc     = dealloc,
+	}
+
+
+	impl std.mem.IAllocatorRT {
+		alloc       = alloc,
+		allocResize = allocResize,
+		dealloc     = dealloc,
+	}
+
+
+
+	///////////////////////////////////
+	// private
+
+	type BucketIndex = alias #private USize;
+
+
+	func calculate_bucket = (size: USize) #private -> BucketIndex {
+		const num_bytes_needed = std.math.max(size, 8);
+		return std.bit.bitWidth(num_bytes_needed - 1) - 3;
+	}
+
+
+	func is_direct_page_bucket = (bucket_index: BucketIndex) -> Bool {
+		return bucket_index >= NUM_BUCKETS;
+	}
+
+	func calc_bucket_elem_size = (bucket_index: BucketIndex) -> USize {
+		return (1 as USize) << (bucket_index + 3) as UI6;
+	}
+
+	func calc_num_elems_per_bucket_page = (bucket_index: BucketIndex) -> USize {
+		return Bucket.Page.NUM_DATA_BYTES >> (bucket_index + 3) as UI6;
+	}	
+
+
+	type Bucket = struct #private {
+		var pages_with_free_space: PagesWithFreedSpaceNode*mut?;
+		var current_allocating_page: Page*mut?;
+		var current_allocating_index: USize = 0;
+
+
+		func add_page_with_free_space = (this mut, page: Page*mut) -> Void {
+			if(this.pages_with_free_space == null){
+				var page_allocator = new std.heap.PageAllocator();
+				var allocator = new std.mem.Allocator<{std.heap.PageAllocator}>(page_allocator);
+
+				var created_free_space_node: PagesWithFreedSpaceNode*uninit =
+					allocator.alloc<{PagesWithFreedSpaceNode}>();
+				created_free_space_node.* = new PagesWithFreedSpaceNode();
+
+				this.pages_with_free_space = @makeInitPtr(created_free_space_node);
+
+			}else if(this.pages_with_free_space.?.mem_pages.size() == PagesWithFreedSpaceNode.NUM_OWNED_PAGES){
+				var page_allocator = new std.heap.PageAllocator();
+				var allocator = new std.mem.Allocator<{std.heap.PageAllocator}>(page_allocator);
+
+				var created_free_space_node: PagesWithFreedSpaceNode*uninit =
+					allocator.alloc<{PagesWithFreedSpaceNode}>();
+				created_free_space_node.* = new PagesWithFreedSpaceNode();
+
+				this.pages_with_free_space.?.next_node = @makeInitPtr(created_free_space_node);
+				@makeInitPtr(created_free_space_node).prev_node = copy this.pages_with_free_space;
+				this.pages_with_free_space = @makeInitPtr(created_free_space_node);
+			}
+
+			this.pages_with_free_space.?.mem_pages.append().* = copy page;
+		}
+
+		func remove_page_with_free_space = (this mut) -> Void {
+			var current_pages_with_free_space: PagesWithFreedSpaceNode*mut = copy this.pages_with_free_space.?;
+
+			current_pages_with_free_space.mem_pages.pop();
+
+			if(current_pages_with_free_space.mem_pages.isEmpty()){
+				this.pages_with_free_space = copy current_pages_with_free_space.prev_node;
+
+				std.heap.PageAllocator.dealloc(std.asBuffer(current_pages_with_free_space));
+			}
+		}
+
+
+		type PagesWithFreedSpaceNode = struct {
+			var prev_node: PagesWithFreedSpaceNode*mut? = null;
+			var next_node: PagesWithFreedSpaceNode*mut? = null;
+			var mem_pages = new std.StaticArrayList<{Page*mut, NUM_OWNED_PAGES}>();
+
+			def NUM_OWNED_PAGES: USize = (
+				std.heap.pageSize()
+					- (std.types.numBytes<{PagesWithFreedSpaceNode*?}>() * 2)
+					- std.types.numBytes<{USize}>()
+			) / std.types.numBytes<{Page*mut}>();
+		}
+		@comptimeAssert(std.types.numBytes<{PagesWithFreedSpaceNode}>() == std.heap.pageSize());
+
+		type Page = struct #ordered {
+			var data = new [Byte:NUM_DATA_BYTES]();
+			var header: Header;
+
+			type Header = struct {
+				var prev_node: Page*? = null;
+				var next_node: Page*? = null;
+				var free_elem: RawPtr*mut? = null;
+				var num_free: UI16;
+			}
+
+			func new = (num_elements: UI16) -> (output: This) {
+				output.header = new Header{num_free = copy num_elements};
+				return...;
+			}
+
+			def NUM_DATA_BYTES: USize = std.heap.pageSize() - std.types.numBytes<{Header}>();
+		}
+		@comptimeAssert(std.types.numBytes<{Page}>() == std.heap.pageSize());
+	}
+
+
+	def NUM_BUCKETS: BucketIndex #private = calculate_bucket(std.heap.pageSize() / 4) + 1;
+	var buckets: [Bucket:NUM_BUCKETS] #private;
+
+}

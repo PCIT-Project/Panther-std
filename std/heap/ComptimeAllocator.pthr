@@ -13,7 +13,7 @@ def std #private = @import("std");
 
 
 type ComptimeAllocator = struct {
-	func alloc = (this mut, size: USize, alignment: UI32) #ct -> [Byte:*mut] {
+	func alloc = (size: USize, alignment: UI32) #ct -> [Byte:*mut] {
 		const ptr: RawPtr = @_ctAlloc(size, alignment);
 
 		unsafe{
@@ -22,27 +22,47 @@ type ComptimeAllocator = struct {
 	}
 
 
-	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) #ct -> Void <Void> {
+	func allocResize = (buffer: [Byte:*], new_size: USize) #ct -> Void <Void> {
 		error;
 	}
 
 
 
-	func dealloc = (this mut, buffer: [Byte:*]) #ct -> Void {
+	func dealloc = (buffer: [Byte:*]) #ct -> Void {
 		@_ctDealloc(buffer.data() as RawPtr);
 	}
 
 
 
 	impl std.mem.IAllocator {
-		alloc       = alloc,
-		allocResize = allocResize,
-		dealloc     = dealloc,
+		alloc = (this mut, size: USize, alignment: UI32) #rtDiff -> [Byte:*mut] {
+			when(@isComptime()){
+				return alloc(size, alignment);
+			}else{
+				unreachable("std.heap.ComptimeAllocator cannot allocate at runtime");
+			}
+		},
+		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) #rtDiff -> Void <Void> {
+			when(@isComptime()){
+				try allocResize(buffer, new_size) else { error; };
+			}else{
+				unreachable("std.heap.ComptimeAllocator cannot allocate at runtime");
+			}
+		},
+		dealloc = (this mut, buffer: [Byte:*], alignment: UI32) #rtDiff -> Void {
+			when(@isComptime()){
+				dealloc(buffer);
+			}else{
+				unreachable("std.heap.ComptimeAllocator cannot deallocate at runtime");
+			}
+		},
 	}
 
 	impl std.mem.IAllocatorCT {
-		alloc       = alloc,
-		allocResize = allocResize,
-		dealloc     = dealloc,
+		alloc = (this mut, size: USize, alignment: UI32) #ct -> [Byte:*mut] { return alloc(size, alignment); },
+		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) #ct -> Void <Void> {
+			try allocResize(buffer, new_size) else { error; };
+		},
+		dealloc = (this mut, buffer: [Byte:*], alignment: UI32) #ct -> Void { dealloc(buffer); },
 	}
 }

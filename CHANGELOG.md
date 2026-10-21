@@ -1,6 +1,14 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.65.0"></a>
+## v0.0.65.0
+- Added `std.heap.GeneralAllocator`
+- Added `std.heap.DebugPageAllocator`
+- Updated `mem.IAllocator`, `mem.IAllocatorCT`, and `mem.IAllocatorRT` methods to include alignment
+
+
+<!---------------------------------->
 <a name="v0.0.64.0"></a>
 ## v0.0.64.0
 - Updated reflect updates to [PCIT-CPP v0.0.406.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.406.0)

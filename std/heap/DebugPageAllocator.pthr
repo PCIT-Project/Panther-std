@@ -1,0 +1,80 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std.heap");
+
+def std #private = @import("std");
+
+
+type DebugPageAllocator = struct {
+	func new = () -> (output: DebugPageAllocator) {
+		output.num_allocations = new std.Atomic<{USize}>(0);
+		return...;
+	}
+
+	func delete = (this mut) -> Void {
+		std.debug.assert(
+			this.num_allocations.load() == 0, "Not all memory pages from `std.heap.DebugPageAllocator` were deallocated"
+		);
+	}
+
+
+
+	func alloc = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] {
+		std.debug.assert(size != 0, "Cannot allocate a size of 0");
+		std.debug.assert(alignment > 0 && std.math.isPowOf2(alignment), "Inavlid alignment");
+		std.debug.assert(
+			alignment as USize <= std.heap.pageSize(),
+			"This alignment is currently unsupported by std.heap.DebugPageAllocator"
+		);
+
+		this.num_allocations += 1;
+
+		return std.heap.PageAllocator.alloc(size, alignment);
+	}
+
+
+	func allocResize = (this mut, buffer: [Byte:*], new_size: USize) -> Void <Void> {
+		try std.heap.PageAllocator.allocResize(buffer, new_size) else { error; };
+	}
+
+
+	func dealloc = (this mut, buffer: [Byte:*]) -> Void {
+		const current_num_allocations: USize = this.num_allocations.fetchSub(1);
+		std.debug.assert(current_num_allocations > 0, "More deallocations than allocations");
+
+		std.heap.PageAllocator.dealloc(buffer);
+	}
+
+
+
+	impl std.mem.IAllocator {
+		alloc       = alloc,
+		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) -> Void <Void> {
+			try this.allocResize(buffer, new_size) else { error; };
+		},
+		dealloc = (this mut, buffer: [Byte:*], alignment: UI32) -> Void { this.dealloc(buffer); },
+	}
+
+
+	impl std.mem.IAllocatorRT {
+		alloc       = alloc,
+		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) #rt -> Void <Void> {
+			try this.allocResize(buffer, new_size) else { error; };
+		},
+		dealloc = (this mut, buffer: [Byte:*], alignment: UI32) #rt -> Void { this.dealloc(buffer); },
+	}
+
+
+
+	///////////////////////////////////
+	// private
+
+	var num_allocations: std.Atomic<{USize}> #private;
+}

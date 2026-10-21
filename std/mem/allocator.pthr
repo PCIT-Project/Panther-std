@@ -26,19 +26,19 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 	
 
 	func alloc = <{T: Type}> (this mut) -> T*uninit {
-		const num_bytes: USize = std.types.numBytes<{T}>();
-		const num_bytes_alignment: UI32 = std.types.numAlignBytes<{T}>();
+		def NUM_BYTES: USize = std.types.numBytes<{T}>();
+		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 
 		unsafe{
-			return std.bitCast<{T*uninit}>(this.allocator_impl.alloc(num_bytes, num_bytes_alignment).data());
+			return std.bitCast<{T*uninit}>(this.allocator_impl.alloc(NUM_BYTES, NUM_BYTES_ALIGNMENT).data());
 		}
 	}
 
 	func alloc = <{T: Type}> (this, num_elements: USize) -> [std.ManualLifetime<{T}>:*mut] {
 		const num_bytes: USize = std.types.numBytes<{T}>() * num_elements;
-		const num_bytes_alignment: UI32 = std.types.numAlignBytes<{T}>();
+		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 
-		const new_alloc: [Byte:*] = this.allocator_impl.alloc(num_bytes, num_bytes_alignment);
+		const new_alloc: [Byte:*] = this.allocator_impl.alloc(num_bytes, NUM_BYTES_ALIGNMENT);
 
 		unsafe{
 			return new [std.ManualLifetime<{T}>:*mut](
@@ -52,8 +52,12 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 			unsafe{ delete ptr.*; }
 		}
 
-		this.allocator_impl.dealloc(std.asBuffer(ptr));
+		this.allocator_impl.dealloc(std.asBuffer(ptr), std.types.numAlignBytes<{T}>());
 	}
+
+	func dealloc = (this mut, ptr: $T*uninit) #unsafe -> Void = delete(
+		"Incorrect method - did you mean to initialize the pointer first, or did you mean to call `.deallocWithoutDelete()` instead?"
+	);
 
 	func dealloc = (this mut, buffer: [$T:*mut]) -> Void {
 		when(std.types.isTriviallyDeletable<{T}>() == false){
@@ -66,37 +70,41 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 
 		unsafe{
 			this.allocator_impl.dealloc(
-				new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>())
+				new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>()),
+				std.types.numAlignBytes<{T}>()
 			);
 		}
 	}
 
 
 	func deallocWithoutDelete = (this mut, ptr: $T*) #unsafe -> Void {
-		this.allocator_impl.dealloc(std.asBuffer(ptr));
+		this.allocator_impl.dealloc(std.asBuffer(ptr), std.types.numAlignBytes<{T}>());
 	}
 
 	func deallocWithoutDelete = (this mut, ptr: $T*uninit) #unsafe -> Void {
-		this.allocator_impl.dealloc(std.asBuffer(std.bitCast<{T*}>(ptr)));
+		this.allocator_impl.dealloc(std.asBuffer(std.bitCast<{T*}>(ptr), std.types.numAlignBytes<{T}>()));
 	}
 
 	func deallocWithoutDelete = (this mut, buffer: [$T:*mut]) #unsafe -> Void {
 		this.allocator_impl.dealloc(
-			new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>())
+			new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>()),
+			std.types.numAlignBytes<{T}>()
 		);
 	}
 
 
 
-	func allocResize = (this, buffer: [$$:*], new_size: USize) -> Void <Void> {
+	func allocResize = (this, buffer: [$Ptr:*], new_size: USize) -> Void <Void> {
 		unsafe{
 			const byte_buffer = new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size());
-			try this.allocator_impl.allocResize(byte_buffer, new_size) else { error; };
+			try this.allocator_impl.allocResize(byte_buffer, std.types.numAlignBytes<{Ptr}>(), new_size) else {
+				error;
+			};
 		}
 	}
 
 	func allocResize = (this, ptr: $Ptr*, new_size: USize) -> Void <Void> {
-		this.allocResize(new [Ptr:*](copy ptr, 1), new_size);
+		this.allocResize(new [Ptr:*](copy ptr, 1), std.types.numAlignBytes<{Ptr}>(), new_size);
 	}
 
 
@@ -106,12 +114,12 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 			return this.allocator_impl.alloc(size, alignment);
 		},
 
-		allocResize = (this mut, buffer: [Byte:*], new_size: USize) -> Void <Void> {
-			try this.allocator_impl.allocResize(buffer, new_size) else { error; };
+		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) -> Void <Void> {
+			try this.allocator_impl.allocResize(buffer, alignment, new_size) else { error; };
 		},
 
-		dealloc = (this mut, buffer: [Byte:*]) -> Void {
-			this.allocator_impl.dealloc(buffer);
+		dealloc = (this mut, buffer: [Byte:*], alignment: UI32) -> Void {
+			this.allocator_impl.dealloc(buffer, alignment);
 		},
 	}
 
@@ -138,8 +146,8 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type}> {
 	
 
 	func alloc = <{T: Type}> (this mut) #rt -> T*uninit {
-		const num_bytes: USize = std.types.numBytes<{T}>();
-		const num_bytes_alignment: UI32 = std.types.numAlignBytes<{T}>();
+		def NUM_BYTES: USize = std.types.numBytes<{T}>();
+		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 
 		unsafe{
 			return std.bitCast<{T*uninit}>(this.allocator_impl.alloc(num_bytes, num_bytes_alignment).data());
@@ -148,9 +156,9 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type}> {
 
 	func alloc = <{T: Type}> (this, num_elements: USize) #rt -> [std.ManualLifetime<{T}>:*mut] {
 		const num_bytes: USize = std.types.numBytes<{T}>() * num_elements;
-		const num_bytes_alignment: UI32 = std.types.numAlignBytes<{T}>();
+		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 
-		const new_alloc: [Byte:*] = this.allocator_impl.alloc(num_bytes, num_bytes_alignment);
+		const new_alloc: [Byte:*] = this.allocator_impl.alloc(num_bytes, NUM_BYTES_ALIGNMENT);
 
 		unsafe{
 			return new [std.ManualLifetime<{T}>:*mut](
@@ -164,7 +172,7 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type}> {
 			unsafe{ delete ptr.*; }
 		}
 
-		this.allocator_impl.dealloc(std.asBuffer(ptr));
+		this.allocator_impl.dealloc(std.asBuffer(ptr), std.types.numAlignBytes<{T}>());
 	}
 
 	func dealloc = (this mut, buffer: [$T:*mut]) #rt -> Void {
@@ -178,36 +186,40 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type}> {
 
 		unsafe{
 			this.allocator_impl.dealloc(
-				new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>())
+				new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>()),
+				std.types.numAlignBytes<{T}>()
 			);
 		}
 	}
 
 
 	func deallocWithoutDelete = (this mut, ptr: $T*) #unsafe #rt -> Void {
-		this.allocator_impl.dealloc(std.asBuffer(ptr));
+		this.allocator_impl.dealloc(std.asBuffer(ptr), std.types.numAlignBytes<{T}>());
 	}
 
 	func deallocWithoutDelete = (this mut, ptr: $T*uninit) #unsafe #rt -> Void {
-		this.allocator_impl.dealloc(std.asBuffer(std.bitCast<{T*}>(ptr)));
+		this.allocator_impl.dealloc(std.asBuffer(std.bitCast<{T*}>(ptr)), std.types.numAlignBytes<{T}>());
 	}
 
 	func deallocWithoutDelete = (this mut, buffer: [$T:*mut]) #unsafe #rt -> Void {
 		this.allocator_impl.dealloc(
-			new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>())
+			new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>()),
+			std.types.numAlignBytes<{T}>()
 		);
 	}
 
 
-	func allocResize = (this, buffer: [$$:*], new_size: USize) #rt -> Void <Void> {
+	func allocResize = (this, buffer: [$Ptr:*], new_size: USize) #rt -> Void <Void> {
 		unsafe{
 			const byte_buffer = new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size());
-			try this.allocator_impl.allocResize(byte_buffer, new_size) else { error; };
+			try this.allocator_impl.allocResize(byte_buffer, std.types.numAlignBytes<{Ptr}>(), new_size) else {
+				error;
+			};
 		}
 	}
 
 	func allocResize = (this, ptr: $Ptr*, new_size: USize) #rt -> Void <Void> {
-		this.allocResize(new [Ptr:*](copy ptr, 1), new_size);
+		this.allocResize(new [Ptr:*](copy ptr, 1), std.types.numAlignBytes<{Ptr}>(), new_size);
 	}
 
 
@@ -217,12 +229,12 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type}> {
 			return this.allocator_impl.alloc(size, alignment);
 		},
 
-		allocResize = (this mut, buffer: [Byte:*], new_size: USize) #rt -> Void <Void> {
-			try this.allocator_impl.allocResize(buffer, new_size) else { error; };
+		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) #rt -> Void <Void> {
+			try this.allocator_impl.allocResize(buffer, alignment, new_size) else { error; };
 		},
 
-		dealloc = (this mut, buffer: [Byte:*]) #rt -> Void {
-			this.allocator_impl.dealloc(buffer);
+		dealloc = (this mut, buffer: [Byte:*], alignment: UI32) #rt -> Void {
+			this.allocator_impl.dealloc(buffer, alignment);
 		},
 	}
 
@@ -275,7 +287,7 @@ type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAll
 			unsafe{ delete ptr.*; }
 		}
 
-		this.allocator_impl.dealloc(std.asBuffer(ptr));
+		this.allocator_impl.dealloc(std.asBuffer(ptr), std.types.numAlignBytes<{T}>());
 	}
 
 	func dealloc = (this mut, buffer: [$T:*mut]) #ct -> Void {
@@ -289,36 +301,40 @@ type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAll
 
 		unsafe{
 			this.allocator_impl.dealloc(
-				new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>())
+				new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>()),
+				std.types.numAlignBytes<{T}>()
 			);
 		}
 	}
 
 
 	func deallocWithoutDelete = (this mut, ptr: $T*) #unsafe #ct -> Void {
-		this.allocator_impl.dealloc(std.asBuffer(ptr));
+		this.allocator_impl.dealloc(std.asBuffer(ptr), std.types.numAlignBytes<{T}>());
 	}
 
 	func deallocWithoutDelete = (this mut, ptr: $T*uninit) #unsafe #ct -> Void {
-		this.allocator_impl.dealloc(std.asBuffer(std.bitCast<{T*}>(ptr)));
+		this.allocator_impl.dealloc(std.asBuffer(std.bitCast<{T*}>(ptr)), std.types.numAlignBytes<{T}>());
 	}
 
 	func deallocWithoutDelete = (this mut, buffer: [$T:*mut]) #unsafe #ct -> Void {
 		this.allocator_impl.dealloc(
-			new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>())
+			new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>()),
+			std.types.numAlignBytes<{T}>()
 		);
 	}
 
 
-	func allocResize = (this, buffer: [$$:*], new_size: USize) #ct -> Void <Void> {
+	func allocResize = (this, buffer: [$Ptr:*], new_size: USize) #ct -> Void <Void> {
 		unsafe{
 			const byte_buffer = new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size());
-			try this.allocator_impl.allocResize(byte_buffer, new_size) else { error; };
+			try this.allocator_impl.allocResize(byte_buffer, std.types.numAlignBytes<{Ptr}>(), new_size) else {
+				error;
+			};
 		}
 	}
 
 	func allocResize = (this, ptr: $Ptr*, new_size: USize) #ct -> Void <Void> {
-		this.allocResize(new [Ptr:*](copy ptr, 1), new_size);
+		this.allocResize(new [Ptr:*](copy ptr, 1), std.types.numAlignBytes<{Ptr}>(), new_size);
 	}
 
 
@@ -328,12 +344,12 @@ type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAll
 			return this.allocator_impl.alloc(size, alignment);
 		},
 
-		allocResize = (this mut, buffer: [Byte:*], new_size: USize) #ct -> Void <Void> {
-			try this.allocator_impl.allocResize(buffer, new_size) else { error; };
+		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) #ct -> Void <Void> {
+			try this.allocator_impl.allocResize(buffer, alignment, new_size) else { error; };
 		},
 
-		dealloc = (this mut, buffer: [Byte:*]) #ct -> Void {
-			this.allocator_impl.dealloc(buffer);
+		dealloc = (this mut, buffer: [Byte:*], alignment: UI32) #ct -> Void {
+			this.allocator_impl.dealloc(buffer, alignment);
 		},
 	}
 

@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 
+def std #private = @import("std");
+
 @setModuleName("std.types");
 
 
@@ -37,7 +39,8 @@ func getIntegerTypeID = <{WIDTH: UI32, IS_UNSIGNED: Bool}> () -> TypeID {
 
 
 func getShiftValueTypeID = <{T: Type}> () -> TypeID {
-	return @_getIntegerTypeID<{std.bitWidth(@_numBits<{T, false}>()), true}>();
+	def NUM: UI32 = std.bitWidth(@_numBits<{T, false}>()) as UI32 - 1;
+	return @_getIntegerTypeID<{NUM, true}>();
 }
 
 

@@ -35,7 +35,7 @@ func bitCeil = (num: $Integral) -> Integral {
 	@comptimeAssert(std.types.isUnsignedIntegral<{Integral}>(), "std.bit.bitWidth only accepts unsigned integrals");
 
 	if(num != 0){
-		return 1 as Integral << bitWidth(num - 1) as type(std.getShiftValueTypeID<{Integral}>());
+		return 1 as Integral << bitWidth(num - 1) as type(std.types.getShiftValueTypeID<{Integral}>());
 	}else{
 		return 0;
 	}
@@ -45,7 +45,7 @@ func bitFloor = (num: $Integral) -> Integral {
 	@comptimeAssert(std.types.isUnsignedIntegral<{Integral}>(), "std.bit.bitWidth only accepts unsigned integrals");
 
 	if(num != 0){
-		return 1 as Integral << (bitWidth(num) - 1) as type(std.getShiftValueTypeID<{Integral}>());
+		return 1 as Integral << (bitWidth(num) - 1) as type(std.types.getShiftValueTypeID<{Integral}>());
 	}else{
 		return 0;
 	}

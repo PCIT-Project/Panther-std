@@ -18,7 +18,7 @@ type ArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
 
 	func new = (arr_ref_ptr: ARRAY_REF_TYPE) -> (output: This) {
 		if(arr_ref_ptr.size() != 0){
-			output.current = copy arr_ref_ptr.data().?;
+			output.current = arr_ref_ptr[0];
 			output.last = arr_ref_ptr[arr_ref_ptr.size() - 1];
 			
 		}else{
@@ -77,7 +77,7 @@ type MutArrayRefIter = struct <{ARRAY_REF_TYPE: Type}> {
 
 	func new = (arr_ref_ptr: ARRAY_REF_TYPE) -> (output: This) {
 		if(arr_ref_ptr.size() != 0){
-			output.current = copy arr_ref_ptr.data().?;
+			output.current = arr_ref_ptr[0];
 			output.last = arr_ref_ptr[arr_ref_ptr.size() - 1];
 			
 		}else{

@@ -267,7 +267,7 @@ type File = struct {
 									"std.fs.File - unknown error when calling std.platform.windows.ntCreateFile"
 								);
 							}else{
-								error CreateError.UNKNOWN;
+								error OpenError.UNKNOWN;
 							}
 						}
 					}

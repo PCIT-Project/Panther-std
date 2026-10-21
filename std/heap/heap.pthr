@@ -13,6 +13,8 @@ def std #private = @import("std");
 
 when(std.platform.SUPPORTS_NON_LINEAR_HEAP){
 	type PageAllocator = alias @import("./PageAllocator.pthr").PageAllocator;
+	type DebugPageAllocator = alias @import("./DebugPageAllocator.pthr").DebugPageAllocator;
+	type GeneralAllocator = alias @import("./GeneralAllocator.pthr").GeneralAllocator;
 }
 
 type ComptimeAllocator = alias @import("./ComptimeAllocator.pthr").ComptimeAllocator;
