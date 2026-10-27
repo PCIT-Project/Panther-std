@@ -200,7 +200,9 @@ func write = (writer: std.Writer<{$$}> mut, arg: RawPtr, format_info: [Char:*] =
 
 
 
-
+type IFmt = interface #nonPolymorphic {
+	func write = (this, writer: std.Writer<{$$}> mut, format_info: [Char:*]) -> Void;
+}
 
 
 func write = (writer: std.Writer<{$$}> mut, arg: $Arg, format_info: [Char:*] = new [Char:*]()) -> Void {
@@ -208,7 +210,7 @@ func write = (writer: std.Writer<{$$}> mut, arg: $Arg, format_info: [Char:*] = n
 		write_integral(writer, arg, format_info);
 		
 	}else{
-		@comptimeError("Cannot format this type");
+		(arg as impl(Arg:IFmt)).write(writer, format_info);
 	}
 }
 
@@ -383,6 +385,7 @@ type FmtString = struct {
 
 		return...;
 	}
+
 
 
 	func new = (fmt_str: [Char:$$;'\0']*) #implicit -> (output: This) {

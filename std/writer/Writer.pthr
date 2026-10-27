@@ -47,8 +47,18 @@ type Writer = struct <{TargetWriter: Type}> {
 	}
 
 
+	func as = (this mut) -> PmWriter {
+		when(std.types.id<{TargetWriter}>() == std.types.id<{impl(*mut:std.IWriter)}>()){
+			return copy this;
+
+		}else{
+			return new PmWriter(this.writer_impl as impl(*mut:std.IWriter));
+		}
+	}
+
+
 	///////////////////////////////////
 	// private
 
-	var writer_impl: impl*mut(TargetWriter:std.IWriter);
+	var writer_impl: impl*mut(TargetWriter:std.IWriter) #private;
 }

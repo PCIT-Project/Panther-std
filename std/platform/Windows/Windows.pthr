@@ -236,13 +236,7 @@ func ntCreateFile = (
 
 		var object_attributes = new native.OBJECT_ATTRIBUTES{
 			Length        = std.types.numBytes<{native.OBJECT_ATTRIBUTES}>() as CULong,
-			RootDirectory = {->expr:native.HANDLE
-				if(root_directory != null){
-					return->expr root_directory.? as native.HANDLE;
-				}else{
-					return->expr null;
-				}
-			},
+			RootDirectory = (root_directory orElse null) as native.HANDLE,
 			ObjectName    = &unicode_path_string,
 			Attributes    = native.OBJECT_ATTRIBUTES.ATTRIBUTE.CASE_INSENSITIVE as native.ULONG,
 		};
