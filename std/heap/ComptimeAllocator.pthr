@@ -35,7 +35,7 @@ type ComptimeAllocator = struct {
 
 
 	impl std.mem.IAllocator {
-		alloc = (this mut, size: USize, alignment: UI32) #rtDiff -> [Byte:*mut] {
+		alloc = (this mut, size: USize, alignment: UI32) #rtDiff -> [Byte:*mut] <Void> {
 			when(@isComptime()){
 				return alloc(size, alignment);
 			}else{
@@ -59,7 +59,9 @@ type ComptimeAllocator = struct {
 	}
 
 	impl std.mem.IAllocatorCT {
-		alloc = (this mut, size: USize, alignment: UI32) #ct -> [Byte:*mut] { return alloc(size, alignment); },
+		alloc = (this mut, size: USize, alignment: UI32) #ct -> [Byte:*mut] <Void> {
+			return alloc(size, alignment);
+		},
 		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) #ct -> Void <Void> {
 			try allocResize(buffer, new_size) else { error; };
 		},

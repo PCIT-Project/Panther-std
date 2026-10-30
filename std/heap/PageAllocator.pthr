@@ -14,7 +14,7 @@ def std #private = @import("std");
 
 type PageAllocator = struct {
 
-	func alloc = (size: USize, alignment: UI32) #rtDiff -> [Byte:*mut] {
+	func alloc = (size: USize, alignment: UI32) #rtDiff -> [Byte:*mut] <Void> {
 		std.debug.assert(size != 0, "Cannot allocate a size of 0");
 		std.debug.assert(alignment > 0 && std.math.isPowOf2(alignment), "Inavlid alignment");
 
@@ -26,7 +26,7 @@ type PageAllocator = struct {
 			}
 
 		}else{
-			return rt_alloc(size, alignment);
+			return try rt_alloc(size, alignment) else { error; };
 		}
 	}
 
@@ -52,7 +52,9 @@ type PageAllocator = struct {
 
 
 	impl std.mem.IAllocator {
-		alloc       = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] { return alloc(size, alignment); },
+		alloc       = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] <Void> {
+			return try alloc(size, alignment) else { error; };
+		},
 		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) -> Void <Void> {
 			try allocResize(buffer, new_size) else { error; }; 
 		},
@@ -61,7 +63,9 @@ type PageAllocator = struct {
 
 
 	impl std.mem.IAllocatorRT {
-		alloc       = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] { return alloc(size, alignment); },
+		alloc       = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] <Void> {
+			return try alloc(size, alignment) else { error; };
+		},
 		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) -> Void <Void> {
 			try allocResize(buffer, new_size) else { error; }; 
 		},
@@ -74,8 +78,7 @@ type PageAllocator = struct {
 	// private
 
 
-
-	func rt_alloc = (size: USize, alignment: UI32) #rt #private -> [Byte:*mut] {
+	func rt_alloc = (size: USize, alignment: UI32) #rt #private -> [Byte:*mut] <Void> {
 		std.debug.assert(
 			alignment as USize <= std.heap.pageSize(),
 			"This alignment is currently unsupported by std.heap.PageAllocator"
@@ -95,55 +98,56 @@ type PageAllocator = struct {
 					-1 as std.platform.linux.FileDescriptor,
 					0
 				) else<errno: std.platform.linux.Errno> {
-					switch(errno){
-						case(std.platform.linux.Errno.ACCES){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.ACCES");
-						}
+					error;
+					// switch(errno){
+					// 	case(std.platform.linux.Errno.ACCES){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Errno.ACCES");
+					// 	}
 
-						case(std.platform.linux.Errno.AGAIN){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.AGAIN");
-						}
+					// 	case(std.platform.linux.Errno.AGAIN){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Errno.AGAIN");
+					// 	}
 
-						case(std.platform.linux.Errno.BADF){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.BADF");
-						}
+					// 	case(std.platform.linux.Errno.BADF){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Errno.BADF");
+					// 	}
 
-						case(std.platform.linux.Errno.EXIST){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.EXIST");
-						}
+					// 	case(std.platform.linux.Errno.EXIST){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Errno.EXIST");
+					// 	}
 
-						case(std.platform.linux.Errno.INVAL){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.INVAL");
-						}
+					// 	case(std.platform.linux.Errno.INVAL){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Errno.INVAL");
+					// 	}
 
-						case(std.platform.linux.Errno.NFILE){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.NFILE");
-						}
+					// 	case(std.platform.linux.Errno.NFILE){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Errno.NFILE");
+					// 	}
 
-						case(std.platform.linux.Errno.NODEV){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.NODEV");
-						}
+					// 	case(std.platform.linux.Errno.NODEV){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Errno.NODEV");
+					// 	}
 
-						case(std.platform.linux.Errno.NOMEM){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.NOMEM");
-						}
+					// 	case(std.platform.linux.Errno.NOMEM){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Errno.NOMEM");
+					// 	}
 
-						case(std.platform.linux.Errno.OVERFLOW){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.OVERFLOW");
-						}
+					// 	case(std.platform.linux.Errno.OVERFLOW){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Errno.OVERFLOW");
+					// 	}
 
-						case(std.platform.linux.Errno.PERM){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.PERM");
-						}
+					// 	case(std.platform.linux.Errno.PERM){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Errno.PERM");
+					// 	}
 
-						case(std.platform.linux.Errno.TXTBSY){
-							unreachable("std.heap.PageAllocator failed to allocate - Errno.TXTBSY");
-						}
+					// 	case(std.platform.linux.Errno.TXTBSY){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Errno.TXTBSY");
+					// 	}
 
-						else{
-							unreachable("std.heap.PageAllocator failed to allocate - Unexpected error");
-						}
-					}
+					// 	else{
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Unexpected error");
+					// 	}
+					// }
 				};
 
 				unsafe{
@@ -165,51 +169,53 @@ type PageAllocator = struct {
 					std.platform.windows.AllocationTypeFlags.COMMIT | std.platform.windows.AllocationTypeFlags.RESERVE,
 					std.platform.windows.AllocationProtectionFlags.READWRITE
 				) else<nt_status: std.platform.windows.NTStatus> {
-					switch(nt_status){
-						case(std.platform.windows.NTStatus.ACCESS_DENIED){
-							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.ACCESS_DENIED");
-						}
+					error;
 
-						case(std.platform.windows.NTStatus.ALREADY_COMMITTED){
-							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.ALREADY_COMMITTED");
-						}
+					// switch(nt_status){
+					// 	case(std.platform.windows.NTStatus.ACCESS_DENIED){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - NTStatus.ACCESS_DENIED");
+					// 	}
 
-						case(std.platform.windows.NTStatus.COMMITMENT_LIMIT){
-							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.COMMITMENT_LIMIT");
-						}
+					// 	case(std.platform.windows.NTStatus.ALREADY_COMMITTED){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - NTStatus.ALREADY_COMMITTED");
+					// 	}
 
-						case(std.platform.windows.NTStatus.CONFLICTING_ADDRESSES){
-							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.CONFLICTING_ADDRESSES");
-						}
+					// 	case(std.platform.windows.NTStatus.COMMITMENT_LIMIT){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - NTStatus.COMMITMENT_LIMIT");
+					// 	}
 
-						case(std.platform.windows.NTStatus.INSUFFICIENT_RESOURCES){
-							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.INSUFFICIENT_RESOURCES");
-						}
+					// 	case(std.platform.windows.NTStatus.CONFLICTING_ADDRESSES){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - NTStatus.CONFLICTING_ADDRESSES");
+					// 	}
 
-						case(std.platform.windows.NTStatus.INVALID_HANDLE){
-							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.INVALID_HANDLE");
-						}
+					// 	case(std.platform.windows.NTStatus.INSUFFICIENT_RESOURCES){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - NTStatus.INSUFFICIENT_RESOURCES");
+					// 	}
 
-						case(std.platform.windows.NTStatus.INVALID_PAGE_PROTECTION){
-							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.INVALID_PAGE_PROTECTION");
-						}
+					// 	case(std.platform.windows.NTStatus.INVALID_HANDLE){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - NTStatus.INVALID_HANDLE");
+					// 	}
 
-						case(std.platform.windows.NTStatus.NO_MEMORY){
-							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.NO_MEMORY");
-						}
+					// 	case(std.platform.windows.NTStatus.INVALID_PAGE_PROTECTION){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - NTStatus.INVALID_PAGE_PROTECTION");
+					// 	}
 
-						case(std.platform.windows.NTStatus.OBJECT_TYPE_MISMATCH){
-							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.OBJECT_TYPE_MISMATCH");
-						}
+					// 	case(std.platform.windows.NTStatus.NO_MEMORY){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - NTStatus.NO_MEMORY");
+					// 	}
 
-						case(std.platform.windows.NTStatus.PROCESS_IS_TERMINATING){
-							unreachable("std.heap.PageAllocator failed to allocate - NTStatus.PROCESS_IS_TERMINATING");
-						}
+					// 	case(std.platform.windows.NTStatus.OBJECT_TYPE_MISMATCH){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - NTStatus.OBJECT_TYPE_MISMATCH");
+					// 	}
 
-						else{
-							unreachable("std.heap.PageAllocator failed to allocate - Unexpected error");
-						}
-					}
+					// 	case(std.platform.windows.NTStatus.PROCESS_IS_TERMINATING){
+					// 		unreachable("std.heap.PageAllocator failed to allocate - NTStatus.PROCESS_IS_TERMINATING");
+					// 	}
+
+					// 	else{
+					// 		unreachable("std.heap.PageAllocator failed to allocate - Unexpected error");
+					// 	}
+					// }
 				};
 
 				unsafe{

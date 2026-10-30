@@ -26,7 +26,7 @@ type DebugPageAllocator = struct {
 
 
 
-	func alloc = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] {
+	func alloc = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] <Void> {
 		std.debug.assert(size != 0, "Cannot allocate a size of 0");
 		std.debug.assert(alignment > 0 && std.math.isPowOf2(alignment), "Inavlid alignment");
 		std.debug.assert(
@@ -36,7 +36,7 @@ type DebugPageAllocator = struct {
 
 		this.num_allocations += 1;
 
-		return std.heap.PageAllocator.alloc(size, alignment);
+		return try std.heap.PageAllocator.alloc(size, alignment) else { error; };
 	}
 
 

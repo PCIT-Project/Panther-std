@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.67.0"></a>
+## v0.0.67.0
+- Added erroring to allocating for allocators (where applicable)
+
+
+<!---------------------------------->
 <a name="v0.0.66.0"></a>
 ## v0.0.66.0
 - Added `fmt.IFmt`

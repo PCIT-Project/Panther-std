@@ -27,94 +27,82 @@ type AtomicRef = struct <{T: Type}>
 
 
 	func load = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this) -> T {
-		return @atomicLoad<{T*, T, ORDERING}>(this.ptr);
+		return @_atomicLoad<{T*, T, ORDERING}>(this.ptr);
 	}
 
 	func store = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this, new_val: T in) -> Void {
-		@atomicStore<{T*mut, T, ORDERING}>(this.ptr, forward new_val);
+		@_atomicStore<{T*mut, T, ORDERING}>(this.ptr, forward new_val);
 	}
 
 
 
 	when(std.types.isIntegral<{T}>() || std.types.isPointer<{T}>() || @getTypeID<{Bool}>() == @getTypeID<{T}>()){
-		func compareExchange = 
-			<{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> 
-			(this, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		{
+		func compareExchange = <{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> (
+			this, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) {
 			[loaded, succeeded] = 
-				@cmpxchg<{T*mut, T, false, SUCCESS_ORDERING, FAILURE_ORDERING}>(this.ptr, expected, forward desired);
+				@_cmpxchg<{T*mut, T, false, SUCCESS_ORDERING, FAILURE_ORDERING}>(this.ptr, expected, forward desired);
 			return...;
 		}
 
-		func compareExchange = 
-			<{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}>
-			(this, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		{
-			[loaded, succeeded] = @cmpxchg<{T*mut, T, false, ORDERING, ORDERING}>(this.ptr, expected, forward desired);
+		func compareExchange = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (
+			this, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) {
+			[loaded, succeeded] = @_cmpxchg<{T*mut, T, false, ORDERING, ORDERING}>(this.ptr, expected, forward desired);
 			return...;
 		}
 
 
 
-		func compareExchangeWeak = 
-			<{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> 
-			(this, expected: T, desired: T in)
-		-> 
-			(loaded: T, succeeded: Bool)
-		{
+		func compareExchangeWeak = <{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> (
+			this, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) {
 			[loaded, succeeded] = 
-				@cmpxchg<{T*mut, T, true, SUCCESS_ORDERING, FAILURE_ORDERING}>(this.ptr, expected, forward desired);
+				@_cmpxchg<{T*mut, T, true, SUCCESS_ORDERING, FAILURE_ORDERING}>(this.ptr, expected, forward desired);
 			return...;
 		}
 
 
-		func compareExchangeWeak = 
-			<{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}>
-			(this, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		{
-			[loaded, succeeded] = @cmpxchg<{T*mut, T, true, ORDERING, ORDERING}>(this.ptr, expected, forward desired);
+		func compareExchangeWeak = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (
+			this, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) {
+			[loaded, succeeded] = @_cmpxchg<{T*mut, T, true, ORDERING, ORDERING}>(this.ptr, expected, forward desired);
 			return...;
 		}
 
 
 
 		func exchange = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.XCHG, ORDERING}>(this.ptr, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.XCHG, ORDERING}>(this.ptr, forward value);
 		}
 
 
 		func fetchAdd = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.ADD, ORDERING}>(this.ptr, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.ADD, ORDERING}>(this.ptr, forward value);
 		}
 
 		func fetchSub = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.SUB, ORDERING}>(this.ptr, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.SUB, ORDERING}>(this.ptr, forward value);
 		}
 
 		func fetchAnd = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.AND, ORDERING}>(this.ptr, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.AND, ORDERING}>(this.ptr, forward value);
 		}
 
 		func fetchOr = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.OR, ORDERING}>(this.ptr, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.OR, ORDERING}>(this.ptr, forward value);
 		}
 
 		func fetchXor = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.XOR, ORDERING}>(this.ptr, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.XOR, ORDERING}>(this.ptr, forward value);
 		}
 
 		func fetchMin = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.MIN, ORDERING}>(this.ptr, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.MIN, ORDERING}>(this.ptr, forward value);
 		}
 
 		func fetchMax = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this, value: T in) -> T {
-			return @atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.MAX, ORDERING}>(this.ptr, forward value);
+			return @_atomicRMW<{T*mut, T, @pthr.AtomicRMWOp.MAX, ORDERING}>(this.ptr, forward value);
 		}
 
 		func += = (this mut, rhs: T in) -> Void { _ = this.fetchAdd(forward rhs); }
@@ -125,33 +113,21 @@ type AtomicRef = struct <{T: Type}>
 
 
 	}else{
-		func compareExchange = 
-			<{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> 
-			(this, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		= delete("Type `T` must be integral, pointer, or `Bool`");
+		func compareExchange = <{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> (
+			this, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) = delete("Type `T` must be integral, pointer, or `Bool`");
 
-		func compareExchange = 
-			<{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}>
-			(this, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		= delete("Type `T` must be integral, pointer, or `Bool`");
+		func compareExchange = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (
+			this, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) = delete("Type `T` must be integral, pointer, or `Bool`");
 
-		func compareExchangeWeak = 
-			<{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> 
-			(this, expected: T, desired: T in)
-		-> 
-			(loaded: T, succeeded: Bool)
-		= delete("Type `T` must be integral, pointer, or `Bool`");
+		func compareExchangeWeak = <{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> (
+			this, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) = delete("Type `T` must be integral, pointer, or `Bool`");
 
-		func compareExchangeWeak = 
-			<{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}>
-			(this, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		= delete("Type `T` must be integral, pointer, or `Bool`");
+		func compareExchangeWeak = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (
+			this, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) = delete("Type `T` must be integral, pointer, or `Bool`");
 
 
 		func exchange = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this, value: T in) -> T

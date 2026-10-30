@@ -14,7 +14,7 @@ def std #private = @import("std");
 
 type GeneralAllocator = struct {
 	
-	func alloc = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] {
+	func alloc = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] <Void> {
 		std.debug.assert(size != 0, "Cannot allocate a size of 0");
 		std.debug.assert(alignment > 0 && std.math.isPowOf2(alignment), "Inavlid alignment");
 		std.debug.assert(
@@ -26,7 +26,7 @@ type GeneralAllocator = struct {
 		const bucket_index: BucketIndex = calculate_bucket(std.math.max(size, alignment as USize));
 
 		if(is_direct_page_bucket(bucket_index)){
-			return std.heap.PageAllocator.alloc(size, alignment);
+			return try std.heap.PageAllocator.alloc(size, alignment) else { error; };
 		}
 
 		var selected_bucket: Bucket*mut = this.buckets[bucket_index];
@@ -58,7 +58,7 @@ type GeneralAllocator = struct {
 			var page_allocator = new std.heap.PageAllocator();
 			var allocator = new std.mem.Allocator<{std.heap.PageAllocator}>(page_allocator);
 
-			const allocated_page: Bucket.Page*uninit = allocator.alloc<{Bucket.Page}>();
+			const allocated_page: Bucket.Page*uninit = try allocator.alloc<{Bucket.Page}>() else { error; };
 			allocated_page.* = new Bucket.Page(max_elems_in_selected_bucket as UI16);
 
 			selected_bucket.current_allocating_page = @makeInitPtr(allocated_page);
@@ -67,7 +67,7 @@ type GeneralAllocator = struct {
 			var page_allocator = new std.heap.PageAllocator();
 			var allocator = new std.mem.Allocator<{std.heap.PageAllocator}>(page_allocator);
 
-			const allocated_page: Bucket.Page*uninit = allocator.alloc<{Bucket.Page}>();
+			const allocated_page: Bucket.Page*uninit = try allocator.alloc<{Bucket.Page}>() else { error; };
 			allocated_page.* = new Bucket.Page(max_elems_in_selected_bucket as UI16);
 
 
@@ -132,24 +132,7 @@ type GeneralAllocator = struct {
 		const num_elems_in_page: USize = calc_num_elems_per_bucket_page(bucket_index);
 
 		if(page.header.num_free as USize == num_elems_in_page){
-			if(page.header.prev_node != null){
-				page.header.prev_node.?.header.next_node = copy page.header.next_node;
-			}
-
-			if(page.header.next_node != null){
-				page.header.next_node.?.header.prev_node = copy page.header.prev_node;
-			}
-
-			unsafe{
-				std.heap.PageAllocator.dealloc(std.asBuffer(page));
-			}
-
-
-			var bucket: Bucket*mut = this.buckets[bucket_index];
-			if(bucket.current_allocating_page != null && page == bucket.current_allocating_page.?){
-				bucket.current_allocating_page = null;
-				bucket.current_allocating_index = 0;
-			}
+			this.dealloc_bucket_page(page, bucket_index);
 			
 		}else if(page.header.free_elem == null){
 			unsafe{
@@ -158,7 +141,9 @@ type GeneralAllocator = struct {
 			}
 
 			var bucket: Bucket*mut = this.buckets[bucket_index];
-			bucket.add_page_with_free_space(page);
+			try bucket.add_page_with_free_space(page) else {
+				this.dealloc_bucket_page(page, bucket_index);
+			};
 
 		}else{
 			unsafe{
@@ -216,13 +201,13 @@ type GeneralAllocator = struct {
 		var current_allocating_index: USize = 0;
 
 
-		func add_page_with_free_space = (this mut, page: Page*mut) -> Void {
+		func add_page_with_free_space = (this mut, page: Page*mut) -> Void <Void> {
 			if(this.pages_with_free_space == null){
 				var page_allocator = new std.heap.PageAllocator();
 				var allocator = new std.mem.Allocator<{std.heap.PageAllocator}>(page_allocator);
 
 				var created_free_space_node: PagesWithFreedSpaceNode*uninit =
-					allocator.alloc<{PagesWithFreedSpaceNode}>();
+					try allocator.alloc<{PagesWithFreedSpaceNode}>() else { error; };
 				created_free_space_node.* = new PagesWithFreedSpaceNode();
 
 				this.pages_with_free_space = @makeInitPtr(created_free_space_node);
@@ -232,7 +217,7 @@ type GeneralAllocator = struct {
 				var allocator = new std.mem.Allocator<{std.heap.PageAllocator}>(page_allocator);
 
 				var created_free_space_node: PagesWithFreedSpaceNode*uninit =
-					allocator.alloc<{PagesWithFreedSpaceNode}>();
+					try allocator.alloc<{PagesWithFreedSpaceNode}>() else { error; };
 				created_free_space_node.* = new PagesWithFreedSpaceNode();
 
 				this.pages_with_free_space.?.next_node = @makeInitPtr(created_free_space_node);
@@ -288,6 +273,27 @@ type GeneralAllocator = struct {
 			def NUM_DATA_BYTES: USize = std.heap.pageSize() - std.types.numBytes<{Header}>();
 		}
 		@comptimeAssert(std.types.numBytes<{Page}>() == std.heap.pageSize());
+	}
+
+	func dealloc_bucket_page = (this mut, page: Bucket.Page*mut mut, bucket_index: BucketIndex) #private -> Void {
+		if(page.header.prev_node != null){
+			page.header.prev_node.?.header.next_node = copy page.header.next_node;
+		}
+
+		if(page.header.next_node != null){
+			page.header.next_node.?.header.prev_node = copy page.header.prev_node;
+		}
+
+		unsafe{
+			std.heap.PageAllocator.dealloc(std.asBuffer(page));
+		}
+
+
+		var bucket: Bucket*mut = this.buckets[bucket_index];
+		if(bucket.current_allocating_page != null && page == bucket.current_allocating_page.?){
+			bucket.current_allocating_page = null;
+			bucket.current_allocating_index = 0;
+		}
 	}
 
 

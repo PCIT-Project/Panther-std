@@ -36,24 +36,18 @@ type Atomic = struct <{T: Type}>
 
 
 	when(std.types.isIntegral<{T}>() || std.types.isPointer<{T}>() || std.types.id<{Bool}>() == std.types.id<{T}>()){
-		func compareExchange = 
-			<{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> 
-			(this mut, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		{
+		func compareExchange = <{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> (
+			this mut, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) {
 			[loaded, succeeded] = @_cmpxchg<{T*mut, T, false, SUCCESS_ORDERING, FAILURE_ORDERING}>(
 				&this.value, expected, forward desired
 			);
 			return...;
 		}
 
-		func compareExchange = 
-			<{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}>
-			(this mut, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		{
+		func compareExchange =  <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (
+			this mut, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) {
 			[loaded, succeeded] =
 				@_cmpxchg<{T*mut, T, false, ORDERING, ORDERING}>(&this.value, expected, forward desired);
 			return...;
@@ -61,12 +55,9 @@ type Atomic = struct <{T: Type}>
 
 
 
-		func compareExchangeWeak = 
-			<{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> 
-			(this mut, expected: T, desired: T in)
-		-> 
-			(loaded: T, succeeded: Bool)
-		{
+		func compareExchangeWeak =  <{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> (
+			this mut, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) {
 			[loaded, succeeded] = @_cmpxchg<{T*mut, T, true, SUCCESS_ORDERING, FAILURE_ORDERING}>(
 				&this.value, expected, forward desired
 			);
@@ -74,12 +65,9 @@ type Atomic = struct <{T: Type}>
 		}
 
 
-		func compareExchangeWeak = 
-			<{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}>
-			(this mut, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		{
+		func compareExchangeWeak = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (
+			this mut, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) {
 			[loaded, succeeded] = @_cmpxchg<{T*mut, T, true, ORDERING, ORDERING}>(
 				&this.value, expected, forward desired
 			);
@@ -130,33 +118,21 @@ type Atomic = struct <{T: Type}>
 		
 
 	}else{
-		func compareExchange = 
-			<{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> 
-			(this mut, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		= delete("Type `T` must be integral, pointer, or `Bool`");
+		func compareExchange = <{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> (
+			this mut, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) = delete("Type `T` must be integral, pointer, or `Bool`");
 
-		func compareExchange = 
-			<{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}>
-			(this mut, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		= delete("Type `T` must be integral, pointer, or `Bool`");
+		func compareExchange = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (
+			this mut, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) = delete("Type `T` must be integral, pointer, or `Bool`");
 
-		func compareExchangeWeak = 
-			<{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> 
-			(this mut, expected: T, desired: T in)
-		-> 
-			(loaded: T, succeeded: Bool)
-		= delete("Type `T` must be integral, pointer, or `Bool`");
+		func compareExchangeWeak = <{SUCCESS_ORDERING: std.AtomicOrdering, FAILURE_ORDERING: std.AtomicOrdering}> (
+			this mut, expected: T, desired: T in
+		) ->  (loaded: T, succeeded: Bool) = delete("Type `T` must be integral, pointer, or `Bool`");
 
-		func compareExchangeWeak = 
-			<{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}>
-			(this mut, expected: T, desired: T in)
-		->
-			(loaded: T, succeeded: Bool)
-		= delete("Type `T` must be integral, pointer, or `Bool`");
+		func compareExchangeWeak = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (
+			this mut, expected: T, desired: T in
+		) -> (loaded: T, succeeded: Bool) = delete("Type `T` must be integral, pointer, or `Bool`");
 
 
 		func exchange = <{ORDERING: std.AtomicOrdering = std.AtomicOrdering.SEQ_CST}> (this mut, value: T in) -> T

@@ -25,12 +25,14 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 
 	
 
-	func alloc = <{T: Type}> (this mut) -> T*uninit {
+	func alloc = <{T: Type}> (this mut) -> T*uninit <Void> {
 		def NUM_BYTES: USize = std.types.numBytes<{T}>();
 		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 
+		const new_alloc: [Byte:*] = try this.allocator_impl.alloc(NUM_BYTES, NUM_BYTES_ALIGNMENT) else { error; };
+
 		unsafe{
-			return std.bitCast<{T*uninit}>(this.allocator_impl.alloc(NUM_BYTES, NUM_BYTES_ALIGNMENT).data());
+			return std.bitCast<{T*uninit}>(new_alloc.data());
 		}
 	}
 
@@ -38,7 +40,7 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 		const num_bytes: USize = std.types.numBytes<{T}>() * num_elements;
 		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 
-		const new_alloc: [Byte:*] = this.allocator_impl.alloc(num_bytes, NUM_BYTES_ALIGNMENT);
+		const new_alloc: [Byte:*] = try this.allocator_impl.alloc(num_bytes, NUM_BYTES_ALIGNMENT) else { error; };
 
 		unsafe{
 			return new [std.ManualLifetime<{T}>:*mut](
@@ -110,8 +112,8 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 
 
 	impl std.mem.IAllocator {
-		alloc = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] {
-			return this.allocator_impl.alloc(size, alignment);
+		alloc = (this mut, size: USize, alignment: UI32) -> [Byte:*mut] <Void> {
+			return try this.allocator_impl.alloc(size, alignment) else { error; };
 		},
 
 		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) -> Void <Void> {
@@ -149,8 +151,10 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type}> {
 		def NUM_BYTES: USize = std.types.numBytes<{T}>();
 		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 
+		const new_alloc: [Byte:*] = try this.allocator_impl.alloc(NUM_BYTES, NUM_BYTES_ALIGNMENT) else { error; };
+
 		unsafe{
-			return std.bitCast<{T*uninit}>(this.allocator_impl.alloc(num_bytes, num_bytes_alignment).data());
+			return std.bitCast<{T*uninit}>(new_alloc.data());
 		}
 	}
 
@@ -158,7 +162,7 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type}> {
 		const num_bytes: USize = std.types.numBytes<{T}>() * num_elements;
 		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 
-		const new_alloc: [Byte:*] = this.allocator_impl.alloc(num_bytes, NUM_BYTES_ALIGNMENT);
+		const new_alloc: [Byte:*] = try this.allocator_impl.alloc(num_bytes, NUM_BYTES_ALIGNMENT) else { error; };
 
 		unsafe{
 			return new [std.ManualLifetime<{T}>:*mut](
@@ -225,8 +229,8 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type}> {
 
 
 	impl std.mem.IAllocatorRT {
-		alloc = (this mut, size: USize, alignment: UI32) #rt -> [Byte:*mut] {
-			return this.allocator_impl.alloc(size, alignment);
+		alloc = (this mut, size: USize, alignment: UI32) #rt -> [Byte:*mut] <Void> {
+			return try this.allocator_impl.alloc(size, alignment) else { error; };
 		},
 
 		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) #rt -> Void <Void> {
@@ -260,20 +264,22 @@ type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAll
 
 	
 
-	func alloc = <{T: Type}> (this mut) #ct -> T*uninit {
-		const num_bytes: USize = std.types.numBytes<{T}>();
-		const num_bytes_alignment: UI32 = std.types.numAlignBytes<{T}>();
+	func alloc = <{T: Type}> (this mut) #ct -> T*uninit <Void> {
+		def NUM_BYTES: USize = std.types.numBytes<{T}>();
+		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
+
+		const new_alloc: [Byte:*] = try this.allocator_impl.alloc(num_bytes, NUM_BYTES_ALIGNMENT) else { error; };
 
 		unsafe{
-			return std.bitCast<{T*uninit}>(this.allocator_impl.alloc(num_bytes, num_bytes_alignment).data());
+			return std.bitCast<{T*uninit}>(this.allocator_impl.alloc(NUM_BYTES, NUM_BYTES_ALIGNMENT).data());
 		}
 	}
 
 	func alloc = <{T: Type}> (this, num_elements: USize) #ct -> [std.ManualLifetime<{T}>:*mut] {
 		const num_bytes: USize = std.types.numBytes<{T}>() * num_elements;
-		const num_bytes_alignment: UI32 = std.types.numAlignBytes<{T}>();
+		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 
-		const new_alloc: [Byte:*] = this.allocator_impl.alloc(num_bytes, num_bytes_alignment);
+		const new_alloc: [Byte:*] = try this.allocator_impl.alloc(num_bytes, NUM_BYTES_ALIGNMENT) else { error; };
 
 		unsafe{
 			return new [std.ManualLifetime<{T}>:*mut](
@@ -340,8 +346,8 @@ type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAll
 
 
 	impl std.mem.IAllocatorCT {
-		alloc = (this mut, size: USize, alignment: UI32) #ct -> [Byte:*mut] {
-			return this.allocator_impl.alloc(size, alignment);
+		alloc = (this mut, size: USize, alignment: UI32) #ct -> [Byte:*mut] <Void> {
+			return try this.allocator_impl.alloc(size, alignment) else { error; };
 		},
 
 		allocResize = (this mut, buffer: [Byte:*], alignment: UI32, new_size: USize) #ct -> Void <Void> {
