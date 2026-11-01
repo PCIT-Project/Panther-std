@@ -73,7 +73,13 @@ type StaticArrayList = struct <{T: Type, CAPACITY: USize}>
 			output._data = new [std.ManualLifetime<{T}>:CAPACITY]();
 			output._size = this.size();
 
-			std.mem.moveBuffer(output as [T:*mut], this as [T:*mut]);
+			when(std.types.isSafeMovable<{T}>() == false){
+				std.mem.moveBuffer(output as [T:*mut], this as [T:*mut]);
+			}else{
+				unsafe{
+					std.mem.moveBuffer(output as [T:*mut], this as [T:*mut]);
+				}
+			}
 			
 			return...;
 		}
@@ -160,43 +166,50 @@ type StaticArrayList = struct <{T: Type, CAPACITY: USize}>
 		this._size -= 1;
 	}
 
-	when(std.types.isNoErrorMovable<{T}>()){
-		func popExtract = (this mut) 
-			#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
-		-> (output: T) {
-			std.debug.assert(this.isEmpty() == false, "Already empty");
 
-			when(std.types.isSafeMovable<{T}>()){
-				unsafe{ output = move this.last().*; }
-			}else{
-				output = move this.last().*;
+
+	when(std.types.isMovable<{T}>()){
+		when(std.types.isNoErrorMovable<{T}>()){
+			func popExtract = (this mut) 
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> (output: T) {
+				std.debug.assert(this.isEmpty() == false, "Already empty");
+
+				when(std.types.isSafeMovable<{T}>()){
+					unsafe{ output = move this.last().*; }
+				}else{
+					output = move this.last().*;
+				}
+
+				this._size -= 1;
+				return...;
 			}
 
-			this._size -= 1;
-			return...;
+		}else{
+			func popExtract = (this mut) -> (output: T) = delete("Type `T` isn't no-error-movable");
 		}
 
-	}else when(std.types.isNoErrorCopyable<{T}>()){
-		func popExtract = (this mut) 
-			#rt(std.types.isComptimeCopyable<{T}>() == false || std.types.isComptimeDeletable<{T}>() == false)
-			#unsafe(std.types.isSafeCopyable<{T}>())
-		-> (output: T) {
-			std.debug.assert(this.isEmpty() == false, "Already empty");
+	}else when(std.types.isCopyable<{T}>()){
+		when(std.types.isNoErrorCopyable<{T}>()){
+			func popExtract = (this mut) 
+				#rt(std.types.isComptimeCopyable<{T}>() == false || std.types.isComptimeDeletable<{T}>() == false)
+				#unsafe(std.types.isSafeCopyable<{T}>() == false)
+			-> (output: T) {
+				std.debug.assert(this.isEmpty() == false, "Already empty");
 
-			output = copy this.last().*;
-			this.pop();
-			return...;
-		}
-
-	}else{
-		when(std.types.isMovable<{T}>() || std.types.isCopyable<{T}>()){
-			func popExtract = (this mut) -> (output: T)
-				= delete("Type `T` isn't no-error movable or no-error copyable");
+				output = copy this.last().*;
+				this.pop();
+				return...;
+			}
 
 		}else{
-			func popExtract = (this mut) -> (output: T) = delete("Type `T` isn't movable or copyable");
+			func popExtract = (this mut) -> (output: T) = delete("Type `T` isn't movable or no-error-copyable");
 		}
+		
+	}else{
+		func popExtract = (this mut) -> (output: T) = delete("Type `T` isn't movable or copyable");
 	}
+
 
 
 	///////////////////////////////////

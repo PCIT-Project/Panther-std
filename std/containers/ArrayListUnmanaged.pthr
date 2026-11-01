@@ -1,0 +1,489 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std");
+
+def std #private = @import("std");
+
+
+type ArrayListUnmanaged = struct <{T: Type}> {
+	func new = () -> (output: This) {
+		output.buffer = new [std.ManualLifetime<{T}>:*mut]();
+		output.current_size = 0;
+		return...;
+	}
+
+
+	func new = (exact_capacity: USize, allocator: std.mem.Allocator<{$$}> mut) -> (output: This) <Void> {
+		output.buffer = try allocator.alloc<{T}>(exact_capacity) else { error; };
+		output.current_size = 0;
+		return...;
+	}
+
+
+
+	when(std.types.isNoErrorCopyable<{T}>()){
+		func new = (data: [T:*], allocator: std.mem.Allocator<{$$}> mut)
+			#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>() == false)
+		-> (output: This) <Void> {
+			output.buffer = try allocator.alloc<{T}>(data.size()) else { error; };
+			output.current_size = 0;
+
+			std.mem.copyBuffer(output as [T:*mut], data);
+			return...;
+		}
+	}
+
+
+	func delete = (this mut) -> Void {
+		std.debug.assert(
+			this.isEmpty(),
+			"`std.ArrayListUnmanaged` was attempted to be deleted with data still held. Did you forget to call `clearAndDealloc()`?"
+		);
+	}
+
+
+	func copy = delete("Use `copyUnmanaged` instead");
+	func move = delete("Use `moveUnmanaged` instead");
+
+
+
+	when(std.types.isCopyable<{T}>()){
+		when(std.types.isNoErrorCopyable<{T}>()){
+			func copyUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut)
+				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>() == false)
+			-> (output: This) <Void> {
+				output = new This();
+				try output.reserve(this.capacity(), allocator) else { error; };
+				output.current_size = copy this.current_size;
+
+				std.mem.copyBuffer(output as [T:*mut], this as [T:*]);
+				return...;
+			}
+
+		}else{
+			func copyUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) -> (output: This) <Void> = delete(
+				"`T` isn't no-error-copyable"
+			);
+		}
+
+	}else{
+		func copyUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) -> (output: This) <Void> = delete(
+			"`T` isn't copyable"
+		);
+	}
+
+
+	when(std.types.isMovable<{T}>()){
+		when(std.types.isNoErrorMovable<{T}>()){
+			func moveUnmanaged = (this mut, allocator: std.mem.Allocator<{$$}> mut)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> (output: This) <Void> {
+				output = new This();
+				try output.reserve(this.capacity(), allocator) else { error; };
+				output.current_size = copy this.current_size;
+
+				when(std.types.isSafeMovable<{T}>() == false){
+					std.mem.moveBuffer(output as [T:*mut], this as [T:*mut]);
+				}else{
+					unsafe{
+						std.mem.moveBuffer(output as [T:*mut], this as [T:*mut]);
+					}
+				}
+
+				this.current_size = 0;
+
+				return...;
+			}
+
+		}else{
+			func moveUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) -> (output: This) <Void> = delete(
+				"`T` isn't no-error-copyable"
+			);
+		}
+
+	}else{
+		func moveUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) -> (output: This) <Void> = delete(
+			"`T` isn't copyable"
+		);
+	}
+
+
+
+	///////////////////////////////////
+	// element access
+
+	func [] = (this, index: USize) -> T* {
+		std.debug.assert(index < this.size(), "Index is out-of-bounds");
+
+		unsafe{ return this.buffer[index].get(); }
+	}
+	func [] = (this mut, index: USize) -> T*mut {
+		std.debug.assert(index < this.size(), "Index is out-of-bounds");
+
+		unsafe{ return this.buffer[index].get(); }
+	}
+
+	func first = (this) -> T* {
+		std.debug.assert(this.isEmpty() == false, "Cannot get first element as current size is 0");
+		return this[0];
+	}
+	func first = (this mut) -> T*mut {
+		std.debug.assert(this.isEmpty() == false, "Cannot get first element as current size is 0");
+		return this[0];
+	}
+
+	func last = (this) -> T* {
+		std.debug.assert(this.isEmpty() == false, "Cannot get last element as current size is 0");
+		return this[this.size() - 1];
+	}
+	func last = (this mut) -> T*mut {
+		std.debug.assert(this.isEmpty() == false, "Cannot get last element as current size is 0");
+		return this[this.size() - 1];
+	}
+
+
+
+	///////////////////////////////////
+	// capacity
+
+	func isEmpty = (this) -> Bool { return this.current_size == 0; }
+	func size = (this) -> USize { return copy this.current_size; }
+	func capacity = (this) -> USize { return this.buffer.size(); }
+
+
+	///////////////////////////////////
+	// modifiers
+
+	func clear = (this mut) #rt(std.types.isComptimeDeletable<{T}>() == false) -> Void {
+		when(std.types.isTriviallyDeletable<{T}>() == false){
+			for(this as [T:*mut]) [_; elem: T mut] {
+				unsafe{ delete elem; }
+			}
+		}
+
+		this.current_size = 0;
+	}
+
+
+	func clearAndDealloc = (this mut, allocator: std.mem.Allocator<{$$}> mut)
+		#rt(std.types.isComptimeDeletable<{T}>() == false) 
+	-> Void {
+		this.clear();
+		allocator.dealloc(this.buffer);
+		this.buffer = new [std.ManualLifetime<{T}>:*mut]();
+	}
+
+
+	when(std.types.isMovable<{T}>()){
+		when(std.types.isNoErrorMovable<{T}>()){
+			func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> Void <Void> {
+				if(new_size <= this.capacity()){ return; }
+
+				try allocator.allocResize(this.buffer, new_size) else {
+					unsafe{
+						const new_buffer: [std.ManualLifetime<{T}>:*mut] #movable =
+							try allocator.alloc<{T}>(new_size) else { error; };
+
+						const new_buffer_ref = new [T:*mut](std.bitCast<{T*mut}>(new_buffer.data()), this.size());
+
+						std.mem.moveBuffer(new_buffer_ref, this as [T:*mut]);
+
+						allocator.dealloc(this.buffer);
+						this.buffer = move new_buffer;
+					}
+				};
+			}
+
+			func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> Void <Void> {
+				try this.reserveExact(std.bitCeil(new_size), allocator) else { error; };
+			}
+
+
+			func append = (this mut, allocator: std.mem.Allocator<{$$}> mut)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> T*uninit <Void> {
+				if(this.capacity() == 0){
+					try this.reserveExact(4, allocator) else { error; };
+
+				}else if(this.size() == this.capacity()){
+					try this.reserve(this.size() * 2, allocator) else { error; };
+				}
+
+				defer{ this.current_size += 1; }
+				unsafe{ return this.buffer[this.current_size].getUninit(); }
+			}
+
+			func popExtract = (this mut)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> (output: T) {
+				std.debug.assert(this.isEmpty() == false, "Already empty");
+
+				when(std.types.isSafeMovable<{T}>()){
+					unsafe{ output = move this.last().*; }
+				}else{
+					output = move this.last().*;
+				}
+
+				this.current_size -= 1;
+				return...;
+			}
+
+
+			func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> Void <Void> {
+				if(this.isEmpty()){ return; }
+
+				try allocator.allocResize(this.buffer, this.size()) else {
+					const new_buffer: [std.ManualLifetime<{T}>:*mut] #movable =
+						try allocator.alloc<{T}>(this.size()) else { error; };
+
+					const new_buffer_ref: [T:*mut] = {->expr:[T:*mut]
+						unsafe{
+							return->expr new [T:*mut](std.bitCast<{T*mut}>(new_buffer.data()), this.size());
+						}
+					};
+
+					when(std.types.isSafeMovable<{T}>() == false){
+						std.mem.moveBuffer(new_buffer_ref, this as [T:*mut]);
+					}else{
+						unsafe{
+							std.mem.moveBuffer(new_buffer_ref, this as [T:*mut]);
+						}
+					}
+
+					this.buffer = move new_buffer;
+
+					return;
+				};
+
+				this.buffer = new [std.ManualLifetime<{T}>:*mut](copy this.buffer.data().?, this.size());
+			}
+
+			
+		}else{
+			func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
+				-> Void <Void> = delete("`T` isn't no-error-movable");
+
+			func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+				"`T` isn't no-error-movable"
+			);
+
+			func append = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> T*uninit <Void> = delete(
+				"`T` isn't no-error-movable"
+			);
+
+			func popExtract = (this mut) -> (output: T) = delete("`T` isn't no-error-movable");
+
+			func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+				"`T` isn't no-error-movable"
+			);
+
+		}
+
+	}else when(std.types.isCopyable<{T}>()){
+		when(std.types.isNoErrorCopyable<{T}>()){
+			func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
+				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
+			-> Void <Void> {
+				if(new_size <= this.capacity()){ return; }
+
+				try allocator.allocResize(this.buffer, new_size) else {
+					unsafe{
+						const new_buffer: [std.ManualLifetime<{T}>:*mut] #movable =
+							try allocator.alloc<{T}>(new_size) else { error; };
+
+						const new_buffer_ref = new [T:*mut](std.bitCast<{T*mut}>(new_buffer.data()), this.size());
+
+						std.mem.copyBuffer(new_buffer_ref, this as [T:*mut]);
+
+						allocator.dealloc(this.buffer);
+						this.buffer = move new_buffer;
+					}
+				};
+			}
+
+			func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
+				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
+			-> Void <Void> {
+				try this.reserveExact(std.bitCeil(new_size), allocator) else { error; };
+			}
+
+
+			func append = (this mut, allocator: std.mem.Allocator<{$$}> mut)
+				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
+			-> T*uninit <Void> {
+				if(this.capacity() == 0){
+					try this.reserveExact(4, allocator) else { error; };
+
+				}else if(this.size() == this.capacity()){
+					try this.reserve(this.size() * 2, allocator) else { error; };
+				}
+
+				defer{ this.current_size += 1; }
+				unsafe{ return this.buffer[this.current_size].getUninit(); }
+			}
+
+			func popExtract = (this mut) 
+				#rt(std.types.isComptimeCopyable<{T}>() == false || std.types.isComptimeDeletable<{T}>() == false)
+				#unsafe(std.types.isSafeCopyable<{T}>() == false)
+			-> (output: T) {
+				std.debug.assert(this.isEmpty() == false, "Already empty");
+
+				output = copy this.last().*;
+				this.pop();
+				return...;
+			}
+
+			func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut)
+				#rt(std.types.isComptimeCopyable<{T}>() == false || std.types.isComptimeDeletable<{T}>() == false)
+				#unsafe(std.types.isSafeCopyable<{T}>() == false)
+			-> Void <Void> {
+				if(this.isEmpty()){ return; }
+
+				try allocator.allocResize(this.buffer, this.size()) else {
+					const new_buffer: [T:*mut] #movable = allocator.alloc<{T}>(this.size());
+
+					std.mem.copyBuffer(new_buffer, this as [T:*mut]);
+
+					when(std.isTriviallyDeletable<{T}>() == false){
+						for(this as [T:*mut]) [_; value: T mut] {
+							when(std.types.isSafeCopyable<{T}>() == false){
+								delete value;
+							}else{
+								unsafe{
+									delete value;
+								}
+							}
+						}
+					}
+
+					this.buffer = move new_bufer;
+
+					return;
+				};
+
+				this.buffer = new [T:*mut](this.buffer.data(), this.size());
+			}
+
+			
+		}else{
+			func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
+			-> Void <Void> = delete(
+				"`T` isn't movable or no-error-copyable"
+			);
+
+			func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+				"`T` isn't movable or no-error-copyable"
+			);
+
+			func append = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> T*uninit <Void> = delete(
+				"`T` isn't movable or no-error-copyable"
+			);
+
+			func popExtract = (this mut) -> (output: T) = delete("`T` isn't movable or no-error-copyable");
+
+			func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+				"`T` isn't movable or no-error-copyable"
+			);
+		}
+
+
+	}else{
+		func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+			"`T` isn't movable or copyable"
+		);
+
+		func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+			"`T` isn't movable or copyable"
+		);
+
+		func append = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> T*uninit <Void> = delete(
+			"`T` isn't movable or copyable"
+		);
+
+		func popExtract = (this mut) -> (output: T) = delete("`T` isn't movable or copyable");
+
+		func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+			"`T` isn't movable or copyable"
+		);
+
+	}
+
+
+
+	func pop = (this mut) #rt(std.types.isComptimeDeletable<{T}>() == false) -> Void {
+		std.debug.assert(this.isEmpty() == false, "Already empty");
+
+		when(std.types.isTriviallyDeletable<{T}>() == false){
+			unsafe{ delete this.last().*; }
+		}
+		this.current_size -= 1;
+	}
+
+
+
+
+	///////////////////////////////////
+	// type conversion
+
+	func as = (this) #implicit -> [T:*] {
+		if(this.isEmpty()){ return new [T:*](); }
+		unsafe{ return new [T:*](this.buffer.data().?.get(), this.size()); }
+	}
+	func as = (this mut) #implicit -> [T:*mut] {
+		if(this.isEmpty()){ return new [T:*mut](); }
+		unsafe{ return new [T:*mut](this.buffer.data().?.get(), this.size()); }
+	}
+
+
+	///////////////////////////////////
+	// iterators
+
+	impl std.IIterable{
+		createIterator = (this) -> impl(std.ArrayRefIter<{[T:*]}>:std.IIterator) {
+			return new impl(std.ArrayRefIter<{[T:*]}>:std.IIterator)(this as [T:*]);
+		},
+		createIterator = (this mut) -> impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIterator) {
+			return new impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIterator)(this as [T:*mut]);
+		},
+	}
+
+
+	impl std.IIterableRT{
+		createIterator = (this) -> impl(std.ArrayRefIter<{[T:*]}>:std.IIteratorRT) {
+			return new impl(std.ArrayRefIter<{[T:*]}>:std.IIteratorRT)(this as [T:*]);
+		},
+		createIterator = (this mut) -> impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorRT) {
+			return new impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorRT)(this as [T:*mut]);
+		},
+	}
+
+	impl std.IIterableCT{
+		createIterator = (this) -> impl(std.ArrayRefIter<{[T:*]}>:std.IIteratorCT) {
+			return new impl(std.ArrayRefIter<{[T:*]}>:std.IIteratorCT)(this as [T:*]);
+		},
+		createIterator = (this mut) -> impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorCT) {
+			return new impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorCT)(this as [T:*mut]);
+		},
+	}
+
+
+
+	///////////////////////////////////
+	// private
+
+	var buffer: [std.ManualLifetime<{T}>:*mut] #private;
+	var current_size: USize #private;
+}

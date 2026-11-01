@@ -36,7 +36,7 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 		}
 	}
 
-	func alloc = <{T: Type}> (this, num_elements: USize) -> [std.ManualLifetime<{T}>:*mut] {
+	func alloc = <{T: Type}> (this, num_elements: USize) -> [std.ManualLifetime<{T}>:*mut] <Void> {
 		const num_bytes: USize = std.types.numBytes<{T}>() * num_elements;
 		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 
@@ -158,7 +158,7 @@ type AllocatorRT = struct <{TargetAllocatorRTType: Type}> {
 		}
 	}
 
-	func alloc = <{T: Type}> (this, num_elements: USize) #rt -> [std.ManualLifetime<{T}>:*mut] {
+	func alloc = <{T: Type}> (this, num_elements: USize) #rt -> [std.ManualLifetime<{T}>:*mut] <Void> {
 		const num_bytes: USize = std.types.numBytes<{T}>() * num_elements;
 		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 
@@ -275,7 +275,7 @@ type AllocatorCT = struct <{TargetAllocatorCTType: Type = impl(*mut:std.mem.IAll
 		}
 	}
 
-	func alloc = <{T: Type}> (this, num_elements: USize) #ct -> [std.ManualLifetime<{T}>:*mut] {
+	func alloc = <{T: Type}> (this, num_elements: USize) #ct -> [std.ManualLifetime<{T}>:*mut] <Void> {
 		const num_bytes: USize = std.types.numBytes<{T}>() * num_elements;
 		def NUM_BYTES_ALIGNMENT: UI32 = std.types.numAlignBytes<{T}>();
 

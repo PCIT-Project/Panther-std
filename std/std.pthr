@@ -120,8 +120,10 @@ def iterators #private = @import("containers/iterators.pthr");
 type ArrayRefIter    = alias iterators.ArrayRefIter;
 type MutArrayRefIter = alias iterators.MutArrayRefIter;
 
-type ManualLifetime  = alias @import("containers/ManualLifetime.pthr").ManualLifetime;
-type StaticArrayList = alias @import("containers/StaticArrayList.pthr").StaticArrayList;
+type ArrayList          = alias @import("containers/ArrayList.pthr").ArrayList;
+type ArrayListUnmanaged = alias @import("containers/ArrayListUnmanaged.pthr").ArrayListUnmanaged;
+type ManualLifetime     = alias @import("containers/ManualLifetime.pthr").ManualLifetime;
+type StaticArrayList    = alias @import("containers/StaticArrayList.pthr").StaticArrayList;
 
 
 

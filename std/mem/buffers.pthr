@@ -53,9 +53,7 @@ func copyBuffer = (dst: [$T:*mut], src: [T:*])
 
 
 
-func moveBuffer = (dst: [$T:*mut], src: [T:*mut])
-	#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
--> Void {
+func moveBuffer = (dst: [$T:*mut], src: [T:*mut]) #rt(std.types.isComptimeMovable<{T}>() == false) #unsafe -> Void {
 	@comptimeAssert(
 		std.types.isNoErrorMovable<{T}>(),
 		"std.mem.moveBuffer requires that buffer element must be no-error movable"
@@ -65,21 +63,13 @@ func moveBuffer = (dst: [$T:*mut], src: [T:*mut])
 	when(std.types.isTriviallyMovable<{T}>()){
 		const buffer_size: USize = dst.size() * std.types.numBytes<{T}>();
 
-		unsafe{
-			const dst_buffer = new [Byte:*mut](std.bitCast<{Byte*mut}>(dst.data()), copy buffer_size);
-			const src_buffer = new [Byte:*](std.bitCast<{Byte*}>(src.data()), copy buffer_size);
-			mem_copy(dst_buffer, src_buffer);
-		}
+		const dst_buffer = new [Byte:*mut](std.bitCast<{Byte*mut}>(dst.data()), copy buffer_size);
+		const src_buffer = new [Byte:*](std.bitCast<{Byte*}>(src.data()), copy buffer_size);
+		mem_copy(dst_buffer, src_buffer);
 
 	}else{
 		for(dst, src) [_; dst_value: T mut, src_value: T mut] {
-			when(std.types.isSafeMovable<{T}>()){
-				unsafe{
-					dst_value = move src_value;
-				}
-			}else{
-				dst_value = move src_value;
-			}
+			dst_value = move src_value;
 		}
 	}
 }

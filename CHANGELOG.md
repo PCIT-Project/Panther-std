@@ -1,6 +1,13 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.68.0"></a>
+## v0.0.68.0
+- Added `ArrayList`
+- Added `ArrayListUnmanaged`
+
+
+<!---------------------------------->
 <a name="v0.0.67.0"></a>
 ## v0.0.67.0
 - Added erroring to allocating for allocators (where applicable)

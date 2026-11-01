@@ -1,0 +1,287 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std");
+
+def std #private = @import("std");
+
+
+type ArrayList = struct <{T: Type, AllocatorImpl: Type}> {
+	func new = (allocator: std.mem.Allocator<{AllocatorImpl}> in) -> (output: This) {
+		output.unmanaged = new std.ArrayListUnmanaged<{T}>();
+		output.allocator = forward allocator;
+		return...;
+	}
+
+
+	func new = (exact_capacity: USize, allocator: std.mem.Allocator<{AllocatorImpl}> in) -> (output: This) <Void> {
+		output.unmanaged = try new std.ArrayListUnmanaged<{T}>(exact_capacity, allocator) else { error; };
+		output.allocator = forward allocator;
+		return...;
+	}
+
+
+
+	when(std.types.isNoErrorCopyable<{T}>()){
+		func new = (data: [T:*], allocator: std.mem.Allocator<{AllocatorImpl}> in)
+			#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>() == false)
+		-> (output: This) <Void> {
+			output.unmanaged = try new std.ArrayListUnmanaged<{T}>(data, allocator) else { error; };
+			output.allocator = forward allocator;
+
+			return...;
+		}
+	}
+
+
+
+	func delete = (this mut)  #rt(std.types.isComptimeDeletable<{T}>() == false) -> Void {
+		this.unmanaged.clearAndDealloc(this.allocator);
+	}
+
+
+
+	when(std.types.isCopyable<{T}>()){
+		when(std.types.isNoErrorCopyable<{T}>()){
+			func copy = (this mut)
+				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>() == false)
+			-> (output: This) {
+				output.unmanaged = try this.unmanaged.copyUnmanaged(this.allocator) else { unreachable; };
+				output.allocator = copy this.allocator;
+				return...;
+			}
+
+		}else{
+			func copy = delete("`T` isn't no-error-copyable");
+		}
+
+	}else{
+		func copy = delete("`T` isn't copyable");
+	}
+
+
+	when(std.types.isCopyable<{T}>()){
+		when(std.types.isNoErrorCopyable<{T}>()){
+			func move = (this mut)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> (output: This) {
+				output.unmanaged = try this.unmanaged.moveUnmanaged(this.allocator) else { unreachable; };
+				output.allocator = copy this.allocator;
+				return...;
+			}
+
+		}else{
+			func move = delete("`T` isn't no-error-movable");
+		}
+
+	}else{
+		func move = delete("`T` isn't movable");
+	}
+
+
+
+	///////////////////////////////////
+	// element access
+
+	func [] = (this, index: USize)     -> T*    { return this.unmanaged[index]; }
+	func [] = (this mut, index: USize) -> T*mut { return this.unmanaged[index]; }
+
+	func first = (this)     -> T*    { return this.unmanaged.first(); }
+	func first = (this mut) -> T*mut { return this.unmanaged.first(); }
+
+	func last = (this)     -> T*    { return this.unmanaged.last(); }
+	func last = (this mut) -> T*mut { return this.unmanaged.last(); }
+
+
+
+	///////////////////////////////////
+	// capacity
+
+	func isEmpty  = (this) -> Bool  { return this.unmanaged.isEmpty();  }
+	func size     = (this) -> USize { return this.unmanaged.size();     }
+	func capacity = (this) -> USize { return this.unmanaged.capacity(); }
+
+
+	///////////////////////////////////
+	// modifiers
+
+	func clear = (this mut) #rt(std.types.isComptimeDeletable<{T}>() == false) -> Void {
+		this.unmanaged.clear();
+	}
+
+	func clearAndDealloc = (this mut) #rt(std.types.isComptimeDeletable<{T}>() == false) -> Void {
+		this.unmanaged.clearAndDealloc(this.allocator);
+	}
+
+
+	when(std.types.isMovable<{T}>()){
+		when(std.types.isNoErrorMovable<{T}>()){
+			func reserveExact = (this mut, new_size: USize)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> Void <Void> {
+				try this.unmanaged.reserveExact(new_size, this.allocator) else { error; };
+			}
+
+			func reserve = (this mut, new_size: USize)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> Void <Void> {
+				try this.unmanaged.reserve(new_size, this.allocator) else { error; };
+			}
+
+
+			func append = (this mut)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> T*uninit <Void> {
+				return try this.unmanaged.append(this.allocator) else { error; };
+			}
+
+
+			func popExtract = (this mut)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> (output: T) {
+				output = this.unmanaged.popExtract();
+				return ...;
+			}
+
+			func shrinkToFit = (this mut)
+				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
+			-> Void <Void> {
+				try this.unmanaged.shrinkToFit(this.allocator) else { error; };
+			}
+
+			
+		}else{
+			func reserveExact = (this mut, new_size: USize) -> Void <Void> = delete("`T` isn't no-error-movable");
+
+			func reserve = (this mut, new_size: USize) -> Void <Void> = delete("`T` isn't no-error-movable");
+
+			func append = (this mut) -> T*uninit <Void> = delete("`T` isn't no-error-movable");
+
+			func popExtract = (this mut) -> (output: T) = delete("`T` isn't no-error-movable");
+
+			func shrinkToFit = (this mut) -> Void <Void> = delete("`T` isn't no-error-movable");
+		}
+
+	}else when(std.types.isCopyable<{T}>()){
+		when(std.types.isNoErrorCopyable<{T}>()){
+			func reserveExact = (this mut, new_size: USize)
+				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
+			-> Void <Void> {
+				try this.unmanaged.reserveExact(new_size, this.allocator) else { error; };
+			}
+
+			func reserve = (this mut, new_size: USize)
+				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
+			-> Void <Void> {
+				try this.unmanaged.reserve(new_size, this.allocator) else { error; };
+			}
+
+
+			func append = (this mut)
+				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
+			-> T*uninit <Void> {
+				return try this.unmanaged.append(this.allocator) else { error; };
+			}
+
+			func popExtract = (this mut) 
+				#rt(std.types.isComptimeCopyable<{T}>() == false || std.types.isComptimeDeletable<{T}>() == false)
+				#unsafe(std.types.isSafeCopyable<{T}>() == false)
+			-> (output: T) {
+				output = this.unmanaged.popExtract();
+				return...;
+			}
+
+			func shrinkToFit = (this mut)
+				#rt(std.types.isComptimeCopyable<{T}>() == false || std.types.isComptimeDeletable<{T}>() == false)
+				#unsafe(std.types.isSafeCopyable<{T}>() == false)
+			-> Void <Void> {
+				try this.unmanaged.shrinkToFit(this.allocator) else { error; };
+			}
+			
+		}else{
+			func reserveExact = (this mut, new_size: USize) -> Void <Void> = delete(
+				"`T` isn't movable or no-error-copyable"
+			);
+
+			func reserve = (this mut, new_size: USize) -> Void <Void> = delete(
+				"`T` isn't movable or no-error-copyable"
+			);
+
+			func append = (this mut) -> T*uninit <Void> = delete("`T` isn't movable or no-error-copyable");
+
+			func popExtract = (this mut) -> (output: T) = delete("`T` isn't movable or no-error-copyable");
+
+			func shrinkToFit = (this mut) -> Void <Void> = delete("`T` isn't movable or no-error-copyable");
+		}
+
+
+	}else{
+		func reserveExact = (this mut, new_size: USize) -> Void <Void> = delete("`T` isn't movable or copyable");
+
+		func reserve = (this mut, new_size: USize) -> Void <Void> = delete("`T` isn't movable or copyable");
+
+		func append = (this mut) -> T*uninit <Void> = delete("`T` isn't movable or copyable");
+
+		func popExtract = (this mut) -> (output: T) = delete("`T` isn't movable or copyable");
+
+		func shrinkToFit = (this mut) -> Void <Void> = delete("`T` isn't movable or copyable");
+	}
+
+
+
+	func pop = (this mut) #rt(std.types.isComptimeDeletable<{T}>() == false) -> Void { this.unmanaged.pop(); }
+
+
+
+	///////////////////////////////////
+	// type conversion
+
+	func as = (this) #implicit -> [T:*] { return this.unmanaged as [T:*]; }
+	func as = (this mut) #implicit -> [T:*mut] { return this.unmanaged as [T:*mut]; }
+
+
+	///////////////////////////////////
+	// iterators
+
+	impl std.IIterable{
+		createIterator = (this) -> impl(std.ArrayRefIter<{[T:*]}>:std.IIterator) {
+			return new impl(std.ArrayRefIter<{[T:*]}>:std.IIterator)(this as [T:*]);
+		},
+		createIterator = (this mut) -> impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIterator) {
+			return new impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIterator)(this as [T:*mut]);
+		},
+	}
+
+
+	impl std.IIterableRT{
+		createIterator = (this) -> impl(std.ArrayRefIter<{[T:*]}>:std.IIteratorRT) {
+			return new impl(std.ArrayRefIter<{[T:*]}>:std.IIteratorRT)(this as [T:*]);
+		},
+		createIterator = (this mut) -> impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorRT) {
+			return new impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorRT)(this as [T:*mut]);
+		},
+	}
+
+	impl std.IIterableCT{
+		createIterator = (this) -> impl(std.ArrayRefIter<{[T:*]}>:std.IIteratorCT) {
+			return new impl(std.ArrayRefIter<{[T:*]}>:std.IIteratorCT)(this as [T:*]);
+		},
+		createIterator = (this mut) -> impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorCT) {
+			return new impl(std.MutArrayRefIter<{[T:*mut]}>:std.IMutIteratorCT)(this as [T:*mut]);
+		},
+	}
+
+
+
+	///////////////////////////////////
+	// private
+
+	var unmanaged: std.ArrayListUnmanaged<{T}> #private;
+	var allocator: std.mem.Allocator<{AllocatorImpl}> #private;
+}
