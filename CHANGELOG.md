@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.69.0"></a>
+## v0.0.69.0
+- Updated to reflect updates in [PCIT-CPP v0.0.421.1](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.421.1)
+
+
+<!---------------------------------->
 <a name="v0.0.68.0"></a>
 ## v0.0.68.0
 - Added `ArrayList`
@@ -30,7 +36,7 @@
 <!---------------------------------->
 <a name="v0.0.64.0"></a>
 ## v0.0.64.0
-- Updated reflect updates to [PCIT-CPP v0.0.406.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.406.0)
+- Updated to reflect updates in [PCIT-CPP v0.0.406.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.406.0)
 
 
 <!---------------------------------->
@@ -60,20 +66,20 @@
 <a name="v0.0.61.0"></a>
 ## v0.0.61.0
 - Added `types.id`
-- Updated reflect updates to [PCIT-CPP v0.0.402.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.402.0)
+- Updated to reflect updates in [PCIT-CPP v0.0.402.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.402.0)
 
 
 <!---------------------------------->
 <a name="v0.0.60.0"></a>
 ## v0.0.60.0
-- Updated reflect updates to [PCIT-CPP v0.0.399.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.399.0)
+- Updated to reflect updates in [PCIT-CPP v0.0.399.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.399.0)
 - Renamed `platform.windows.NtStatus` to `platform.windows.NTStatus`
 
 
 <!---------------------------------->
 <a name="v0.0.59.0"></a>
 ## v0.0.59.0
-- Updated reflect updates to [PCIT-CPP v0.0.389.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.389.0)
+- Updated to reflect updates in [PCIT-CPP v0.0.389.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.389.0)
 
 
 <!---------------------------------->
@@ -85,19 +91,19 @@
 <!---------------------------------->
 <a name="v0.0.58.0"></a>
 ## v0.0.58.0
-- Updated reflect updates to [PCIT-CPP v0.0.386.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.386.0)
+- Updated to reflect updates in [PCIT-CPP v0.0.386.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.386.0)
 
 
 <!---------------------------------->
 <a name="v0.0.57.0"></a>
 ## v0.0.57.0
-- Updated reflect updates to [PCIT-CPP v0.0.380.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.380.0)
+- Updated to reflect updates in [PCIT-CPP v0.0.380.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.380.0)
 
 
 <!---------------------------------->
 <a name="v0.0.56.0"></a>
 ## v0.0.56.0
-- Updated reflect updates to [PCIT-CPP v0.0.379.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.379.0)
+- Updated to reflect updates in [PCIT-CPP v0.0.379.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.379.0)
 
 
 <!---------------------------------->

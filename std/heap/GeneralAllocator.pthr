@@ -259,8 +259,8 @@ type GeneralAllocator = struct {
 			var header: Header;
 
 			type Header = struct {
-				var prev_node: Page*? = null;
-				var next_node: Page*? = null;
+				var prev_node: Page*mut? = null;
+				var next_node: Page*mut? = null;
 				var free_elem: RawPtr*mut? = null;
 				var num_free: UI16;
 			}
@@ -275,7 +275,7 @@ type GeneralAllocator = struct {
 		@comptimeAssert(std.types.numBytes<{Page}>() == std.heap.pageSize());
 	}
 
-	func dealloc_bucket_page = (this mut, page: Bucket.Page*mut mut, bucket_index: BucketIndex) #private -> Void {
+	func dealloc_bucket_page = (this mut, page: Bucket.Page*mut, bucket_index: BucketIndex) #private -> Void {
 		if(page.header.prev_node != null){
 			page.header.prev_node.?.header.next_node = copy page.header.next_node;
 		}
