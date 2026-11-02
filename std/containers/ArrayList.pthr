@@ -32,7 +32,9 @@ type ArrayList = struct <{T: Type, AllocatorImpl: Type}> {
 		func new = (data: [T:*], allocator: std.mem.Allocator<{AllocatorImpl}> in)
 			#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>() == false)
 		-> (output: This) <Void> {
-			output.unmanaged = try new std.ArrayListUnmanaged<{T}>(data, allocator) else { error; };
+			unsafe{
+				output.unmanaged = try new std.ArrayListUnmanaged<{T}>(data, allocator) else { error; };
+			}
 			output.allocator = forward allocator;
 
 			return...;
@@ -52,7 +54,9 @@ type ArrayList = struct <{T: Type, AllocatorImpl: Type}> {
 			func copy = (this mut)
 				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>() == false)
 			-> (output: This) {
-				output.unmanaged = try this.unmanaged.copyUnmanaged(this.allocator) else { unreachable; };
+				unsafe{
+					output.unmanaged = try this.unmanaged.copyUnmanaged(this.allocator) else { unreachable; };
+				}
 				output.allocator = copy this.allocator;
 				return...;
 			}
@@ -71,7 +75,9 @@ type ArrayList = struct <{T: Type, AllocatorImpl: Type}> {
 			func move = (this mut)
 				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
 			-> (output: This) {
-				output.unmanaged = try this.unmanaged.moveUnmanaged(this.allocator) else { unreachable; };
+				unsafe{
+					output.unmanaged = try this.unmanaged.moveUnmanaged(this.allocator) else { unreachable; };
+				}
 				output.allocator = copy this.allocator;
 				return...;
 			}
@@ -125,34 +131,44 @@ type ArrayList = struct <{T: Type, AllocatorImpl: Type}> {
 			func reserveExact = (this mut, new_size: USize)
 				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
 			-> Void <Void> {
-				try this.unmanaged.reserveExact(new_size, this.allocator) else { error; };
+				unsafe{
+					try this.unmanaged.reserveExact(new_size, this.allocator) else { error; };
+				}
 			}
 
 			func reserve = (this mut, new_size: USize)
 				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
 			-> Void <Void> {
-				try this.unmanaged.reserve(new_size, this.allocator) else { error; };
+				unsafe{
+					try this.unmanaged.reserve(new_size, this.allocator) else { error; };
+				}
 			}
 
 
 			func append = (this mut)
 				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
 			-> T*uninit <Void> {
-				return try this.unmanaged.append(this.allocator) else { error; };
+				unsafe{
+					return try this.unmanaged.append(this.allocator) else { error; };
+				}
 			}
 
 
 			func popExtract = (this mut)
 				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
 			-> (output: T) {
-				output = this.unmanaged.popExtract();
+				unsafe{
+					output = this.unmanaged.popExtract();
+				}
 				return ...;
 			}
 
 			func shrinkToFit = (this mut)
 				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
 			-> Void <Void> {
-				try this.unmanaged.shrinkToFit(this.allocator) else { error; };
+				unsafe{
+					try this.unmanaged.shrinkToFit(this.allocator) else { error; };
+				}
 			}
 
 			
@@ -169,27 +185,35 @@ type ArrayList = struct <{T: Type, AllocatorImpl: Type}> {
 			func reserveExact = (this mut, new_size: USize)
 				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
 			-> Void <Void> {
-				try this.unmanaged.reserveExact(new_size, this.allocator) else { error; };
+				unsafe{
+					try this.unmanaged.reserveExact(new_size, this.allocator) else { error; };
+				}
 			}
 
 			func reserve = (this mut, new_size: USize)
 				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
 			-> Void <Void> {
-				try this.unmanaged.reserve(new_size, this.allocator) else { error; };
+				unsafe{
+					try this.unmanaged.reserve(new_size, this.allocator) else { error; };
+				}
 			}
 
 
 			func append = (this mut)
 				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
 			-> T*uninit <Void> {
-				return try this.unmanaged.append(this.allocator) else { error; };
+				unsafe{
+					return try this.unmanaged.append(this.allocator) else { error; };
+				}
 			}
 
 			func popExtract = (this mut) 
 				#rt(std.types.isComptimeCopyable<{T}>() == false || std.types.isComptimeDeletable<{T}>() == false)
 				#unsafe(std.types.isSafeCopyable<{T}>() == false)
 			-> (output: T) {
-				output = this.unmanaged.popExtract();
+				unsafe{
+					output = this.unmanaged.popExtract();
+				}
 				return...;
 			}
 
@@ -197,7 +221,9 @@ type ArrayList = struct <{T: Type, AllocatorImpl: Type}> {
 				#rt(std.types.isComptimeCopyable<{T}>() == false || std.types.isComptimeDeletable<{T}>() == false)
 				#unsafe(std.types.isSafeCopyable<{T}>() == false)
 			-> Void <Void> {
-				try this.unmanaged.shrinkToFit(this.allocator) else { error; };
+				unsafe{
+					try this.unmanaged.shrinkToFit(this.allocator) else { error; };
+				}
 			}
 			
 		}else{

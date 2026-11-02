@@ -80,18 +80,24 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 
 
 	func deallocWithoutDelete = (this mut, ptr: $T*) #unsafe -> Void {
-		this.allocator_impl.dealloc(std.asBuffer(ptr), std.types.numAlignBytes<{T}>());
+		unsafe{
+			this.allocator_impl.dealloc(std.asBuffer(ptr), std.types.numAlignBytes<{T}>());
+		}
 	}
 
 	func deallocWithoutDelete = (this mut, ptr: $T*uninit) #unsafe -> Void {
-		this.allocator_impl.dealloc(std.asBuffer(std.bitCast<{T*}>(ptr), std.types.numAlignBytes<{T}>()));
+		unsafe{
+			this.allocator_impl.dealloc(std.asBuffer(std.bitCast<{T*}>(ptr), std.types.numAlignBytes<{T}>()));
+		}
 	}
 
 	func deallocWithoutDelete = (this mut, buffer: [$T:*mut]) #unsafe -> Void {
-		this.allocator_impl.dealloc(
-			new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>()),
-			std.types.numAlignBytes<{T}>()
-		);
+		unsafe{
+			this.allocator_impl.dealloc(
+				new [Byte:*](std.bitCast<{Byte*}>(buffer.data()), buffer.size() * std.types.numBytes<{T}>()),
+				std.types.numAlignBytes<{T}>()
+			);
+		}
 	}
 
 

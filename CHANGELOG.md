@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.72.0"></a>
+## v0.0.72.0
+- Updated to reflect updates in [PCIT-CPP v0.0.424.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.424.0)
+
+
+<!---------------------------------->
 <a name="v0.0.71.0"></a>
 ## v0.0.71.0
 - Added `Warning`

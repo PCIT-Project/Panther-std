@@ -35,7 +35,9 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 			output.buffer = try allocator.alloc<{T}>(data.size()) else { error; };
 			output.current_size = 0;
 
-			std.mem.copyBuffer(output as [T:*mut], data);
+			unsafe{
+				std.mem.copyBuffer(output as [T:*mut], data);
+			}
 			return...;
 		}
 	}
@@ -63,7 +65,9 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 				try output.reserve(this.capacity(), allocator) else { error; };
 				output.current_size = copy this.current_size;
 
-				std.mem.copyBuffer(output as [T:*mut], this as [T:*]);
+				unsafe{
+					std.mem.copyBuffer(output as [T:*mut], this as [T:*]);
+				}
 				return...;
 			}
 
@@ -85,12 +89,9 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 				try output.reserve(this.capacity(), allocator) else { error; };
 				output.current_size = copy this.current_size;
 
-				when(std.types.isSafeMovable<{T}>() == false){
+
+				unsafe{
 					std.mem.moveBuffer(output as [T:*mut], this as [T:*mut]);
-				}else{
-					unsafe{
-						std.mem.moveBuffer(output as [T:*mut], this as [T:*mut]);
-					}
 				}
 
 				this.current_size = 0;
@@ -198,7 +199,9 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 			func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
 				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
 			-> Void <Void> {
-				try this.reserveExact(std.bitCeil(new_size), allocator) else { error; };
+				unsafe{
+					try this.reserveExact(std.bitCeil(new_size), allocator) else { error; };
+				}
 			}
 
 
@@ -220,11 +223,7 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 			-> (output: T) {
 				std.debug.assert(this.isEmpty() == false, "Already empty");
 
-				when(std.types.isSafeMovable<{T}>()){
-					unsafe{ output = move this.last().*; }
-				}else{
-					output = move this.last().*;
-				}
+				unsafe{ output = move this.last().*; }
 
 				this.current_size -= 1;
 				return...;
@@ -246,13 +245,8 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 						}
 					};
 
-					when(std.types.isSafeMovable<{T}>() == false){
-						std.mem.moveBuffer(new_buffer_ref, this as [T:*mut]);
-					}else{
-						unsafe{
-							std.mem.moveBuffer(new_buffer_ref, this as [T:*mut]);
-						}
-					}
+
+					unsafe{ std.mem.moveBuffer(new_buffer_ref, this as [T:*mut]); }
 
 					this.buffer = move new_buffer;
 
@@ -296,7 +290,7 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 
 						const new_buffer_ref = new [T:*mut](std.bitCast<{T*mut}>(new_buffer.data()), this.size());
 
-						std.mem.copyBuffer(new_buffer_ref, this as [T:*mut]);
+						unsafe{ std.mem.copyBuffer(new_buffer_ref, this as [T:*mut]); }
 
 						allocator.dealloc(this.buffer);
 						this.buffer = move new_buffer;
@@ -307,21 +301,25 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 			func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
 				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
 			-> Void <Void> {
-				try this.reserveExact(std.bitCeil(new_size), allocator) else { error; };
+				unsafe{
+					try this.reserveExact(std.bitCeil(new_size), allocator) else { error; };
+				}
 			}
 
 
 			func append = (this mut, allocator: std.mem.Allocator<{$$}> mut)
 				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
 			-> T*uninit <Void> {
-				if(this.capacity() == 0){
-					try this.reserveExact(4, allocator) else { error; };
+				unsafe{
+					if(this.capacity() == 0){
+						try this.reserveExact(4, allocator) else { error; };
 
-				}else if(this.size() == this.capacity()){
-					try this.reserve(this.size() * 2, allocator) else { error; };
+					}else if(this.size() == this.capacity()){
+						try this.reserve(this.size() * 2, allocator) else { error; };
+					}
+
+					return this.appendNoRealloc();
 				}
-
-				return this.appendNoRealloc();
 			}
 
 			func popExtract = (this mut) 
@@ -331,7 +329,7 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 				std.debug.assert(this.isEmpty() == false, "Already empty");
 
 				output = copy this.last().*;
-				this.pop();
+				unsafe{ this.pop(); }
 				return...;
 			}
 
@@ -344,17 +342,13 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 				try allocator.allocResize(this.buffer, this.size()) else {
 					const new_buffer: [T:*mut] #movable = allocator.alloc<{T}>(this.size());
 
-					std.mem.copyBuffer(new_buffer, this as [T:*mut]);
+					unsafe{
+						std.mem.copyBuffer(new_buffer, this as [T:*mut]);
+					}
 
 					when(std.isTriviallyDeletable<{T}>() == false){
 						for(this as [T:*mut]) [_; value: T mut] {
-							when(std.types.isSafeCopyable<{T}>() == false){
-								delete value;
-							}else{
-								unsafe{
-									delete value;
-								}
-							}
+							unsafe{ delete value; }
 						}
 					}
 

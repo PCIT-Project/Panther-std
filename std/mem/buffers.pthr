@@ -63,9 +63,11 @@ func moveBuffer = (dst: [$T:*mut], src: [T:*mut]) #rt(std.types.isComptimeMovabl
 	when(std.types.isTriviallyMovable<{T}>()){
 		const buffer_size: USize = dst.size() * std.types.numBytes<{T}>();
 
-		const dst_buffer = new [Byte:*mut](std.bitCast<{Byte*mut}>(dst.data()), copy buffer_size);
-		const src_buffer = new [Byte:*](std.bitCast<{Byte*}>(src.data()), copy buffer_size);
-		mem_copy(dst_buffer, src_buffer);
+		unsafe{
+			const dst_buffer = new [Byte:*mut](std.bitCast<{Byte*mut}>(dst.data()), copy buffer_size);
+			const src_buffer = new [Byte:*](std.bitCast<{Byte*}>(src.data()), copy buffer_size);
+			mem_copy(dst_buffer, src_buffer);
+		}
 
 	}else{
 		for(dst, src) [_; dst_value: T mut, src_value: T mut] {

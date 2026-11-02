@@ -31,7 +31,9 @@ type StaticArrayList = struct <{T: Type, CAPACITY: USize}>
 			output._data = new [std.ManualLifetime<{T}>:CAPACITY]();
 			output._size = data.size();
 
-			std.mem.copyBuffer(output as [T:*mut], data);
+			unsafe{
+				std.mem.copyBuffer(output as [T:*mut], data);
+			}
 			return...;
 		}
 	}
@@ -53,7 +55,9 @@ type StaticArrayList = struct <{T: Type, CAPACITY: USize}>
 			output._data = new [std.ManualLifetime<{T}>:CAPACITY]();
 			output._size = this.size();
 
-			std.mem.copyBuffer(output as [T:*mut], this as [T:*]);
+			unsafe{
+				std.mem.copyBuffer(output as [T:*mut], this as [T:*]);
+			}
 
 			return...;
 		}
@@ -73,12 +77,8 @@ type StaticArrayList = struct <{T: Type, CAPACITY: USize}>
 			output._data = new [std.ManualLifetime<{T}>:CAPACITY]();
 			output._size = this.size();
 
-			when(std.types.isSafeMovable<{T}>() == false){
+			unsafe{
 				std.mem.moveBuffer(output as [T:*mut], this as [T:*mut]);
-			}else{
-				unsafe{
-					std.mem.moveBuffer(output as [T:*mut], this as [T:*mut]);
-				}
 			}
 			
 			return...;
@@ -175,11 +175,7 @@ type StaticArrayList = struct <{T: Type, CAPACITY: USize}>
 			-> (output: T) {
 				std.debug.assert(this.isEmpty() == false, "Already empty");
 
-				when(std.types.isSafeMovable<{T}>()){
-					unsafe{ output = move this.last().*; }
-				}else{
-					output = move this.last().*;
-				}
+				unsafe{ output = move this.last().*; }
 
 				this._size -= 1;
 				return...;
@@ -198,7 +194,7 @@ type StaticArrayList = struct <{T: Type, CAPACITY: USize}>
 				std.debug.assert(this.isEmpty() == false, "Already empty");
 
 				output = copy this.last().*;
-				this.pop();
+				unsafe{ this.pop(); }
 				return...;
 			}
 

@@ -14,15 +14,19 @@ def std #private = @import("std");
 
 
 func advancePointer = (ptr: $T*, num_elems: ISize = 1) #unsafe -> T* {
-	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
-	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
-	return std.bitCast<{T*}>(ptr_num);
+	unsafe{
+		var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
+		ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
+		return std.bitCast<{T*}>(ptr_num);
+	}
 }
 
 func advancePointer = (ptr: $T*mut, num_elems: ISize = 1) #unsafe -> T*mut {
-	var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
-	ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
-	return std.bitCast<{T*mut}>(ptr_num);
+	unsafe{
+		var ptr_num: ISize = std.bitCast<{ISize}>(ptr);
+		ptr_num += std.types.numBytes<{T}>() as ISize * num_elems;
+		return std.bitCast<{T*mut}>(ptr_num);
+	}
 }
 
 
