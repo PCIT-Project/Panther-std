@@ -172,14 +172,11 @@ when(std.platform.SUPPORTS_CMD){
 
 
 }else{
-	func print = (str: [Char:*]) #rtDiff -> Void = delete("Not supported in this platform target");
-	func print = (format_str: std.fmt.FmtString, args: $$...) -> Void =
-		delete("Not supported in this platform target");
+	func print = (str: [Char:*])                              = delete("Not supported in this platform target");
+	func print = (format_str: std.fmt.FmtString, args: $$...) = delete("Not supported in this platform target");
 
-	func println = (str: [Char:*]) #rtDiff -> Void = delete("Not supported in this platform target");
-	func println = (format_str: std.fmt.FmtString, args: $$...) -> Void =
-		delete("Not supported in this platform target");
-
+	func println = (str: [Char:*])                              = delete("Not supported in this platform target");
+	func println = (format_str: std.fmt.FmtString, args: $$...) = delete("Not supported in this platform target");
 }
 
 

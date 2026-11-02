@@ -57,7 +57,7 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 		this.allocator_impl.dealloc(std.asBuffer(ptr), std.types.numAlignBytes<{T}>());
 	}
 
-	func dealloc = (this mut, ptr: $T*uninit) #unsafe -> Void = delete(
+	func dealloc = (this mut, ptr: $T*uninit) = delete(
 		"Incorrect method - did you mean to initialize the pointer first, or did you mean to call `.deallocWithoutDelete()` instead?"
 	);
 

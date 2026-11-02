@@ -68,15 +68,11 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 			}
 
 		}else{
-			func copyUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) -> (output: This) <Void> = delete(
-				"`T` isn't no-error-copyable"
-			);
+			func copyUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) = delete("`T` isn't no-error-copyable");
 		}
 
 	}else{
-		func copyUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) -> (output: This) <Void> = delete(
-			"`T` isn't copyable"
-		);
+		func copyUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) = delete("`T` isn't copyable");
 	}
 
 
@@ -103,15 +99,11 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 			}
 
 		}else{
-			func moveUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) -> (output: This) <Void> = delete(
-				"`T` isn't no-error-copyable"
-			);
+			func moveUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) = delete("`T` isn't no-error-copyable");
 		}
 
 	}else{
-		func moveUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) -> (output: This) <Void> = delete(
-			"`T` isn't copyable"
-		);
+		func moveUnmanaged = (this, allocator: std.mem.Allocator<{$$}> mut) = delete("`T` isn't copyable");
 	}
 
 
@@ -220,8 +212,7 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 					try this.reserve(this.size() * 2, allocator) else { error; };
 				}
 
-				defer{ this.current_size += 1; }
-				unsafe{ return this.buffer[this.current_size].getUninit(); }
+				return this.appendNoRealloc();
 			}
 
 			func popExtract = (this mut)
@@ -273,20 +264,19 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 
 			
 		}else{
-			func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
-				-> Void <Void> = delete("`T` isn't no-error-movable");
-
-			func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+			func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) = delete(
 				"`T` isn't no-error-movable"
 			);
 
-			func append = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> T*uninit <Void> = delete(
+			func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) = delete(
 				"`T` isn't no-error-movable"
 			);
 
-			func popExtract = (this mut) -> (output: T) = delete("`T` isn't no-error-movable");
+			func append = (this mut, allocator: std.mem.Allocator<{$$}> mut) = delete("`T` isn't no-error-movable");
 
-			func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+			func popExtract = (this mut) = delete("`T` isn't no-error-movable");
+
+			func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut) = delete(
 				"`T` isn't no-error-movable"
 			);
 
@@ -331,8 +321,7 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 					try this.reserve(this.size() * 2, allocator) else { error; };
 				}
 
-				defer{ this.current_size += 1; }
-				unsafe{ return this.buffer[this.current_size].getUninit(); }
+				return this.appendNoRealloc();
 			}
 
 			func popExtract = (this mut) 
@@ -379,49 +368,55 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 
 			
 		}else{
-			func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
-			-> Void <Void> = delete(
+			func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) = delete(
 				"`T` isn't movable or no-error-copyable"
 			);
 
-			func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+			func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) = delete(
 				"`T` isn't movable or no-error-copyable"
 			);
 
-			func append = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> T*uninit <Void> = delete(
+			func append = (this mut, allocator: std.mem.Allocator<{$$}> mut) = delete(
 				"`T` isn't movable or no-error-copyable"
 			);
 
-			func popExtract = (this mut) -> (output: T) = delete("`T` isn't movable or no-error-copyable");
+			func popExtract = (this mut) = delete("`T` isn't movable or no-error-copyable");
 
-			func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+			func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut) = delete(
 				"`T` isn't movable or no-error-copyable"
 			);
 		}
 
 
 	}else{
-		func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+		func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) = delete(
 			"`T` isn't movable or copyable"
 		);
 
-		func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+		func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut) = delete(
 			"`T` isn't movable or copyable"
 		);
 
-		func append = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> T*uninit <Void> = delete(
+		func append = (this mut, allocator: std.mem.Allocator<{$$}> mut) = delete(
 			"`T` isn't movable or copyable"
 		);
 
-		func popExtract = (this mut) -> (output: T) = delete("`T` isn't movable or copyable");
+		func popExtract = (this mut) = delete("`T` isn't movable or copyable");
 
-		func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut) -> Void <Void> = delete(
+		func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut) = delete(
 			"`T` isn't movable or copyable"
 		);
 
 	}
 
 
+
+	func appendNoRealloc = (this mut) -> T*uninit {
+		std.debug.assert(this.size() < this.capacity(), "Already at capacity");
+
+		defer{ this.current_size += 1; }
+		unsafe{ return this.buffer[this.current_size].getUninit(); }
+	}
 
 	func pop = (this mut) #rt(std.types.isComptimeDeletable<{T}>() == false) -> Void {
 		std.debug.assert(this.isEmpty() == false, "Already empty");

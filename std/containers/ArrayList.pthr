@@ -157,15 +157,11 @@ type ArrayList = struct <{T: Type, AllocatorImpl: Type}> {
 
 			
 		}else{
-			func reserveExact = (this mut, new_size: USize) -> Void <Void> = delete("`T` isn't no-error-movable");
-
-			func reserve = (this mut, new_size: USize) -> Void <Void> = delete("`T` isn't no-error-movable");
-
-			func append = (this mut) -> T*uninit <Void> = delete("`T` isn't no-error-movable");
-
-			func popExtract = (this mut) -> (output: T) = delete("`T` isn't no-error-movable");
-
-			func shrinkToFit = (this mut) -> Void <Void> = delete("`T` isn't no-error-movable");
+			func reserveExact = (this mut, new_size: USize) = delete("`T` isn't no-error-movable");
+			func reserve      = (this mut, new_size: USize) = delete("`T` isn't no-error-movable");
+			func append       = (this mut)                  = delete("`T` isn't no-error-movable");
+			func popExtract   = (this mut)                  = delete("`T` isn't no-error-movable");
+			func shrinkToFit  = (this mut)                  = delete("`T` isn't no-error-movable");
 		}
 
 	}else when(std.types.isCopyable<{T}>()){
@@ -205,35 +201,26 @@ type ArrayList = struct <{T: Type, AllocatorImpl: Type}> {
 			}
 			
 		}else{
-			func reserveExact = (this mut, new_size: USize) -> Void <Void> = delete(
-				"`T` isn't movable or no-error-copyable"
-			);
-
-			func reserve = (this mut, new_size: USize) -> Void <Void> = delete(
-				"`T` isn't movable or no-error-copyable"
-			);
-
-			func append = (this mut) -> T*uninit <Void> = delete("`T` isn't movable or no-error-copyable");
-
-			func popExtract = (this mut) -> (output: T) = delete("`T` isn't movable or no-error-copyable");
-
-			func shrinkToFit = (this mut) -> Void <Void> = delete("`T` isn't movable or no-error-copyable");
+			func reserveExact = (this mut, new_size: USize) = delete("`T` isn't movable or no-error-copyable");
+			func reserve      = (this mut, new_size: USize) = delete("`T` isn't movable or no-error-copyable");
+			func append       = (this mut)                  = delete("`T` isn't movable or no-error-copyable");
+			func popExtract   = (this mut)                  = delete("`T` isn't movable or no-error-copyable");
+			func shrinkToFit  = (this mut)                  = delete("`T` isn't movable or no-error-copyable");
 		}
 
 
 	}else{
-		func reserveExact = (this mut, new_size: USize) -> Void <Void> = delete("`T` isn't movable or copyable");
-
-		func reserve = (this mut, new_size: USize) -> Void <Void> = delete("`T` isn't movable or copyable");
-
-		func append = (this mut) -> T*uninit <Void> = delete("`T` isn't movable or copyable");
-
-		func popExtract = (this mut) -> (output: T) = delete("`T` isn't movable or copyable");
-
-		func shrinkToFit = (this mut) -> Void <Void> = delete("`T` isn't movable or copyable");
+		func reserveExact = (this mut, new_size: USize) = delete("`T` isn't movable or copyable");
+		func reserve      = (this mut, new_size: USize) = delete("`T` isn't movable or copyable");
+		func append       = (this mut)                  = delete("`T` isn't movable or copyable");
+		func popExtract   = (this mut)                  = delete("`T` isn't movable or copyable");
+		func shrinkToFit  = (this mut)                  = delete("`T` isn't movable or copyable");
 	}
 
 
+	func appendNoRealloc = (this mut) -> T*uninit {
+		return this.unmanaged.appendNoRealloc();
+	}
 
 	func pop = (this mut) #rt(std.types.isComptimeDeletable<{T}>() == false) -> Void { this.unmanaged.pop(); }
 
