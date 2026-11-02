@@ -1,12 +1,17 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.71.0"></a>
+## v0.0.71.0
+- Added `Warning`
+
+
+<!---------------------------------->
 <a name="v0.0.70.0"></a>
 ## v0.0.70.0
 - Added `ArrayList.appendNoRealloc`
 - Added `ArrayListUnmanaged.appendNoRealloc`
 - Updated to reflect updates in [PCIT-CPP v0.0.422.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.422.0)
-
 
 
 <!---------------------------------->

@@ -158,14 +158,15 @@ def fmt = @import("writer/fmt.pthr");
 //////////////////////////////////////////////////////////////////////
 // builtins
 
-type CallingConvention = alias @pthr.CallingConvention;
-type Language          = alias @pthr.Language;
 type Architecture      = alias @pthr.Architecture;
+type CallingConvention = alias @pthr.CallingConvention;
+type CompilerMode      = alias @pthr.CompilerMode;
+type Language          = alias @pthr.Language;
 type Platform          = alias @pthr.Platform;
-type WindowsSubsystem  = alias @pthr.WindowsSubsystem;
 type Mode              = alias @pthr.Mode;
 type OptMode           = alias @pthr.OptMode;
-type CompilerMode      = alias @pthr.CompilerMode;
+type Warning           = alias @pthr.Warning;
+type WindowsSubsystem  = alias @pthr.WindowsSubsystem;
 
 
 type IIterable         = alias @pthr._IIterable;
