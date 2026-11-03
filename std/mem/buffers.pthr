@@ -71,7 +71,15 @@ func moveBuffer = (dst: [$T:*mut], src: [T:*mut]) #rt(std.types.isComptimeMovabl
 
 	}else{
 		for(dst, src) [_; dst_value: T mut, src_value: T mut] {
-			dst_value = move src_value;
+			unsafe{
+				dst_value = move src_value;
+			}
 		}
 	}
+}
+
+
+
+func makeComptimeBuffer = (buffer: [$T:*]) #ct -> [T:*] {
+	return @makeComptimeBuffer<{[T:*]}>(buffer);
 }

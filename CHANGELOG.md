@@ -1,6 +1,16 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.73.0"></a>
+## v0.0.73.0
+- Added `mem.makeComptimeBuffer`
+- Added support for non-format `{` and `}` in `fmt.FmtString`
+- Fixed `ArrayListUnmanaged.appendExact` if current capacity is 0
+- Fixed `ArrayListUnmanaged.appendExact` if the `allocator.allocResize` fails
+- Fixed `ArrayListUnmanaged.clearAndDealloc` if current capacity is 0
+
+
+<!---------------------------------->
 <a name="v0.0.72.0"></a>
 ## v0.0.72.0
 - Updated to reflect updates in [PCIT-CPP v0.0.424.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.424.0)

@@ -351,16 +351,19 @@ func write_integral_detail = <{Integral: Type, BASE: Integral, IS_CAPITAL: Bool}
 
 
 type FmtString = struct {
-	func new = (fmt_str: [Char:*]) #implicit -> (output: This) {
+	func new = (fmt_str: [Char:*]) #implicit #ct-> (output: This) {
 		std.debug.assert(fmt_str.size() != 0, "Format string cannot be empty");
 
-		output.parts = new std.StaticArrayList<{Part, 32}>();
+		var comptime_allocator = new std.heap.ComptimeAllocator();
+		var allocator = new std.mem.Allocator<{std.heap.ComptimeAllocator}>(comptime_allocator);
+
+		var parts = new std.ArrayList<{Part, std.heap.ComptimeAllocator}>(copy allocator);
+		var current_string = new std.ArrayList<{Char, std.heap.ComptimeAllocator}>(copy allocator);
 
 		var i: USize = 0;
 		var current_start: USize = 0;
 		while(i < fmt_str.size()){
-			
-			if(fmt_str[i].* == '{'){
+			if(fmt_str[i].* == '{' && (i + 1 >= fmt_str.size() || fmt_str[i+1].* != '{')){
 				i += 1;
 				while(fmt_str[i].* != '}'){
 					i += 1;
@@ -368,27 +371,62 @@ type FmtString = struct {
 				}
 				i += 1;
 
-				output.parts.append().* = new Part{
+				(try parts.append() else { unreachable; }).* = new Part{
 					value = new [Char:*](fmt_str[current_start + 1], i - current_start - 2)
 				};
 				current_start = copy i;
 
 			}else{
-				while(i < fmt_str.size() && fmt_str[i].* != '{'){
-					i += 1;
+				var found_double_curly: Bool = false;
+
+				while(i < fmt_str.size()){
+					switch(fmt_str[i].*){
+						case('{'){
+							if(i + 1 < fmt_str.size() && fmt_str[i + 1].* == '{'){
+								(try current_string.append() else { unreachable; }).* = '{';
+								i += 2;
+								found_double_curly = true;
+
+							}else{
+								break;
+							}
+
+						}case('}'){
+							std.debug.assert(i + 1 < fmt_str.size(), "Missing second '}' for non-format '}'");
+							(try current_string.append() else { unreachable; }).* = '}';
+							i += 2;
+							found_double_curly = true;
+							
+						}else{
+							(try current_string.append() else { unreachable; }).* = copy fmt_str[i].*;
+							i += 1;
+						}
+					}
 				}
 
-				output.parts.append().* = new Part{str = new [Char:*](fmt_str[current_start], i - current_start)};
+				if(found_double_curly){
+					(try parts.append() else { unreachable; }).* = new Part{
+						str = std.mem.makeComptimeBuffer(current_string as [Char:*])
+					};
+				}else{
+					(try parts.append() else { unreachable; }).* = new Part{
+						str = new [Char:*](fmt_str[current_start], i - current_start)
+					};
+				}
+				current_string.clear();
+
 				current_start = copy i;
 			}
 		}
+
+		output.parts = std.mem.makeComptimeBuffer(parts as [Part:*]);
 
 		return...;
 	}
 
 
 
-	func new = (fmt_str: [Char:$$;'\0']*) #implicit -> (output: This) {
+	func new = (fmt_str: [Char:$$;'\0']*) #implicit #ct -> (output: This) {
 		output = new FmtString(fmt_str.* as [Char:*]);
 		return...;
 	}
@@ -424,5 +462,5 @@ type FmtString = struct {
 		value: [Char:*],
 	}
 
-	var parts: std.StaticArrayList<{Part, 32}> #private;
+	var parts: [Part:*] #private;
 }

@@ -168,6 +168,8 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 	func clearAndDealloc = (this mut, allocator: std.mem.Allocator<{$$}> mut)
 		#rt(std.types.isComptimeDeletable<{T}>() == false) 
 	-> Void {
+		if(this.capacity() == 0){ return; }
+
 		this.clear();
 		allocator.dealloc(this.buffer);
 		this.buffer = new [std.ManualLifetime<{T}>:*mut]();
@@ -179,21 +181,30 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 			func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
 				#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe(std.types.isSafeMovable<{T}>() == false)
 			-> Void <Void> {
+				if(this.capacity() == 0){
+					this.buffer = try allocator.alloc<{T}>(new_size) else { error; };
+					return;
+				}
+
 				if(new_size <= this.capacity()){ return; }
 
 				try allocator.allocResize(this.buffer, new_size) else {
-					unsafe{
-						const new_buffer: [std.ManualLifetime<{T}>:*mut] #movable =
-							try allocator.alloc<{T}>(new_size) else { error; };
+					const new_buffer: [std.ManualLifetime<{T}>:*mut] #movable =
+						try allocator.alloc<{T}>(new_size) else { error; };
 
+					unsafe{
 						const new_buffer_ref = new [T:*mut](std.bitCast<{T*mut}>(new_buffer.data()), this.size());
 
 						std.mem.moveBuffer(new_buffer_ref, this as [T:*mut]);
-
-						allocator.dealloc(this.buffer);
-						this.buffer = move new_buffer;
 					}
+
+					allocator.dealloc(this.buffer);
+					this.buffer = move new_buffer;
+
+					return;
 				};
+
+				this.buffer = new [std.ManualLifetime<{T}>:*mut](copy this.buffer.data().?, copy new_size);
 			}
 
 			func reserve = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
@@ -273,7 +284,6 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 			func shrinkToFit = (this mut, allocator: std.mem.Allocator<{$$}> mut) = delete(
 				"`T` isn't no-error-movable"
 			);
-
 		}
 
 	}else when(std.types.isCopyable<{T}>()){
@@ -281,6 +291,11 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 			func reserveExact = (this mut, new_size: USize, allocator: std.mem.Allocator<{$$}> mut)
 				#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>())
 			-> Void <Void> {
+				if(this.capacity() == 0){
+					this.buffer = try allocator.alloc<{T}>(new_size) else { error; };
+					return;
+				}
+
 				if(new_size <= this.capacity()){ return; }
 
 				try allocator.allocResize(this.buffer, new_size) else {

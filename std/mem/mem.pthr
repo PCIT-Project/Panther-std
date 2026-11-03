@@ -34,6 +34,6 @@ type PmAllocatorCT = alias AllocatorCT<{impl(*mut:IAllocatorCT)}>;
 
 
 def buffers #private = @import("./buffers.pthr");
-func copyBuffer = alias buffers.copyBuffer;
-func moveBuffer = alias buffers.moveBuffer;
-
+func copyBuffer         = alias buffers.copyBuffer;
+func moveBuffer         = alias buffers.moveBuffer;
+func makeComptimeBuffer = alias buffers.makeComptimeBuffer;
