@@ -1,0 +1,114 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std.char");
+
+
+func isLetter = (character: Char) -> Bool {
+	var as_upper = character as UI8 & 0xDF;
+	return (as_upper -% ('A' as UI8)) < 26;
+}
+func isLetter = (character: CWChar) -> Bool {
+	var as_upper = character as UI16 & 0xFFDF;
+	return (as_upper -% ('A' as UI16)) < 26;
+}
+
+
+func isUpper = (character: Char) -> Bool {
+	return (character as UI8 -% 'A' as UI8) < 26;
+}
+func isUpper = (character: CWChar) -> Bool {
+	return (character as UI8 -% 'A' as UI8) < 26;
+}
+
+
+func isLower = (character: Char) -> Bool {
+	return (character as UI8 -% 'a' as UI8) < 26;
+}
+func isLower = (character: CWChar) -> Bool {
+	return (character as UI8 -% 'a' as UI8) < 26;
+}
+
+
+func isNumber = (character: Char) -> Bool {
+	return (character as UI8 -% '0' as UI8) < 10;
+}
+func isNumber = (character: CWChar) -> Bool {
+	return (character as UI16 -% '0' as UI16) < 10;
+}
+
+func isHexNumber = (character: Char) -> Bool {
+	if(isNumber(character)){ return true; }
+
+	var as_upper = character as UI8 & 0xDF;
+	return as_upper < 6;
+}
+func isHexNumber = (character: CWChar) -> Bool {
+	if(isNumber(character)){ return true; }
+
+	var as_upper = character as UI16 & 0xFFDF;
+	return as_upper < 6;
+}
+
+func isOctalNumber = (character: Char) -> Bool {
+	return (character as UI8 -% '0' as UI8) < 8;
+}
+func isOctalNumber = (character: CWChar) -> Bool {
+	return (character as UI16 -% '0' as UI16) < 8;
+}
+
+func isBinaryNumber = (character: Char) -> Bool {
+	return (character as UI8 -% '0' as UI8) < 2;
+}
+func isBinaryNumber = (character: CWChar) -> Bool {
+	return (character as UI16 -% '0' as UI16) < 2;
+}
+
+
+
+func isLetterOrNumber = (character: Char) -> Bool {
+	return isLetter(character) || isNumber(character);
+}
+func isLetterOrNumber = (character: CWChar) -> Bool {
+	return isLetter(character) || isNumber(character);
+}
+
+
+
+
+func toUpper = (character: Char) -> Char {
+	if(isLetter(character)){
+		return (character as UI8 & 0xDF) as Char;
+	}else{
+		return copy character;
+	}
+}
+func toUpper = (character: CWChar) -> CWChar {
+	if(isLetter(character)){
+		return (character as UI8 & 0xDF) as CWChar;
+	}else{
+		return copy character;
+	}
+}
+
+
+func toLower = (character: Char) -> Char {
+	if(isLetter(character)){
+		return (character as UI8 | 0x20) as Char;
+	}else{
+		return copy character;
+	}
+}
+func toLower = (character: CWChar) -> CWChar {
+	if(isLetter(character)){
+		return (character as UI8 | 0x20) as CWChar;
+	}else{
+		return copy character;
+	}
+}

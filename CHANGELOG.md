@@ -1,6 +1,22 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.74.0"></a>
+## v0.0.74.0
+- Added module `char`
+	- `isLetter`
+	- `isLower`
+	- `isUpper`
+	- `isNumber`
+	- `isHexNumber`
+	- `isOctalNumber`
+	- `isBinaryNumber`
+	- `isLetterOrNumber`
+	- `toLower`
+	- `toUpper`
+
+
+<!---------------------------------->
 <a name="v0.0.73.0"></a>
 ## v0.0.73.0
 - Added `mem.makeComptimeBuffer`

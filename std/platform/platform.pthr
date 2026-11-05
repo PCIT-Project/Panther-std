@@ -21,9 +21,8 @@ when switch(@config.platform){
 		def SUPPORTS_CMD: Bool = false;
 		def SUPPORTS_NON_CMD_FILE_IO: Bool = false;
 		def SUPPORTS_NON_LINEAR_HEAP: Bool = false;
-	}
-
-	case(std.Platform.LINUX){
+	
+	}case(std.Platform.LINUX){
 		def linux = @import("./Linux/Linux.pthr");
 		def panther = delete("Current target platform is Linux");
 		def windows = delete("Current target platform is Linux");
@@ -31,9 +30,8 @@ when switch(@config.platform){
 		def SUPPORTS_CMD: Bool = true;
 		def SUPPORTS_NON_CMD_FILE_IO: Bool = true;
 		def SUPPORTS_NON_LINEAR_HEAP: Bool = true;
-	}
-
-	case(std.Platform.PANTHER_VM){
+	
+	}case(std.Platform.PANTHER_VM){
 		def linux = delete("Current target platform is PantherVM");
 		def pantherVM = @import("./PantherVM/PantherVM.pthr");
 		def windows = delete("Current target platform is PantherVM");
@@ -41,9 +39,8 @@ when switch(@config.platform){
 		def SUPPORTS_CMD: Bool = true;
 		def SUPPORTS_NON_CMD_FILE_IO: Bool = true;
 		def SUPPORTS_NON_LINEAR_HEAP: Bool = true;
-	}
-
-	case(std.Platform.WINDOWS){
+	
+	}case(std.Platform.WINDOWS){
 		def linux = delete("Current target platform is Windows");
 		def panther = delete("Current target platform is Windows");
 		def windows = @import("./Windows/Windows.pthr");

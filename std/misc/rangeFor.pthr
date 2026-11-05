@@ -74,7 +74,9 @@ func reverseRangeFor = <{T: Type}> (first: T, last: T, stride: T = 1 as T) -> Re
 
 
 
-type RangeForIter = struct <{T: Type}> {
+type RangeForIter = struct <{T: Type}>
+	#comptimeAssert(std.types.isIntegral<{T}>() || std.types.isFloatingPoint<{T}>(), "Invalid `T`")
+{
 	func new = (first: T, last: T, stride: T) -> (output: This) {
 		output.first  = copy first;
 		output.last   = copy last;
@@ -144,7 +146,9 @@ type RangeForIter = struct <{T: Type}> {
 }
 
 
-type ReverseRangeForIter = struct <{T: Type}> {
+type ReverseRangeForIter = struct <{T: Type}>
+	#comptimeAssert(std.types.isIntegral<{T}>() || std.types.isFloatingPoint<{T}>(), "Invalid `T`")
+{
 	func new = (first: T, last: T, stride: T) -> (output: This) {
 		output.first  = copy first;
 		output.last   = copy last;
