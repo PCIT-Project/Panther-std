@@ -56,6 +56,17 @@ type UNICODE_STRING = struct #ordered {
 			Buffer        = copy str.data().?,
 		};
 	}
+
+	// windows doesn't have a const version of this so...
+	func create = (str: [CWChar:*;'\0' as CWChar]) #unsafe -> UNICODE_STRING {
+		unsafe{
+			return new UNICODE_STRING{
+				Length        = (str.size() * std.types.numBytes<{CWChar}>()) as USHORT,
+				MaximumLength = ((str.size() + 1) * std.types.numBytes<{CWChar}>()) as USHORT,
+				Buffer        = std.bitCast<{PWSTR}>(copy str.data().?),
+			};
+		}
+	}
 }
 type PUNICODE_STRING = alias UNICODE_STRING*mut;
 

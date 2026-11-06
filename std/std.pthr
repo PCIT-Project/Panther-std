@@ -66,13 +66,8 @@ def debug = @import("debug.pthr");
 //////////////////////////////////////////////////////////////////////
 // fs
 
-
-when(platform.SUPPORTS_NON_CMD_FILE_IO){
-	def fs = @import("./fs/fs.pthr");
-}else{
-	def fs = delete("This platform doesn't support non-cmd file IO");
-}
-
+def fs = @import("./fs/fs.pthr");
+	
 
 
 //////////////////////////////////////////////////////////////////////

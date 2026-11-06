@@ -120,6 +120,12 @@ type RangeForIter = struct <{T: Type}>
 			atEnd = atEnd,
 		}
 
+		impl std.IIteratorCT {
+			next  = next,
+			get   = get,
+			atEnd = atEnd,
+		}
+
 
 		var current: T #private;
 		const last: T #private;
@@ -136,6 +142,12 @@ type RangeForIter = struct <{T: Type}>
 	impl std.IIterableRefRT {
 		createIterator = (this) -> impl(Iter:std.IIteratorRT) {
 			return new impl(Iter:std.IIteratorRT)(this.first, this.last, this.stride);
+		}
+	}
+
+	impl std.IIterableRefCT {
+		createIterator = (this) -> impl(Iter:std.IIteratorCT) {
+			return new impl(Iter:std.IIteratorCT)(this.first, this.last, this.stride);
 		}
 	}
 
@@ -176,7 +188,7 @@ type ReverseRangeForIter = struct <{T: Type}>
 		}
 
 		func atEnd = (this) -> Bool {
-			return this.current < this.last;
+			return this.current <= this.last;
 		}
 
 
@@ -187,6 +199,12 @@ type ReverseRangeForIter = struct <{T: Type}>
 		}
 
 		impl std.IIteratorRT {
+			next  = next,
+			get   = get,
+			atEnd = atEnd,
+		}
+
+		impl std.IIteratorCT {
 			next  = next,
 			get   = get,
 			atEnd = atEnd,
@@ -208,6 +226,12 @@ type ReverseRangeForIter = struct <{T: Type}>
 	impl std.IIterableRefRT {
 		createIterator = (this) -> impl(Iter:std.IIteratorRT) {
 			return new impl(Iter:std.IIteratorRT)(this.first, this.last, this.stride);
+		}
+	}
+
+	impl std.IIterableRefCT {
+		createIterator = (this) -> impl(Iter:std.IIteratorCT) {
+			return new impl(Iter:std.IIteratorCT)(this.first, this.last, this.stride);
 		}
 	}
 

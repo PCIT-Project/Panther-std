@@ -9,5 +9,39 @@
 
 @setModuleName("std.fs");
 
+def std #private = @import("std");
 
-type File = alias @import("./File.pthr").File;
+type File    = alias @import("./File.pthr").File;
+
+type PathRefImpl  = alias @import("./PathRef.pthr").PathRefImpl;
+type PathRef      = alias PathRefImpl<{PathCharacter}>;
+type PathRefUTF8  = alias PathRefImpl<{Char}>;
+type PathRefUTF16 = alias PathRefImpl<{CWChar}>;
+
+
+when switch(@config.platform){
+	case(std.Platform.FREESTANDING){
+		type PathCharacter = alias Char;
+		def PATH_SEPARATOR: PathCharacter = '/';
+
+	}case(std.Platform.LINUX){
+		type PathCharacter = alias Char;
+		def PATH_SEPARATOR: PathCharacter = '/';
+
+	}case(std.Platform.PANTHER_VM){
+		type PathCharacter = alias Char;
+		def PATH_SEPARATOR: PathCharacter = '/';
+
+	}case(std.Platform.WINDOWS){
+		type PathCharacter = alias CWChar;
+		def PATH_SEPARATOR: PathCharacter = '\\' as PathCharacter;
+	}
+}
+
+func isPathSeparator = (character: Char) -> Bool {
+	return character == '/' || character == '\\';
+}
+
+func isPathSeparator = (character: CWChar) -> Bool {
+	return character == '/' as CWChar || character == '\\' as CWChar;
+}

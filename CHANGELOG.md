@@ -1,6 +1,19 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.75.0"></a>
+## v0.0.75.0
+- Added `fs.PathRef`
+	- `PathRefUTF8`
+	- `PathRefUTF16`
+- Added `fs.PathCharacter`
+- Added `fs.PATH_SEPARATOR`
+- Added `fs.isPathSeparator`
+- Added `char.isWhitespace`
+- Fixed `ReverseRangeFor` if the end is `0`
+
+
+<!---------------------------------->
 <a name="v0.0.74.0"></a>
 ## v0.0.74.0
 - Added module `char`

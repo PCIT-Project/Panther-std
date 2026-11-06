@@ -1,0 +1,263 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std.fs");
+
+def std #private = @import("std");
+
+
+
+type PathRefImpl = struct <{Character: Type}> {
+	type StrType = alias [Character:*;'\0' as Character];
+
+	func new = () -> (output: This) {
+		output.str = new StrType();
+		return...;
+	}
+
+	func new = (str: StrType) -> (output: This) {
+		output.str = copy str;
+		return...;
+	}
+
+
+	when(std.types.id<{Character}>() != std.types.id<{Char}>()){
+		func new = (str: [Char:*;'\0']) #ct #implicit -> (output: This) {
+			var comptime_allocator = new std.heap.ComptimeAllocator();
+
+			var str_buffer = try new std.ArrayList<{Character, std.heap.ComptimeAllocator}>(
+				str.size() + 1, new std.mem.Allocator<{std.heap.ComptimeAllocator}>(comptime_allocator)
+			) else { unreachable; };
+
+			for(std.rangeFor(str.size())) [_; i: USize] {
+				str_buffer.appendNoRealloc().* = str[i].* as Character;
+			}
+
+			str_buffer.appendNoRealloc().* = '\0' as Character;
+
+			const comptime_buffer: [Character:*] = std.mem.makeComptimeBuffer(str_buffer as [Character:*]);
+
+			output.str = new StrType(copy comptime_buffer.data().?, str.size());
+
+			return...;
+		}
+	}
+
+
+	///////////////////////////////////
+	// decompositions
+
+	func rootName = (this) -> StrType {
+		when(@config.platform == std.Platform.WINDOWS){
+			if(this.str.size() < 2){ return new StrType(); }
+
+			// Prefixed by drive letter such as `X:` or `x:`
+			if(std.char.isLetter(this.str[0].*) && this.str[1].* == ':' as Character){
+				return new StrType(copy this.str.data().?, 2);
+			}
+
+			// if not a drive letter, all start with a slash
+			if(std.fs.isPathSeparator(this.str[0].*) == false){ return new StrType(); }
+
+
+			// UNC = Universal Naming Convention (prefixed by `\xx\` which is not followed by a `\`)
+			const is_maybe_unc: Bool = this.str.size() >= 4
+				&& std.fs.isPathSeparator(this.str[3].*)
+				&& (this.str.size() == 4 || std.fs.isPathSeparator(this.str[4].*) == false);
+			if(is_maybe_unc){
+				if(std.fs.isPathSeparator(this.str[1].*)){
+					if(this.str[2].* == '?' as Character){ // prefixed by `\\?\`
+						return new StrType(copy this.str.data().?, 3);
+					}
+
+					if(this.str[2].* == '.' as Character){ // prefixed by `\\.\`
+						return new StrType(copy this.str.data().?, 3);
+					}
+
+				}else if(this.str[1].* == '?' as Character && this.str[2].* == '?' as Character){ // prefixed by `\??\`
+					return new StrType(copy this.str.data().?, 3);
+				}
+			}
+
+
+			// Prefixed by `\\server` which is not followed by a `\`
+			if(
+				this.str.size() >= 3
+				&& std.fs.isPathSeparator(this.str[1].*)
+				&& std.fs.isPathSeparator(this.str[2].*) == false
+			){
+			    for(std.rangeFor(3 as USize, this.str.size() - 1)) [_; i: USize] {
+			    	if(std.fs.isPathSeparator(this.str[i].*)){
+			    		return new StrType(copy this.str.data().?, copy i);
+			    	}
+			    }
+			}
+
+			return new StrType();
+
+		}else{
+			return new StrType();
+		}
+	}
+
+
+	func rootPathSubStr = (this) -> StrType {
+		var root_name: StrType = this.rootName();
+
+		if(root_name.size() == 0){ return new StrType(); }
+
+		for(std.rangeFor(root_name.size(), this.str.size() - 1)) [_; i: USize] {
+			if(std.fs.isPathSeparator(this.str[i].*)){
+				return new StrType(copy this.str.data().?, i + 1);
+			}
+		}
+
+		return new StrType();
+	}
+
+	func rootDirectorySubStr = (this) -> StrType {
+		var root_name: StrType = this.rootName();
+
+		if(root_name.size() == 0){ return new StrType(); }
+
+		for(std.rangeFor(root_name.size(), this.str.size() - 1)) [_; i: USize] {
+			if(std.fs.isPathSeparator(this.str[i].*)){
+				return new StrType(this.str[root_name.size()], i - root_name.size() + 1);
+			}
+		}
+
+		return new StrType();
+	}
+
+
+	func relativeToRootPath = (this) -> StrType {
+		var root_path: StrType= this.rootPathSubStr();
+		if(root_path.size() == 0){ return new StrType(); }
+
+		return new StrType(this.str[root_path.size()], this.str.size() - root_path.size());
+	}
+
+
+
+
+	func parentDirectorySubStr = (this) -> StrType {
+		for(std.reverseRangeFor(this.str.size() - 1)) [_; i: USize] {
+			if(this.str[i].* == '/' as Character || this.str[i].* == '\\' as Character){
+				return new StrType(copy this.str.data().?, copy i);
+			}
+		}
+
+		return new StrType();
+	}
+
+	func fileName = (this) -> StrType {
+		for(std.reverseRangeFor(this.str.size() - 1)) [_; i: USize] {
+			if(this.str[i].* == '/' as Character || this.str[i].* == '\\' as Character){
+				return new StrType(this.str[i + 1], this.str.size() - i - 1);
+			}
+		}
+
+		return new StrType();
+	}
+
+	func stem = (this) -> StrType {
+		var period_index: USize? = null;
+
+		for(std.reverseRangeFor(this.str.size() - 1)) [_; i: USize] {
+			if(this.str[i].* == '/' as Character || this.str[i].* == '\\' as Character){
+				if(period_index == null){
+					return new StrType();
+				}
+
+				return new StrType(this.str[i + 1], period_index.? - i - 1);
+			}
+
+			if(this.str[i].* == '.' as Character){
+				period_index = copy i;
+			}
+		}
+
+		return new StrType();
+	}
+
+	func extension = (this) -> StrType {
+		for(std.reverseRangeFor(this.str.size() - 1)) [_; i: USize] {
+			if(this.str[i].* == '.' as Character){
+				return new StrType(this.str[i + 1], this.str.size() - i);
+			}
+		}
+
+		return new StrType();
+	}
+
+
+
+	///////////////////////////////////
+	// queries
+
+	func isEmpty = (this) -> Bool { return this.str.size() == 0; }
+
+
+	func isAbsolute = (this) -> Bool {
+		when(@config.platform == std.Platform.WINDOWS){
+			var root_name: StrType = this.rootName();
+
+			if(root_name.size() == 0){ return false; }
+
+			if(root_name.size() == 2 && this.str[1].* == ':' as Character){ // is drive
+				return this.str.size() >= 3 && std.fs.isPathSeparator(this.str[2].*);
+			}
+
+			return true;
+
+		}else{
+			return this.hasRootDirectory();
+		}
+	}
+
+	func isRelative = (this) -> Bool {
+		return !this.isAbsolute();
+	}
+	
+
+	func isUNC = (this) -> Bool {
+		return this.rootName().size() > 2;
+	}
+
+
+	func hasRootName        = (this) -> Bool { return this.rootName().size() != 0;              }
+	func hasRootDirectory   = (this) -> Bool { return this.rootDirectorySubStr().size() != 0;   }
+	func hasRootPath        = (this) -> Bool { return this.rootPathSubStr().size() != 0;        }
+
+	func hasParentDirectory = (this) -> Bool { return this.parentDirectorySubStr().size() != 0; }
+	func hasFileName        = (this) -> Bool { return this.fileName().size() != 0;              }
+	func hasStem            = (this) -> Bool { return this.stem().size() != 0;                  }
+	func hasExtension       = (this) -> Bool { return this.extension().size() != 0;             }
+
+
+
+	///////////////////////////////////
+	// interfaces
+
+	impl std.fmt.IFmt{
+		write = (this, writer: std.Writer<{$$}> mut, format_info: [Char:*]) -> Void {
+			std.debug.assert(format_info.size() == 0, "Invalid format info for this type (std.fs.FileRef)");
+
+			writer.write(this.str);
+		}
+	}
+
+
+
+	///////////////////////////////////
+	// member vars
+
+	const str: StrType;
+}
+

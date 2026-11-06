@@ -17,7 +17,7 @@ func assert = (cond: Bool, message: [Char:*]) -> Void {
 			when(std.platform.SUPPORTS_CMD){
 				print("\e[37m\e[41mPCIT Panther Language - `std.debug.assert`: \"");
 				print(message);
-				print("\e[0m\n");
+				print("\"\e[0m\n");
 			}
 
 			@breakpoint();

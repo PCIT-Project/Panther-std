@@ -17,7 +17,8 @@ def std #private = @import("std");
 type File = struct {
 	when switch(@config.platform){
 		case(std.Platform.FREESTANDING){
-			@comptimeError("`std.fs.File` is not supported in frestanding platform target");
+			// TODO(FUTURE): add this when feature is added
+			// type Handle = delete("std.fs.File.Handle is not supported in frestanding platform target");
 		}
 
 		case(std.Platform.LINUX){
@@ -48,7 +49,7 @@ type File = struct {
 	func createStdout = () #rt -> (output: File) {
 		when switch(@config.platform){
 			case(std.Platform.FREESTANDING){
-				@comptimeError("`std.fs.File` is not supported in freestanding platform target");
+				unreachable("`std.fs.File` is not supported in freestanding platform target");
 			}
 
 			case(std.Platform.LINUX){
@@ -130,12 +131,13 @@ type File = struct {
 		}
 	}
 
-	func open = (path: [Char:*;'\0'], may_create: Bool) #rt -> This <OpenError> {
+	func open = (path: std.fs.PathRef, may_create: Bool) #rt -> This <OpenError> {
+		std.debug.assert(path.isAbsolute(), "`std.fs.File.open` - file path must be absolute");
+
 		when switch(@config.platform){
 			case(std.Platform.FREESTANDING){
-				@comptimeError("`std.fs.File` is not supported in frestanding platform target");
+				unreachable("`std.fs.File.open` is not supported in frestanding platform target");
 			}
-
 
 
 			case(std.Platform.LINUX){
@@ -154,7 +156,7 @@ type File = struct {
 				}
 
 
-				var file_descriptor: Handle = try linux.openat(linux.AT_FDCWD, path, flags, openat_mode)
+				var file_descriptor: Handle = try linux.openat(linux.AT_FDCWD, path.str, flags, openat_mode)
 					else<errno: linux.Errno>
 				{
 					switch(errno){
@@ -199,13 +201,24 @@ type File = struct {
 			}
 
 			case(std.Platform.PANTHER_VM){
-				unreachable("std.fs.File - open is not currently supported");
+				unreachable("`std.fs.File.open` is not supported in Panther platform target");
 			}
 
 			case(std.Platform.WINDOWS){
-				std.debug.assert(path.size() < 260, "Path is too large");
-				var wpath_buffer = new [CWChar:266]();
-				const wpath: [CWChar:*mut;'\0' as CWChar] = make_wpath(path, wpath_buffer);
+				when(@config.mode == std.Mode.DEBUG){
+					std.debug.assert(
+						path.isUNC(),
+						"`std.fs.File.open` - on windows, path must be UNC (Universal Naming Convention), such as having prefix `\\??\\`"
+					);
+					
+					for(path.str) [_; character: CWChar] {
+						std.debug.assert(
+							character != '/' as CWChar,
+							"`std.fs.File.open` - path must have platform preferred separators"
+						);
+					}
+				}
+
 
 				def windows = std.platform.windows;
 
@@ -218,8 +231,8 @@ type File = struct {
 				};
 
 				var file_handle: std.platform.windows.Handle = try std.platform.windows.ntCreateFile(
-					wpath,
-					windows.cwdHandle(),
+					path.str,
+					null,
 					windows.FileAccess.GENERIC_WRITE,
 					windows.FileAttribute.NORMAL,
 					windows.FileShareAccess.READ | windows.FileShareAccess.WRITE | windows.FileShareAccess.DELETE,
@@ -338,10 +351,12 @@ type File = struct {
 		}
 	}
 
-	func create = (path: [Char:*;'\0']) #rt -> This <CreateError> {
+	func create = (path: std.fs.PathRef) #rt -> This <CreateError> {
+		std.debug.assert(path.isAbsolute(), "`std.fs.File.create` - file path must be absolute");
+
 		when switch(@config.platform){
 			case(std.Platform.FREESTANDING){
-				@comptimeError("`std.fs.File` is not supported in frestanding platform target");
+				unreachable("`std.fs.File.create` is not supported in frestanding platform target");
 			}
 
 
@@ -350,7 +365,7 @@ type File = struct {
 
 				var file_descriptor: Handle = try linux.openat(
 					linux.AT_FDCWD,
-					path,
+					path.str,
 					linux.O.RDWR | linux.O.CREAT | linux.O.EXCL,
 					(linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode
 				) else<errno: linux.Errno> {
@@ -396,19 +411,29 @@ type File = struct {
 			}
 
 			case(std.Platform.PANTHER_VM){
-				unreachable("std.fs.File - create is not currently supported");
+				unreachable("`std.fs.File.create` is not supported in Panther platform target");
 			}
 
 			case(std.Platform.WINDOWS){
-				std.debug.assert(path.size() < 260, "Path is too large");
-				var wpath_buffer = new [CWChar:266]();
-				const wpath: [CWChar:*mut;'\0' as CWChar] = make_wpath(path, wpath_buffer);
+				when(@config.mode == std.Mode.DEBUG){
+					std.debug.assert(
+						path.isUNC(),
+						"`std.fs.File.create` - on windows, path must be UNC (Universal Naming Convention), such as having prefix `\\??\\`"
+					);
+					
+					for(path.str) [_; character: CWChar] {
+						std.debug.assert(
+							character != '/' as CWChar,
+							"`std.fs.File.create` - path must have platform preferred separators"
+						);
+					}
+				}
 
 				def windows = std.platform.windows;
 
 				var file_handle: std.platform.windows.Handle = try std.platform.windows.ntCreateFile(
-					wpath,
-					windows.cwdHandle(),
+					path.str,
+					null,
 					windows.FileAccess.GENERIC_WRITE,
 					windows.FileAttribute.NORMAL,
 					windows.FileShareAccess.READ | windows.FileShareAccess.WRITE | windows.FileShareAccess.DELETE,
@@ -474,7 +499,7 @@ type File = struct {
 		// TODO(FUTURE): error handling
 		when switch(@config.platform){
 			case(std.Platform.FREESTANDING){
-				@comptimeError("`std.fs.File` is not supported in freestanding platform target");
+				unreachable("`std.fs.File` is not supported in freestanding platform target");
 			}
 
 			case(std.Platform.LINUX){
@@ -514,7 +539,7 @@ type File = struct {
 
 		when switch(@config.platform){
 			case(std.Platform.FREESTANDING){
-				@comptimeError("`std.fs.File` is not supported in frestanding platform target");
+				unreachable("`std.fs.File` is not supported in frestanding platform target");
 			}
 
 			case(std.Platform.LINUX){
@@ -531,7 +556,7 @@ type File = struct {
 			}
 
 			case(std.Platform.PANTHER_VM){
-				std.debug.unimplemented();
+				unreachable("`std.fs.File.close` is not supported in Panther platform target");
 			}
 
 			case(std.Platform.WINDOWS){

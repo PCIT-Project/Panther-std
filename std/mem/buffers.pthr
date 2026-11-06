@@ -31,6 +31,9 @@ func copyBuffer = (dst: [$T:*mut], src: [T:*])
 		"std.mem.copyBuffer requires that buffer element must be no-error copyable"
 	);
 	std.debug.assert(dst.size() == src.size(), "Sizes of buffers must be the same");
+	std.debug.assert(dst.size() != 0, "Cannot copy empty buffer");
+
+	if(dst.size() == 0){ return; }
 
 	when(std.types.isTriviallyCopyable<{T}>()){
 		const buffer_size: USize = dst.size() * std.types.numBytes<{T}>();
@@ -59,6 +62,8 @@ func moveBuffer = (dst: [$T:*mut], src: [T:*mut]) #rt(std.types.isComptimeMovabl
 		"std.mem.moveBuffer requires that buffer element must be no-error movable"
 	);
 	std.debug.assert(dst.size() == src.size(), "Sizes of buffers must be the same");
+	std.debug.assert(dst.size() != 0, "Cannot move empty buffer");
+
 
 	when(std.types.isTriviallyMovable<{T}>()){
 		const buffer_size: USize = dst.size() * std.types.numBytes<{T}>();

@@ -80,6 +80,15 @@ func isLetterOrNumber = (character: CWChar) -> Bool {
 }
 
 
+func isWhitespace = (character: Char) -> Bool {
+	return character == ' ' || ((character as UI8 -% '\t' as UI8) < 5);
+}
+
+func isWhitespace = (character: CWChar) -> Bool {
+	return character == ' ' as CWChar || ((character as UI16 -% '\t' as UI16) < 5);
+}
+
+
 
 
 func toUpper = (character: Char) -> Char {
