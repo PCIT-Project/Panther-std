@@ -58,7 +58,8 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 	}
 
 	func dealloc = (this mut, ptr: $T*uninit) = delete(
-		"Incorrect method - did you mean to initialize the pointer first, or did you mean to call `.deallocWithoutDelete()` instead?"
+		"Incorrect method - did you mean to initialize the pointer first,"
+			++ " or did you mean to call `.deallocWithoutDelete()` instead?"
 	);
 
 	func dealloc = (this mut, buffer: [$T:*mut]) -> Void {

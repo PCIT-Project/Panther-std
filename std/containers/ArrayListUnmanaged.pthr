@@ -46,7 +46,8 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 	func delete = (this mut) -> Void {
 		std.debug.assert(
 			this.isEmpty(),
-			"`std.ArrayListUnmanaged` was attempted to be deleted with data still held. Did you forget to call `clearAndDealloc()`?"
+			"`std.ArrayListUnmanaged` was attempted to be deleted with data still held."
+				++ " Did you forget to call `clearAndDealloc()`?"
 		);
 	}
 

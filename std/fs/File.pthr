@@ -208,7 +208,8 @@ type File = struct {
 				when(@config.mode == std.Mode.DEBUG){
 					std.debug.assert(
 						path.isUNC(),
-						"`std.fs.File.open` - on windows, path must be UNC (Universal Naming Convention), such as having prefix `\\??\\`"
+						"`std.fs.File.open` - on windows, path must be UNC (Universal Naming Convention), "
+							++ "such as having prefix `\\??\\`"
 					);
 					
 					for(path.str) [_; character: CWChar] {
@@ -418,7 +419,8 @@ type File = struct {
 				when(@config.mode == std.Mode.DEBUG){
 					std.debug.assert(
 						path.isUNC(),
-						"`std.fs.File.create` - on windows, path must be UNC (Universal Naming Convention), such as having prefix `\\??\\`"
+						"`std.fs.File.create` - on windows, path must be UNC (Universal Naming Convention), "
+							++ "such as having prefix `\\??\\`"
 					);
 					
 					for(path.str) [_; character: CWChar] {
