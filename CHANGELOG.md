@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.76.1"></a>
+## v0.0.76.1
+- Fixed fmt of Integrals when the value equals the base
+
+
+<!---------------------------------->
 <a name="v0.0.76.0"></a>
 ## v0.0.76.0
 - Updated to reflect updates in [PCIT-CPP v0.0.428.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.428.0)

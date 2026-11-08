@@ -295,7 +295,7 @@ func write_integral_detail = <{Integral: Type, BASE: Integral, IS_CAPITAL: Bool}
 	def WORKING_BASE: WorkingIntegral = BASE as WorkingIntegral;
 
 
-	while(working_number > WORKING_BASE){
+	while(working_number >= WORKING_BASE){
 		const current_working_num: WorkingIntegral = copy working_number;
 		working_number /= WORKING_BASE;
 
