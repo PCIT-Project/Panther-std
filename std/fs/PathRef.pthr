@@ -59,7 +59,7 @@ type PathRefImpl = struct <{Character: Type}> {
 
 			// Prefixed by drive letter such as `X:` or `x:`
 			if(std.char.isLetter(this.str[0].*) && this.str[1].* == ':' as Character){
-				return new StrType(copy this.str.data().?, 2);
+				return this.str.subarray(0, 2);
 			}
 
 			// if not a drive letter, all start with a slash
@@ -73,15 +73,15 @@ type PathRefImpl = struct <{Character: Type}> {
 			if(is_maybe_unc){
 				if(std.fs.isPathSeparator(this.str[1].*)){
 					if(this.str[2].* == '?' as Character){ // prefixed by `\\?\`
-						return new StrType(copy this.str.data().?, 3);
+						return this.str.subarray(0, 3);
 					}
 
 					if(this.str[2].* == '.' as Character){ // prefixed by `\\.\`
-						return new StrType(copy this.str.data().?, 3);
+						return this.str.subarray(0, 3);
 					}
 
 				}else if(this.str[1].* == '?' as Character && this.str[2].* == '?' as Character){ // prefixed by `\??\`
-					return new StrType(copy this.str.data().?, 3);
+					return this.str.subarray(0, 3);
 				}
 			}
 
@@ -94,7 +94,7 @@ type PathRefImpl = struct <{Character: Type}> {
 			){
 			    for(std.rangeFor(3 as USize, this.str.size() - 1)) [_; i: USize] {
 			    	if(std.fs.isPathSeparator(this.str[i].*)){
-			    		return new StrType(copy this.str.data().?, copy i);
+			    		return this.str.subarray(0, i);
 			    	}
 			    }
 			}
@@ -114,7 +114,7 @@ type PathRefImpl = struct <{Character: Type}> {
 
 		for(std.rangeFor(root_name.size(), this.str.size() - 1)) [_; i: USize] {
 			if(std.fs.isPathSeparator(this.str[i].*)){
-				return new StrType(copy this.str.data().?, i + 1);
+				return this.str.subarray(0, i + 1);
 			}
 		}
 
@@ -128,7 +128,7 @@ type PathRefImpl = struct <{Character: Type}> {
 
 		for(std.rangeFor(root_name.size(), this.str.size() - 1)) [_; i: USize] {
 			if(std.fs.isPathSeparator(this.str[i].*)){
-				return new StrType(this.str[root_name.size()], i - root_name.size() + 1);
+				return this.str.subarray(root_name.size(), i - root_name.size() + 1);
 			}
 		}
 
@@ -140,7 +140,7 @@ type PathRefImpl = struct <{Character: Type}> {
 		var root_path: StrType= this.rootPathSubStr();
 		if(root_path.size() == 0){ return new StrType(); }
 
-		return new StrType(this.str[root_path.size()], this.str.size() - root_path.size());
+		return this.str.subarray(root_path.size(), this.str.size() - root_path.size());
 	}
 
 
@@ -149,7 +149,7 @@ type PathRefImpl = struct <{Character: Type}> {
 	func parentDirectorySubStr = (this) -> StrType {
 		for(std.reverseRangeFor(this.str.size() - 1)) [_; i: USize] {
 			if(this.str[i].* == '/' as Character || this.str[i].* == '\\' as Character){
-				return new StrType(copy this.str.data().?, copy i);
+				return this.str.subarray(0, i);
 			}
 		}
 
@@ -159,7 +159,7 @@ type PathRefImpl = struct <{Character: Type}> {
 	func fileName = (this) -> StrType {
 		for(std.reverseRangeFor(this.str.size() - 1)) [_; i: USize] {
 			if(this.str[i].* == '/' as Character || this.str[i].* == '\\' as Character){
-				return new StrType(this.str[i + 1], this.str.size() - i - 1);
+				return this.str.subarray(i + 1, this.str.size() - i - 1);
 			}
 		}
 
@@ -175,7 +175,7 @@ type PathRefImpl = struct <{Character: Type}> {
 					return new StrType();
 				}
 
-				return new StrType(this.str[i + 1], period_index.? - i - 1);
+				return this.str.subarray(i + 1, period_index.? - i - 1);
 			}
 
 			if(this.str[i].* == '.' as Character){
@@ -189,7 +189,7 @@ type PathRefImpl = struct <{Character: Type}> {
 	func extension = (this) -> StrType {
 		for(std.reverseRangeFor(this.str.size() - 1)) [_; i: USize] {
 			if(this.str[i].* == '.' as Character){
-				return new StrType(this.str[i + 1], this.str.size() - i);
+				return this.str.subarray(i + 1, this.str.size() - i - 1);
 			}
 		}
 

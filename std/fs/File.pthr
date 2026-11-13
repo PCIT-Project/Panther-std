@@ -17,8 +17,7 @@ def std #private = @import("std");
 type File = struct {
 	when switch(@config.platform){
 		case(std.Platform.FREESTANDING){
-			// TODO(FUTURE): add this when feature is added
-			// type Handle = delete("std.fs.File.Handle is not supported in frestanding platform target");
+			type Handle = delete("std.fs.File.Handle is not supported in frestanding platform target");
 		}
 
 		case(std.Platform.LINUX){
@@ -98,6 +97,7 @@ type File = struct {
 
 		type Simple = enum {
 			ACCESS_DENIED,
+			BUSY,
 			FILE_NOT_FOUND,
 			INVALID_PATH,
 			SYSTEM_ERROR,
@@ -109,7 +109,7 @@ type File = struct {
 				case(OpenError.ANTIVIRUS_INTERFERENCE)   { return Simple.ACCESS_DENIED;  }
 				case(OpenError.CANCELLED)                { return Simple.SYSTEM_ERROR;   }
 				case(OpenError.DEVICE_BUSY)              { return Simple.SYSTEM_ERROR;   }
-				case(OpenError.FILE_BUSY)                { return Simple.ACCESS_DENIED;  }
+				case(OpenError.FILE_BUSY)                { return Simple.BUSY;           }
 				case(OpenError.FILE_NOT_FOUND)           { return Simple.FILE_NOT_FOUND; }
 				case(OpenError.FILE_TOO_BIG)             { return Simple.ACCESS_DENIED;  }
 				case(OpenError.INVALID_PATH)             { return Simple.INVALID_PATH;   }
@@ -120,7 +120,7 @@ type File = struct {
 				case(OpenError.NO_SPACE)                 { return Simple.SYSTEM_ERROR;   }
 				case(OpenError.NOT_A_DIRECTORY)          { return Simple.INVALID_PATH;   }
 				case(OpenError.PERMISSION_DENIED)        { return Simple.ACCESS_DENIED;  }
-				case(OpenError.PIPE_BUSY)                { return Simple.ACCESS_DENIED;  }
+				case(OpenError.PIPE_BUSY)                { return Simple.BUSY;           }
 				case(OpenError.PROCESS_FD_LIMIT_REACHED) { return Simple.SYSTEM_ERROR;   }
 				case(OpenError.READ_ONLY_FILE_SYSTEM)    { return Simple.SYSTEM_ERROR;   }
 				case(OpenError.SYM_LINK_LOOP)            { return Simple.INVALID_PATH;   }
