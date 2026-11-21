@@ -155,6 +155,94 @@ type FreeTypeFlags = enum(UI32) {
 }
 
 
+type FileInformationClass = enum(UI32) {
+	DIRECTORY_INFORMATION                         = native.FILE_INFORMATION_CLASS.DirectoryInformation as UI32,
+	FULL_DIRECTORY_INFORMATION                    = native.FILE_INFORMATION_CLASS.FullDirectoryInformation as UI32,
+	BOTH_DIRECTORY_INFORMATION                    = native.FILE_INFORMATION_CLASS.BothDirectoryInformation as UI32,
+	BASIC_INFORMATION                             = native.FILE_INFORMATION_CLASS.BasicInformation as UI32,
+	STANDARD_INFORMATION                          = native.FILE_INFORMATION_CLASS.StandardInformation as UI32,
+	INTERNAL_INFORMATION                          = native.FILE_INFORMATION_CLASS.InternalInformation as UI32,
+	EA_INFORMATION                                = native.FILE_INFORMATION_CLASS.EaInformation as UI32,
+	ACCESS_INFORMATION                            = native.FILE_INFORMATION_CLASS.AccessInformation as UI32,
+	NAME_INFORMATION                              = native.FILE_INFORMATION_CLASS.NameInformation as UI32,
+	RENAME_INFORMATION                            = native.FILE_INFORMATION_CLASS.RenameInformation as UI32,
+	LINK_INFORMATION                              = native.FILE_INFORMATION_CLASS.LinkInformation as UI32,
+	NAMES_INFORMATION                             = native.FILE_INFORMATION_CLASS.NamesInformation as UI32,
+	DISPOSITION_INFORMATION                       = native.FILE_INFORMATION_CLASS.DispositionInformation as UI32,
+	POSITION_INFORMATION                          = native.FILE_INFORMATION_CLASS.PositionInformation as UI32,
+	FULL_EAINFORMATION                            = native.FILE_INFORMATION_CLASS.FullEaInformation as UI32,
+	MODE_INFORMATION                              = native.FILE_INFORMATION_CLASS.ModeInformation as UI32,
+	ALIGNMENT_INFORMATION                         = native.FILE_INFORMATION_CLASS.AlignmentInformation as UI32,
+	ALL_INFORMATION                               = native.FILE_INFORMATION_CLASS.AllInformation as UI32,
+	ALLOCATION_INFORMATION                        = native.FILE_INFORMATION_CLASS.AllocationInformation as UI32,
+	END_OF_FILE_INFORMATION                       = native.FILE_INFORMATION_CLASS.EndOfFileInformation as UI32,
+	ALTERNATE_NAME_INFORMATION                    = native.FILE_INFORMATION_CLASS.AlternateNameInformation as UI32,
+	STREAM_INFORMATION                            = native.FILE_INFORMATION_CLASS.StreamInformation as UI32,
+	PIPE_INFORMATION                              = native.FILE_INFORMATION_CLASS.PipeInformation as UI32,
+	PIPE_LOCAL_INFORMATION                        = native.FILE_INFORMATION_CLASS.PipeLocalInformation as UI32,
+	PIPE_REMOTE_INFORMATION                       = native.FILE_INFORMATION_CLASS.PipeRemoteInformation as UI32,
+	MAILSLOT_QUERY_INFORMATION                    = native.FILE_INFORMATION_CLASS.MailslotQueryInformation as UI32,
+	MAILSLOT_SET_INFORMATION                      = native.FILE_INFORMATION_CLASS.MailslotSetInformation as UI32,
+	COMPRESSION_INFORMATION                       = native.FILE_INFORMATION_CLASS.CompressionInformation as UI32,
+	OBJECT_ID_INFORMATION                         = native.FILE_INFORMATION_CLASS.ObjectIdInformation as UI32,
+	COMPLETION_INFORMATION                        = native.FILE_INFORMATION_CLASS.CompletionInformation as UI32,
+	MOVE_CLUSTERINFORMATION                       = native.FILE_INFORMATION_CLASS.MoveClusterInformation as UI32,
+	QUOTA_INFORMATION                             = native.FILE_INFORMATION_CLASS.QuotaInformation as UI32,
+	REPARSE_POINT_INFORMATION                     = native.FILE_INFORMATION_CLASS.ReparsePointInformation as UI32,
+	NETWORK_OPEN_INFORMATION                      = native.FILE_INFORMATION_CLASS.NetworkOpenInformation as UI32,
+	ATTRIBUTE_TAG_INFORMATION                     = native.FILE_INFORMATION_CLASS.AttributeTagInformation as UI32,
+	TRACKING_INFORMATION                          = native.FILE_INFORMATION_CLASS.TrackingInformation as UI32,
+	ID_BOTH_DIRECTORY_INFORMATION                 = native.FILE_INFORMATION_CLASS.IdBothDirectoryInformation as UI32,
+	ID_FULL_DIRECTORY_INFORMATION                 = native.FILE_INFORMATION_CLASS.IdFullDirectoryInformation as UI32,
+	VALID_DATA_LENGTH_INFORMATION                 = native.FILE_INFORMATION_CLASS.ValidDataLengthInformation as UI32,
+	SHORT_NAME_INFORMATION                        = native.FILE_INFORMATION_CLASS.ShortNameInformation as UI32,
+	IO_COMPLETION_NOTIFICATION_INFORMATION        = native.FILE_INFORMATION_CLASS.IoCompletionNotificationInformation as UI32,
+	IO_STATUS_BLOCK_RANGE_INFORMATION             = native.FILE_INFORMATION_CLASS.IoStatusBlockRangeInformation as UI32,
+	IO_PRIORITY_HINT_INFORMATION                  = native.FILE_INFORMATION_CLASS.IoPriorityHintInformation as UI32,
+	SFIO_RESERVE_INFORMATION                      = native.FILE_INFORMATION_CLASS.SfioReserveInformation as UI32,
+	SFIO_VOLUME_INFORMATION                       = native.FILE_INFORMATION_CLASS.SfioVolumeInformation as UI32,
+	HARD_LINK_INFORMATION                         = native.FILE_INFORMATION_CLASS.HardLinkInformation as UI32,
+	PROCESS_IDS_USING_FILE_INFORMATION            = native.FILE_INFORMATION_CLASS.ProcessIdsUsingFileInformation as UI32,
+	NORMALIZED_NAME_INFORMATION                   = native.FILE_INFORMATION_CLASS.NormalizedNameInformation as UI32,
+	NETWORK_PHYSICAL_NAME_INFORMATION             = native.FILE_INFORMATION_CLASS.NetworkPhysicalNameInformation as UI32,
+	ID_GLOBAL_TX_DIRECTORY_INFORMATION            = native.FILE_INFORMATION_CLASS.IdGlobalTxDirectoryInformation as UI32,
+	IS_REMOTE_DEVICE_INFORMATION                  = native.FILE_INFORMATION_CLASS.IsRemoteDeviceInformation as UI32,
+	UNUSED_INFORMATION                            = native.FILE_INFORMATION_CLASS.UnusedInformation as UI32,
+	NUMA_NODE_INFORMATION                         = native.FILE_INFORMATION_CLASS.NumaNodeInformation as UI32,
+	STANDARD_LINK_INFORMATION                     = native.FILE_INFORMATION_CLASS.StandardLinkInformation as UI32,
+	REMOTE_PROTOCOL_INFORMATION                   = native.FILE_INFORMATION_CLASS.RemoteProtocolInformation as UI32,
+	RENAME_INFORMATION_BYPASS_ACCESS_CHECK        = native.FILE_INFORMATION_CLASS.RenameInformationBypassAccessCheck as UI32,
+	LINK_INFORMATION_BYPASS_ACCESS_CHECK          = native.FILE_INFORMATION_CLASS.LinkInformationBypassAccessCheck as UI32,
+	VOLUME_NAME_INFORMATION                       = native.FILE_INFORMATION_CLASS.VolumeNameInformation as UI32,
+	ID_INFORMATION                                = native.FILE_INFORMATION_CLASS.IdInformation as UI32,
+	ID_EXTD_DIRECTORY_INFORMATION                 = native.FILE_INFORMATION_CLASS.IdExtdDirectoryInformation as UI32,
+	REPLACE_COMPLETION_INFORMATION                = native.FILE_INFORMATION_CLASS.ReplaceCompletionInformation as UI32,
+	HARD_LINK_FULL_ID_INFORMATION                 = native.FILE_INFORMATION_CLASS.HardLinkFullIdInformation as UI32,
+	ID_EXTD_BOTH_DIRECTORY_INFORMATION            = native.FILE_INFORMATION_CLASS.IdExtdBothDirectoryInformation as UI32,
+	DISPOSITION_INFORMATION_EX                    = native.FILE_INFORMATION_CLASS.DispositionInformationEx as UI32,
+	RENAME_INFORMATION_EX                         = native.FILE_INFORMATION_CLASS.RenameInformationEx as UI32,
+	RENAME_INFORMATION_EX_BYPASS_ACCESS_CHECK     = native.FILE_INFORMATION_CLASS.RenameInformationExBypassAccessCheck as UI32,
+	DESIRED_STORAGE_CLASS_INFORMATION             = native.FILE_INFORMATION_CLASS.DesiredStorageClassInformation as UI32,
+	STAT_INFORMATION                              = native.FILE_INFORMATION_CLASS.StatInformation as UI32,
+	MEMORY_PARTITION_INFORMATION                  = native.FILE_INFORMATION_CLASS.MemoryPartitionInformation as UI32,
+	STAT_LX_INFORMATION                           = native.FILE_INFORMATION_CLASS.StatLxInformation as UI32,
+	CASE_SENSITIVE_INFORMATION                    = native.FILE_INFORMATION_CLASS.CaseSensitiveInformation as UI32,
+	LINK_INFORMATION_EX                           = native.FILE_INFORMATION_CLASS.LinkInformationEx as UI32,
+	LINK_INFORMATION_EX_BYPASS_ACCESS_CHECK       = native.FILE_INFORMATION_CLASS.LinkInformationExBypassAccessCheck as UI32,
+	STORAGE_RESERVE_ID_INFORMATION                = native.FILE_INFORMATION_CLASS.StorageReserveIdInformation as UI32,
+	CASE_SENSITIVE_INFORMATION_FORCE_ACCESS_CHECK = native.FILE_INFORMATION_CLASS.CaseSensitiveInformationForceAccessCheck as UI32,
+	KNOWN_FOLDER_INFORMATION                      = native.FILE_INFORMATION_CLASS.KnownFolderInformation as UI32,
+	STAT_BASIC_INFORMATION                        = native.FILE_INFORMATION_CLASS.StatBasicInformation as UI32,
+	ID64_EXTD_DIRECTORY_INFORMATION               = native.FILE_INFORMATION_CLASS.Id64ExtdDirectoryInformation as UI32,
+	ID64_EXTD_BOTH_DIRECTORY_INFORMATION          = native.FILE_INFORMATION_CLASS.Id64ExtdBothDirectoryInformation as UI32,
+	ID_ALL_EXTD_DIRECTORY_INFORMATION             = native.FILE_INFORMATION_CLASS.IdAllExtdDirectoryInformation as UI32,
+	ID_ALL_EXTD_BOTH_DIRECTORY_INFORMATION        = native.FILE_INFORMATION_CLASS.IdAllExtdBothDirectoryInformation as UI32,
+	STREAM_RESERVATION_INFORMATION                = native.FILE_INFORMATION_CLASS.StreamReservationInformation as UI32,
+	MUP_PROVIDER_INFO                             = native.FILE_INFORMATION_CLASS.MupProviderInfo as UI32,
+	MAXIMUM_INFORMATION                           = native.FILE_INFORMATION_CLASS.MaximumInformation as UI32,
+}
+
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -191,9 +279,9 @@ func ntAllocateVirtualMemory = (
 ) #rt -> (address: RawPtr, size: USize) <NTStatus> {
 	std.debug.assert(region_size != 0, "Cannot request 0 bytes");
 	std.debug.assert(
-		(allocation_type & AllocationTypeFlags.COMMIT) as UI32 != 0
-		|| (allocation_type & AllocationTypeFlags.RESERVE) as UI32 != 0
-		|| (allocation_type & AllocationTypeFlags.RESET) as UI32 != 0,
+		std.hasFlag(allocation_type, AllocationTypeFlags.COMMIT)
+		|| std.hasFlag(allocation_type, AllocationTypeFlags.RESERVE)
+		|| std.hasFlag(allocation_type, AllocationTypeFlags.RESET),
 		"At least of COMMIT, RESERVE, or RESET must be set"
 	);
 
@@ -284,7 +372,7 @@ func ntFreeVirtualMemory = (
 	free_type      : FreeTypeFlags,
 ) #rt -> (address: RawPtr, size: USize) <NTStatus> {
 	std.debug.assert(
-		(free_type & FreeTypeFlags.RELEASE) as UI32 == 0 || region_size == 0,
+		std.hasFlag(free_type, FreeTypeFlags.RELEASE) == false || region_size == 0,
 		"if REALEASE is set, `region_size` must be 0"
 	);
 
@@ -300,6 +388,49 @@ func ntFreeVirtualMemory = (
 
 	if(status == NTStatus.SUCCESS){ return...; }
 	error copy status;
+}
+
+
+
+// returns `false` if no more files
+// errors null if out of memeory
+func ntQueryDirectoryFile = (
+	handle                 : Handle,
+	buffer                 : [Byte:*mut],
+	file_information_class : FileInformationClass,
+	return_single_entry    : Bool,
+	restart_scan           : Bool,
+) #rt -> Bool <NTStatus?> {
+	var io_status_block = new std.ManualLifetime<{native.IO_STATUS_BLOCK}>();
+	
+	unsafe{
+		const status: NTStatus = native.NtQueryDirectoryFile(
+			handle as native.HANDLE,
+			null,
+			null,
+			null,
+			io_status_block.get(),
+			buffer.data() as RawPtr,
+			buffer.size() as CULong,
+			file_information_class as native.FILE_INFORMATION_CLASS,
+			return_single_entry,
+			null,
+			restart_scan
+		) as NTStatus;
+
+		switch(status){
+			case(NTStatus.SUCCESS){
+				if(io_status_block.get().Information == 0){ error null; }
+				return true;
+				
+			}case(NTStatus.NO_MORE_FILES){
+				return false;
+				
+			}else{
+				error copy status;
+			}
+		}
+	}
 }
 
 

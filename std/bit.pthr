@@ -84,8 +84,14 @@ func countROne = (num: $Integral) -> Integral {
 	return @_cttz<{Integral}>(~num);
 }
 
+func hasFlag = (value: $T, flag: T) -> Bool {
+	unsafe{
+		return value & flag != std.bitCast<{T}>(0 as type(std.types.getUnderlyingTypeID<{T}>()));
+	}
+}
 
 func popCount = (num: $Integral) -> Integral {
 	return @_ctPop<{Integral}>(num);
 }
+
 

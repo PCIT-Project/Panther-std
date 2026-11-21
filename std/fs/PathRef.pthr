@@ -241,6 +241,14 @@ type PathRefImpl = struct <{Character: Type}> {
 	func hasExtension       = (this) -> Bool { return this.extension().size() != 0;             }
 
 
+	///////////////////////////////////
+	// comparison
+
+	func == = (this, rhs: This) -> Bool {
+		return std.mem.equals(this.str, rhs.str);
+	}
+
+
 
 	///////////////////////////////////
 	// interfaces
@@ -249,7 +257,7 @@ type PathRefImpl = struct <{Character: Type}> {
 		write = (this, writer: std.Writer<{$$}> mut, format_info: [Char:*]) -> Void {
 			std.debug.assert(format_info.size() == 0, "Invalid format info for this type (std.fs.FileRef)");
 
-			writer.write(this.str);
+			writer.write("{}", this.str);
 		}
 	}
 

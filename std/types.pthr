@@ -24,6 +24,10 @@ func numAlignBytes = <{T: Type}> () -> UI32 {
 	return @_numAlignBytes<{T}>();
 }
 
+func numOffsetBytes = <{T: Type, MEMBER_NAME: [Char:*]}> () -> USize {
+	return @_numOffsetBytes<{T, MEMBER_NAME}>();
+}
+
 func numBits = <{T: Type, INCLUDE_PADDING: Bool = true}> () -> USize {
 	return @_numBits<{T, INCLUDE_PADDING}>();
 }
@@ -41,6 +45,11 @@ func getIntegerTypeID = <{WIDTH: UI32, IS_UNSIGNED: Bool}> () -> TypeID {
 func getShiftValueTypeID = <{T: Type}> () -> TypeID {
 	def NUM: UI32 = std.bitWidth(@_numBits<{T, false}>()) as UI32 - 1;
 	return @_getIntegerTypeID<{NUM, true}>();
+}
+
+
+func getUnderlyingTypeID = <{T: Type}> () -> TypeID {
+	return @_getUnderlyingTypeID<{T}>();
 }
 
 

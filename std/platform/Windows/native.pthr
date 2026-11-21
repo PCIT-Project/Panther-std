@@ -18,12 +18,15 @@ def std #private = @import("std");
 //////////////////
 // https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types
 
+type BOOL      = alias Bool32;
+type BOOLEAN   = alias Bool;
+type CCHAR     = alias Char;
 type DWORD     = alias UI32;
 type HANDLE    = alias RawPtr;
 type HINSTANCE = alias RawPtr;
 type LONG      = alias CLong;
 type LONG_PTR  = alias ISize;
-type LPCSTR    = alias Char*; // null terminated string
+type LPCSTR    = alias Char*;
 type LPDWORD   = alias DWORD*mut;
 type LPVOID    = alias RawPtr;
 type LPCVOID   = alias RawPtr;
@@ -40,6 +43,7 @@ type UINT      = alias CUInt;
 type ULONG     = alias CULong;
 type ULONG_PTR = alias USize;
 type USHORT    = alias CUShort;
+type WCHAR     = alias CWChar;
 type WORD      = alias CUShort;
 
 
@@ -88,6 +92,13 @@ type PSTRING = alias STRING*mut;
 
 
 
+
+
+
+
+
+
+
 //////////////////
 // https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-large_integer-r1
 
@@ -133,7 +144,7 @@ type PIO_STATUS_BLOCK = alias IO_STATUS_BLOCK*mut;
 type IO_APC_ROUTINE = alias func(PVOID, PIO_STATUS_BLOCK, ULONG) #rt #callConv(@pthr.CallingConvention.WIN_API)
 	-> Void;
 
-type PIO_APC_ROUTINE = alias IO_APC_ROUTINE?;
+type PIO_APC_ROUTINE = alias IO_APC_ROUTINE*mut;
 
 
 //////////////////
@@ -173,9 +184,143 @@ type POBJECT_ATTRIBUTES = alias OBJECT_ATTRIBUTES*mut;
 type NTSTATUS = alias UI32;
 type ACCESS_MASK = alias ULONG;
 
-type LIST_ENTRY = struct {
+type LIST_ENTRY = struct #ordered {
 	var Flink: LIST_ENTRY*mut;
 	var Blink: LIST_ENTRY*mut;
+}
+
+
+///////////////////////////////////
+// file information class
+
+type FILE_INFORMATION_CLASS = enum(CUInt) {
+	DirectoryInformation                     = 1,
+	FullDirectoryInformation                 = 2,
+	BothDirectoryInformation                 = 3,
+	BasicInformation                         = 4,
+	StandardInformation                      = 5,
+	InternalInformation                      = 6,
+	EaInformation                            = 7,
+	AccessInformation                        = 8,
+	NameInformation                          = 9,
+	RenameInformation                        = 10,
+	LinkInformation                          = 11,
+	NamesInformation                         = 12,
+	DispositionInformation                   = 13,
+	PositionInformation                      = 14,
+	FullEaInformation                        = 15,
+	ModeInformation                          = 16,
+	AlignmentInformation                     = 17,
+	AllInformation                           = 18,
+	AllocationInformation                    = 19,
+	EndOfFileInformation                     = 20,
+	AlternateNameInformation                 = 21,
+	StreamInformation                        = 22,
+	PipeInformation                          = 23,
+	PipeLocalInformation                     = 24,
+	PipeRemoteInformation                    = 25,
+	MailslotQueryInformation                 = 26,
+	MailslotSetInformation                   = 27,
+	CompressionInformation                   = 28,
+	ObjectIdInformation                      = 29,
+	CompletionInformation                    = 30,
+	MoveClusterInformation                   = 31,
+	QuotaInformation                         = 32,
+	ReparsePointInformation                  = 33,
+	NetworkOpenInformation                   = 34,
+	AttributeTagInformation                  = 35,
+	TrackingInformation                      = 36,
+	IdBothDirectoryInformation               = 37,
+	IdFullDirectoryInformation               = 38,
+	ValidDataLengthInformation               = 39,
+	ShortNameInformation                     = 40,
+	IoCompletionNotificationInformation      = 41,
+	IoStatusBlockRangeInformation            = 42,
+	IoPriorityHintInformation                = 43,
+	SfioReserveInformation                   = 44,
+	SfioVolumeInformation                    = 45,
+	HardLinkInformation                      = 46,
+	ProcessIdsUsingFileInformation           = 47,
+	NormalizedNameInformation                = 48,
+	NetworkPhysicalNameInformation           = 49,
+	IdGlobalTxDirectoryInformation           = 50,
+	IsRemoteDeviceInformation                = 51,
+	UnusedInformation                        = 52,
+	NumaNodeInformation                      = 53,
+	StandardLinkInformation                  = 54,
+	RemoteProtocolInformation                = 55,
+	RenameInformationBypassAccessCheck       = 56,
+	LinkInformationBypassAccessCheck         = 57,
+	VolumeNameInformation                    = 58,
+	IdInformation                            = 59,
+	IdExtdDirectoryInformation               = 60,
+	ReplaceCompletionInformation             = 61,
+	HardLinkFullIdInformation                = 62,
+	IdExtdBothDirectoryInformation           = 63,
+	DispositionInformationEx                 = 64,
+	RenameInformationEx                      = 65,
+	RenameInformationExBypassAccessCheck     = 66,
+	DesiredStorageClassInformation           = 67,
+	StatInformation                          = 68,
+	MemoryPartitionInformation               = 69,
+	StatLxInformation                        = 70,
+	CaseSensitiveInformation                 = 71,
+	LinkInformationEx                        = 72,
+	LinkInformationExBypassAccessCheck       = 73,
+	StorageReserveIdInformation              = 74,
+	CaseSensitiveInformationForceAccessCheck = 75,
+	KnownFolderInformation                   = 76,
+	StatBasicInformation                     = 77,
+	Id64ExtdDirectoryInformation             = 78,
+	Id64ExtdBothDirectoryInformation         = 79,
+	IdAllExtdDirectoryInformation            = 80,
+	IdAllExtdBothDirectoryInformation        = 81,
+	StreamReservationInformation,
+	MupProviderInfo,
+	MaximumInformation,
+}
+type PFILE_INFORMATION_CLASS = alias FILE_INFORMATION_CLASS*mut;
+
+
+type FILE_DIRECTORY_INFORMATION = struct #ordered {
+	var NextEntryOffset : ULONG;
+	var FileIndex       : ULONG;
+	var CreationTime    : LARGE_INTEGER;
+	var LastAccessTime  : LARGE_INTEGER;
+	var LastWriteTime   : LARGE_INTEGER;
+	var ChangeTime      : LARGE_INTEGER;
+	var EndOfFile       : LARGE_INTEGER;
+	var AllocationSize  : LARGE_INTEGER;
+	var FileAttributes  : FileAttribute;
+	var FileNameLength  : ULONG;
+	var FileName        : [WCHAR:1]; // is actually a variable length array based on `.FileNameLength`
+}
+type PFILE_DIRECTORY_INFORMATION = alias FILE_DIRECTORY_INFORMATION*mut;
+
+
+type FileAttribute = enum(CInt) {
+	READONLY              = 0x00000001,
+	HIDDEN                = 0x00000002,
+	SYSTEM                = 0x00000004,
+	DIRECTORY             = 0x00000010,
+	ARCHIVE               = 0x00000020,
+	DEVICE                = 0x00000040,
+	NORMAL                = 0x00000080,
+	TEMPORARY             = 0x00000100,
+	SPARSE_FILE           = 0x00000200,
+	REPARSE_POINT         = 0x00000400,
+	COMPRESSED            = 0x00000800,
+	OFFLINE               = 0x00001000,
+	NOT_CONTENT_INDEXED   = 0x00002000,
+	ENCRYPTED             = 0x00004000,
+	INTEGRITY_STREAM      = 0x00008000,
+	VIRTUAL               = 0x00010000,
+	NO_SCRUB_DATA         = 0x00020000,
+	EA                    = 0x00040000,
+	PINNED                = 0x00080000,
+	UNPINNED              = 0x00100000,
+	RECALL_ON_OPEN        = 0x00040000,
+	RECALL_ON_DATA_ACCESS = 0x00400000,
 }
 
 
@@ -326,7 +471,7 @@ type RTL_DRIVE_LETTER_CURDIR = struct #ordered {
 }
 
 
-type RTL_CRITICAL_SECTION = struct {
+type RTL_CRITICAL_SECTION = struct #ordered {
 	var DebugInfo      : RTL_CRITICAL_SECTION_DEBUG*;
 	var LockCount      : LONG;
 	var RecursionCount : LONG;
@@ -335,7 +480,7 @@ type RTL_CRITICAL_SECTION = struct {
 	var SpinCount      : ULONG_PTR;
 }
 
-type RTL_CRITICAL_SECTION_DEBUG = struct {
+type RTL_CRITICAL_SECTION_DEBUG = struct #ordered {
 	var \"Type"                   : WORD;
 	var CreatorBackTraceIndex     : WORD;
 	var CriticalSection           : RTL_CRITICAL_SECTION*;
@@ -428,10 +573,25 @@ func NtFreeVirtualMemory = (
 ) #callConv(@pthr.CallingConvention.WIN_API) -> NTSTATUS = extern(@pthr.Language.C);
 
 
+func NtQueryDirectoryFile = (
+	FileHandle           : HANDLE,
+	Event                : HANDLE,
+	ApcRoutine           : PIO_APC_ROUTINE?,
+	ApcContext           : PVOID?,
+	IoStatusBlock        : PIO_STATUS_BLOCK,
+	FileInformation      : PVOID,
+	Length               : ULONG,
+	FileInformationClass : FILE_INFORMATION_CLASS,
+	ReturnSingleEntry    : BOOLEAN,
+	FileName             : PUNICODE_STRING?,
+	RestartScan          : BOOLEAN,
+) #callConv(@pthr.CallingConvention.WIN_API) -> NTSTATUS = extern(@pthr.Language.C);
+
+
 func NtWriteFile = (
 	FileHandle    : HANDLE,
 	Event         : HANDLE,
-	ApcRoutine    : PIO_APC_ROUTINE,
+	ApcRoutine    : PIO_APC_ROUTINE?,
 	ApcContext    : PVOID,
 	IoStatusBlock : PIO_STATUS_BLOCK,
 	Buffer        : PVOID,
@@ -445,7 +605,7 @@ func NtWriteFile = (
 //////////////////////////////////////////////////////////////////////
 // kernel32
 
-func ExitProcess = 
+func ExitProcess =
 	(uExitCode: UINT) #noReturn #callConv(@pthr.CallingConvention.WIN_API) -> Void = extern(@pthr.Language.C);
 
 

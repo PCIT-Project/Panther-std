@@ -35,5 +35,53 @@ type PmAllocatorCT = alias AllocatorCT<{impl(*mut:IAllocatorCT)}>;
 
 def buffers #private = @import("./buffers.pthr");
 func copyBuffer         = alias buffers.copyBuffer;
+func copyBufferNotEmpty = alias buffers.copyBufferNotEmpty;
 func moveBuffer         = alias buffers.moveBuffer;
+func moveBufferNotEmpty = alias buffers.moveBufferNotEmpty;
 func makeComptimeBuffer = alias buffers.makeComptimeBuffer;
+
+
+// TODO(FUTURE): optimize
+func equals = (lhs: [$T:*], rhs: [T:*]) -> Bool {
+	if(lhs.size() != rhs.size()){ return false; }
+
+	for(lhs, rhs) [_; lhs_value: T, rhs_value: T] {
+		if(lhs_value != rhs_value){ return false; }
+	}
+
+	return true;
+}
+
+func equals = (lhs: [$T:*;$TERMINATOR], rhs: [T:*;TERMINATOR]) -> Bool {
+	if(lhs.size() != rhs.size()){ return false; }
+
+	for(lhs, rhs) [_; lhs_value: T, rhs_value: T] {
+		if(lhs_value != rhs_value){ return false; }
+	}
+
+	return true;
+}
+
+
+
+
+
+// TODO(FUTURE): optimize
+func findIndexOfValue = (buffer: [$T:*], value_to_find: T) -> USize? {
+	for(buffer) [i: USize; elem: T] {
+		if(elem == value_to_find){
+			return copy i;
+		}
+	}
+
+	return null;
+}
+func findIndexOfValue = (buffer: [$T:*;$$], value_to_find: T) -> USize? {
+	for(buffer) [i: USize; elem: T] {
+		if(elem == value_to_find){
+			return copy i;
+		}
+	}
+
+	return null;
+}

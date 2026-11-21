@@ -1,0 +1,845 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+
+@setModuleName("std.fs");
+
+def std #private = @import("std");
+
+
+
+
+type Directory = struct {
+	when switch(@config.platform){
+		case(std.Platform.FREESTANDING){
+			type Handle = delete("std.fs.Directory.Handle is not supported in frestanding platform target");
+			type NativeError = delete("std.fs.Directory.NativeError is not supported in frestanding platform target");
+			
+		}case(std.Platform.LINUX){
+			type Handle = alias std.platform.linux.FileDescriptor;
+			type NativeError = alias std.platform.linux.Errno;
+			
+		}case(std.Platform.PANTHER_VM){
+			type Handle = alias std.platform.pantherVM.FileHandle;
+			type NativeError = struct{}
+			
+		}case(std.Platform.WINDOWS){
+			type Handle = alias std.platform.windows.Handle;
+			type NativeError = alias std.platform.windows.NTStatus;
+		}
+	}
+
+	func new = () -> (output: This) {
+		output.handle = null;
+		return...;
+	}
+
+	func new = (handle: Handle in) -> (output: This) {
+		output.handle = forward handle;
+		return...;
+	}
+
+
+	func delete = (this mut) #rt -> Void {
+		if(this.isOpen()){ this.close_without_resetting_handle(); }
+	}
+
+
+
+	///////////////////////////////////
+	// create
+
+
+	type CreateError = enum {
+		DENIED,
+		INVALID_PATH,
+		PATH_ALREADY_EXISTS,
+		OTHER,
+	}
+
+
+	func create = (path: std.fs.PathRef) #rt -> Directory <err: CreateError, native_err: NativeError> {
+		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				unreachable("`std.fs.Directory.open` is not supported in frestanding platform target");
+
+			}case(std.Platform.LINUX){
+				while(true){->create
+					try Directory.createNotOpen(path) else<e: CreateError, ne: NativeError> {
+						err = copy e;
+						native_err = copy ne;
+						error...;
+					};
+
+					while(true){->open
+						return try Directory.open(path) else<open_err: OpenError, open_native_err: NativeError> {
+							switch(open_err){
+								case(OpenError.BUSY)               { continue->open; }
+								case(OpenError.DENIED)             { unreachable; }
+								case(OpenError.INVALID_PATH)       { unreachable; }
+								case(OpenError.PATH_NOT_DIRECTORY) { err = CreateError.PATH_ALREADY_EXISTS; }
+								case(OpenError.PATH_NOT_FOUND)     { continue->create; }
+								case(OpenError.OTHER)              { err = CreateError.OTHER; }
+							}
+
+							native_err = copy open_native_err;
+							error...;
+						};
+					}
+				}
+
+			}case(std.Platform.PANTHER_VM){
+				@panic("`std.fs.Directory.create` is currently unsupported on PantherVM");
+
+			}case(std.Platform.WINDOWS){
+				def windows = std.platform.windows;
+
+				var file_handle: std.platform.windows.Handle = try std.platform.windows.ntCreateFile(
+					path.str,
+					null,
+					windows.FileAccess.GENERIC_WRITE
+						| windows.FileAccess.FILE_LIST_DIRECTORY
+						| windows.FileAccess.FILE_TRAVERSE,
+					windows.FileAttribute.NORMAL,
+					windows.FileShareAccess.READ | windows.FileShareAccess.WRITE | windows.FileShareAccess.DELETE,
+					windows.FileCreateDisposition.CREATE,
+					windows.FileCreateOptions.DIRECTORY_FILE | windows.FileCreateOptions.SYNCHRONOUS_IO_NONALERT
+				) else<nt_status: windows.NTStatus> {
+					native_err = copy nt_status;
+
+					switch(nt_status){
+						case(windows.NTStatus.ACCESS_DENIED)    { err = CreateError.DENIED;       }
+						case(windows.NTStatus.BAD_NETWORK_PATH) { err = CreateError.INVALID_PATH; }
+						case(windows.NTStatus.BAD_NETWORK_NAME) { err = CreateError.INVALID_PATH; }
+
+						case(windows.NTStatus.CANCELLED){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							err = CreateError.OTHER;
+						}
+
+						case(windows.NTStatus.FILE_IS_A_DIRECTORY) { err = CreateError.PATH_ALREADY_EXISTS; }
+
+						case(windows.NTStatus.INVALID_HANDLE){
+							unreachable("std.fs.Directory - invalid handle to std.platform.windows.ntCreateFile");
+						}
+						case(windows.NTStatus.INVALID_PARAMETER){
+							unreachable("std.fs.Directory - invalid parameter to std.platform.windows.ntCreateFile");
+						}
+
+						case(windows.NTStatus.OBJECT_NAME_COLLISION)  { err = CreateError.PATH_ALREADY_EXISTS; }
+						case(windows.NTStatus.OBJECT_NAME_INVALID)    { err = CreateError.INVALID_PATH;        }
+						case(windows.NTStatus.OBJECT_NAME_NOT_FOUND)  { err = CreateError.INVALID_PATH;        }
+						case(windows.NTStatus.OBJECT_PATH_SYNTAX_BAD) { err = CreateError.INVALID_PATH;        }
+						case(windows.NTStatus.USER_MAPPED_FILE)       { err = CreateError.DENIED;              }
+						case(windows.NTStatus.VIRUS_INFECTED)         { err = CreateError.DENIED;              }
+						case(windows.NTStatus.VIRUS_DELETED)          { err = CreateError.DENIED;              }
+						else                                          { err = CreateError.OTHER;               }
+					}
+
+					error...;
+				};
+
+				return new Directory(move file_handle);
+			}
+		}
+	}
+
+
+
+	///////////////////////////////////
+	// createNotOpen
+
+
+
+	func createNotOpen = (path: std.fs.PathRef) #rt -> Void <err: CreateError, native_err: NativeError> {
+		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				unreachable("`std.fs.Directory.open` is not supported in frestanding platform target");
+
+			}case(std.Platform.LINUX){
+				def linux = std.platform.linux;
+
+				try std.platform.linux.mkdir(
+					path.str, (linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode
+				) else <errno: linux.Errno> {
+					native_err = copy errno;
+
+					switch(errno){
+						case(linux.Errno.ACCES)       { err = CreateError.DENIED;              }
+						case(linux.Errno.BADF)        {
+							unreachable("std.fs.Directory - invalid handle to std.platform.linux.open");
+						}
+						case(linux.Errno.EXIST)       { err = CreateError.PATH_ALREADY_EXISTS; }
+						case(linux.Errno.FAULT)       { err = CreateError.INVALID_PATH;        }
+						case(linux.Errno.INTR){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							err = CreateError.OTHER;
+						}
+						case(linux.Errno.INVAL)       { err = CreateError.INVALID_PATH;        }
+						case(linux.Errno.NAMETOOLONG) { err = CreateError.INVALID_PATH ;       }
+						case(linux.Errno.NOENT)       { err = CreateError.INVALID_PATH;        }
+						case(linux.Errno.NOTDIR)      { err = CreateError.INVALID_PATH;        }
+						case(linux.Errno.PERM)        { err = CreateError.DENIED;              }
+						case(linux.Errno.ROFS)        { err = CreateError.DENIED;              }
+						else                          { err = CreateError.OTHER;               }
+					}
+
+					error...;
+				};
+
+
+			}case(std.Platform.PANTHER_VM){
+				@panic("`std.fs.Directory.createNotOpen` is currently unsupported on PantherVM");
+
+			}case(std.Platform.WINDOWS){
+				_ = try Directory.create(path) else <create_err: CreateError, create_native_err: NativeError> {
+					err = copy create_err;
+					native_err = copy create_native_err;
+					error...;
+				};
+			}
+		}
+	}
+
+
+	///////////////////////////////////
+	// createOrOpen
+
+
+	type OpenError = enum {
+		BUSY,
+		DENIED,
+		INVALID_PATH,
+		PATH_NOT_DIRECTORY,
+		PATH_NOT_FOUND,
+		OTHER,
+	}
+
+
+	func createOrOpen = (path: std.fs.PathRef) #rt -> Directory <err: OpenError, native_err: NativeError> {
+		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				unreachable("`std.fs.Directory.open` is not supported in frestanding platform target");
+
+			}case(std.Platform.LINUX){
+				def linux = std.platform.linux;
+
+				var file_descriptor: Handle = try linux.open(
+					path.str,
+					linux.O.RDONLY | linux.O.DIRECTORY | linux.O.CLOEXEC,
+					(linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode
+				) else<errno: linux.Errno> {
+					native_err = copy errno;
+
+					switch(errno){
+						case(linux.Errno.ACCES)       { err = OpenError.DENIED;             }
+						case(linux.Errno.BADF)        {
+							unreachable("`std.fs.Directory` - handle is invalid to std.platform.linux.open");
+						}
+						case(linux.Errno.BUSY)        { err = OpenError.BUSY;               }
+						case(linux.Errno.FAULT)       { err = OpenError.DENIED;             }
+						case(linux.Errno.INTR){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							err = OpenError.OTHER;
+						}
+						case(linux.Errno.INVAL)       { err = OpenError.INVALID_PATH;       }
+						case(linux.Errno.NAMETOOLONG) { err = OpenError.INVALID_PATH;       }
+						case(linux.Errno.NOENT)       { err = OpenError.PATH_NOT_FOUND;     }
+						case(linux.Errno.NOTDIR)      { err = OpenError.PATH_NOT_DIRECTORY; }
+						case(linux.Errno.PERM)        { err = OpenError.DENIED;             }
+						case(linux.Errno.ROFS)        { err = OpenError.DENIED;             }
+						case(linux.Errno.TXTBSY)      { err = OpenError.BUSY;               }
+						else                          { err = OpenError.OTHER;              }
+					}
+
+					error...;
+				};
+
+				return new Directory(move file_descriptor);
+
+			}case(std.Platform.PANTHER_VM){
+				@panic("`std.fs.Directory.createOrOpen` is currently unsupported on PantherVM");
+
+			}case(std.Platform.WINDOWS){
+				def windows = std.platform.windows;
+
+				var file_handle: std.platform.windows.Handle = try std.platform.windows.ntCreateFile(
+					path.str,
+					null,
+					windows.FileAccess.GENERIC_WRITE
+						| windows.FileAccess.FILE_LIST_DIRECTORY
+						| windows.FileAccess.FILE_TRAVERSE,
+					windows.FileAttribute.NORMAL,
+					windows.FileShareAccess.READ | windows.FileShareAccess.WRITE | windows.FileShareAccess.DELETE,
+					windows.FileCreateDisposition.OPEN_IF,
+					windows.FileCreateOptions.DIRECTORY_FILE | windows.FileCreateOptions.SYNCHRONOUS_IO_NONALERT
+				) else<nt_status: windows.NTStatus> {
+					native_err = copy nt_status;
+
+					switch(nt_status){
+						case(windows.NTStatus.ACCESS_DENIED)    { err = OpenError.DENIED;         }
+						case(windows.NTStatus.BAD_NETWORK_PATH) { err = OpenError.PATH_NOT_FOUND; }
+						case(windows.NTStatus.BAD_NETWORK_NAME) { err = OpenError.PATH_NOT_FOUND; }
+
+						case(windows.NTStatus.CANCELLED){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							err = OpenError.OTHER;
+						}
+
+						case(windows.NTStatus.DELETE_PENDING)      { err = OpenError.BUSY;  }
+
+						case(windows.NTStatus.INVALID_HANDLE){
+							unreachable("std.fs.Directory - invalid handle to std.platform.windows.ntCreateFile");
+						}
+						case(windows.NTStatus.INVALID_PARAMETER){
+							unreachable("std.fs.Directory - Invalid parameter to std.platform.windows.ntCreateFile");
+						}
+
+						case(windows.NTStatus.NOT_A_DIRECTORY)        { err = OpenError.PATH_NOT_DIRECTORY; }
+						case(windows.NTStatus.OBJECT_NAME_INVALID)    { err = OpenError.INVALID_PATH;       }
+						case(windows.NTStatus.OBJECT_NAME_NOT_FOUND)  { err = OpenError.PATH_NOT_FOUND;     }
+						case(windows.NTStatus.OBJECT_PATH_NOT_FOUND)  { err = OpenError.PATH_NOT_FOUND;     }
+						case(windows.NTStatus.OBJECT_PATH_SYNTAX_BAD) { err = OpenError.INVALID_PATH;       }
+						case(windows.NTStatus.PIPE_BUSY)              { err = OpenError.BUSY;               }
+						case(windows.NTStatus.SHARING_VIOLATION)      { err = OpenError.BUSY;               }
+						case(windows.NTStatus.USER_MAPPED_FILE)       { err = OpenError.DENIED;             }
+						case(windows.NTStatus.VIRUS_INFECTED)         { err = OpenError.DENIED;             }
+						case(windows.NTStatus.VIRUS_DELETED)          { err = OpenError.DENIED;             }
+						else                                          { err = OpenError.OTHER;              }
+					}
+
+					error...;
+				};
+
+				return new Directory(move file_handle);
+			}
+		}
+	}
+
+
+	///////////////////////////////////
+	// open
+
+
+	func open = (path: std.fs.PathRef) #rt -> Directory <err: OpenError, native_err: NativeError> {
+		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				unreachable("`std.fs.Directory.open` is not supported in frestanding platform target");
+
+			}case(std.Platform.LINUX){
+				def linux = std.platform.linux;
+
+				var file_descriptor: Handle = try linux.open(
+					path.str,
+					linux.O.RDONLY | linux.O.DIRECTORY | linux.O.CLOEXEC,
+					(linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode
+				) else<errno: linux.Errno> {
+					native_err = copy errno;
+
+					switch(errno){
+						case(linux.Errno.ACCES)       { err = OpenError.DENIED;         }
+						case(linux.Errno.BADF)        {
+							unreachable("`std.fs.Directory` - handle is invalid to std.platform.linux.open");
+						}
+						case(linux.Errno.BUSY)        { err = OpenError.BUSY;           }
+						case(linux.Errno.FAULT)       { err = OpenError.DENIED;         }
+						case(linux.Errno.INTR){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							err = OpenError.OTHER;
+						}
+						case(linux.Errno.INVAL)       { err = OpenError.INVALID_PATH;       }
+						case(linux.Errno.NAMETOOLONG) { err = OpenError.INVALID_PATH;       }
+						case(linux.Errno.NOENT)       { err = OpenError.PATH_NOT_FOUND;     }
+						case(linux.Errno.NOTDIR)      { err = OpenError.PATH_NOT_DIRECTORY; } // TODO(FUTURE): if path doesn't exist, `PATH_NOT_FOUND`
+						case(linux.Errno.PERM)        { err = OpenError.DENIED;             }
+						case(linux.Errno.ROFS)        { err = OpenError.DENIED;             }
+						case(linux.Errno.TXTBSY)      { err = OpenError.BUSY;               }
+						else                          { err = OpenError.OTHER;              }
+					}
+
+					error...;
+				};
+
+				return new Directory(move file_descriptor);
+
+			}case(std.Platform.PANTHER_VM){
+				@panic("`std.fs.Directory.open` is currently unsupported on PantherVM");
+
+			}case(std.Platform.WINDOWS){
+				def windows = std.platform.windows;
+
+				var file_handle: std.platform.windows.Handle = try std.platform.windows.ntCreateFile(
+					path.str,
+					null,
+					windows.FileAccess.GENERIC_WRITE
+						| windows.FileAccess.FILE_LIST_DIRECTORY
+						| windows.FileAccess.FILE_TRAVERSE,
+					windows.FileAttribute.NORMAL,
+					windows.FileShareAccess.READ
+						| windows.FileShareAccess.WRITE
+						| windows.FileShareAccess.DELETE,
+					windows.FileCreateDisposition.OPEN,
+					windows.FileCreateOptions.DIRECTORY_FILE | windows.FileCreateOptions.SYNCHRONOUS_IO_NONALERT
+				) else<nt_status: windows.NTStatus> {
+					native_err = copy nt_status;
+
+					const nt = copy nt_status;
+
+					switch(nt_status){
+						case(windows.NTStatus.ACCESS_DENIED)    { err = OpenError.DENIED;         }
+						case(windows.NTStatus.BAD_NETWORK_PATH) { err = OpenError.PATH_NOT_FOUND; }
+						case(windows.NTStatus.BAD_NETWORK_NAME) { err = OpenError.PATH_NOT_FOUND; }
+
+						case(windows.NTStatus.CANCELLED){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							err = OpenError.OTHER;
+						}
+
+						case(windows.NTStatus.DELETE_PENDING)      { err = OpenError.BUSY;          }
+
+						case(windows.NTStatus.INVALID_HANDLE){
+							unreachable("std.fs.Directory - invalid handle to std.platform.windows.ntCreateFile");
+						}
+						case(windows.NTStatus.INVALID_PARAMETER){
+							unreachable("std.fs.Directory - Invalid parameter to std.platform.windows.ntCreateFile");
+						}
+
+						case(windows.NTStatus.NOT_A_DIRECTORY)        { err = OpenError.PATH_NOT_DIRECTORY; }
+						case(windows.NTStatus.OBJECT_NAME_INVALID)    { err = OpenError.INVALID_PATH;       }
+						case(windows.NTStatus.OBJECT_NAME_NOT_FOUND)  { err = OpenError.PATH_NOT_FOUND;     }
+						case(windows.NTStatus.OBJECT_PATH_NOT_FOUND)  { err = OpenError.PATH_NOT_FOUND;     }
+						case(windows.NTStatus.OBJECT_PATH_SYNTAX_BAD) { err = OpenError.INVALID_PATH;       }
+						case(windows.NTStatus.PIPE_BUSY)              { err = OpenError.BUSY;               }
+						case(windows.NTStatus.SHARING_VIOLATION)      { err = OpenError.BUSY;               }
+						case(windows.NTStatus.USER_MAPPED_FILE)       { err = OpenError.DENIED;             }
+						case(windows.NTStatus.VIRUS_INFECTED)         { err = OpenError.DENIED;             }
+						case(windows.NTStatus.VIRUS_DELETED)          { err = OpenError.DENIED;             }
+						else                                          { err = OpenError.OTHER;              }
+					}
+
+					error...;
+				};
+
+				return new Directory(move file_handle);
+			}
+		}
+	}
+
+
+	///////////////////////////////////
+	// methods
+
+	func close = (this mut) #rt -> Void {
+		this.close_without_resetting_handle();
+		this.handle = null;
+	}
+
+
+
+	func isOpen = (this) -> Bool { return this.handle != null; }
+
+	func internalHandle = (this) -> Handle {
+		std.debug.assert(this.isOpen(), "std.fs.Directory isn't open");
+		return copy this.handle.?;
+	}
+
+
+
+	when(std.platform.SUPPORTS_NON_CMD_FILE_IO){
+		
+		func createIterator = (this, buffer: [Byte:*mut]) #rt -> Iterator {
+			return new Iterator(&this, copy buffer);
+		}
+
+
+		type Entry = struct {
+			var name : std.fs.PathRef;
+			var kind : Kind;
+
+			type Kind = enum {
+				BLOCK_DEVICE,
+				CHARACTER_DEVICE,
+				DIRECTORY,
+				NAMED_PIPE,
+				NAMED_SOCKET,
+				REGULAR_FILE,
+				SYM_LINK,
+				UNKNOWN,
+			}
+		}
+
+		type Iterator = struct {
+			type Impl = struct {
+				func new = (iterator: Iterator*) #rt -> (output: Impl) {
+					output.iterator          = copy iterator;
+					output.entry             = null;
+
+					when(@config.platform == std.Platform.LINUX){
+						output.num_bytes_written = 0;
+					}
+
+					output.buffer_offset     = 0;
+					output.at_end            = false;
+
+					when(@config.platform == std.Platform.WINDOWS){
+						output.need_to_syscall = true;
+					}
+
+					output.make_syscall(true);
+					output.next(); // skip ".""
+					if(output.at_end == false && output.entry.?.name == new std.fs.PathRef("..")){ // skip ".."
+						output.next();
+					}
+
+					return...;
+				}
+
+				func next = (this mut) #rt -> Void {
+					when switch(@config.platform){
+						case(std.Platform.FREESTANDING){
+							@comptimeError("Should have been checked that this was allowed already");
+
+						}case(std.Platform.LINUX){
+							if(this.buffer_offset < this.num_bytes_written){
+								const directory_entry: std.platform.linux.Dirent64* = {->expr:std.platform.linux.Dirent64*
+									unsafe{
+										return->expr std.bitCast<{std.platform.linux.Dirent64*}>(
+											this.iterator.buffer[this.buffer_offset]
+										);
+									}
+								};
+
+								def OFFSET_OF_NAME: USize =
+									std.types.numOffsetBytes<{std.platform.linux.Dirent64, "name"}>();
+								const name_max_size: USize = directory_entry.reclen as USize - OFFSET_OF_NAME;
+
+								const name_size: USize = copy std.mem.findIndexOfValue(
+									new [Char:*](directory_entry.name.data(), copy name_max_size), '\0'
+								).?;
+
+
+								const kind: Entry.Kind #movable = {->expr:Entry.Kind
+									switch(directory_entry.\"type" as std.platform.linux.DT){
+										case(std.platform.linux.DT.UNKNOWN){ return->expr Entry.Kind.UNKNOWN; }
+										case(std.platform.linux.DT.FIFO)   { return->expr Entry.Kind.NAMED_PIPE; }
+										case(std.platform.linux.DT.CHR)    { return->expr Entry.Kind.CHARACTER_DEVICE; }
+										case(std.platform.linux.DT.DIR)    { return->expr Entry.Kind.DIRECTORY; }
+										case(std.platform.linux.DT.BLK)    { return->expr Entry.Kind.BLOCK_DEVICE; }
+										case(std.platform.linux.DT.REG)    { return->expr Entry.Kind.REGULAR_FILE; }
+										case(std.platform.linux.DT.LNK)    { return->expr Entry.Kind.SYM_LINK; }
+										case(std.platform.linux.DT.SOCK)   { return->expr Entry.Kind.NAMED_SOCKET; }
+										else                               { return->expr Entry.Kind.UNKNOWN; }
+									}
+								};
+
+								this.entry = new Entry{
+									name = new std.fs.PathRef(
+										new [Char:*](directory_entry.name.data(), copy name_size)
+									),
+									kind = move kind,
+								};
+
+								this.buffer_offset += directory_entry.reclen as USize;
+								
+							}else{
+								this.buffer_offset = 0;
+								this.make_syscall(false);
+							}
+
+						}case(std.Platform.PANTHER_VM){
+							@comptimeError("Currently unimplemented");
+
+						}case(std.Platform.WINDOWS){
+							def native = std.platform.windows.native;
+
+							if(this.need_to_syscall){
+								this.buffer_offset = 0;
+								this.make_syscall(false);
+								
+							}else{
+								unsafe{
+									type FILE_DIRECTORY_INFORMATION = alias
+										std.platform.windows.native.FILE_DIRECTORY_INFORMATION;
+
+									var target_info: FILE_DIRECTORY_INFORMATION* =
+										std.bitCast<{FILE_DIRECTORY_INFORMATION*}>(
+										this.iterator.buffer[this.buffer_offset]
+										);
+
+
+									const kind: Entry.Kind #movable = {->expr:Entry.Kind
+										if(std.hasFlag(target_info.FileAttributes, native.FileAttribute.REPARSE_POINT)){
+											return->expr Entry.Kind.SYM_LINK;
+										}
+										if(std.hasFlag(target_info.FileAttributes, native.FileAttribute.DIRECTORY)){
+											return->expr Entry.Kind.DIRECTORY;
+										}
+
+										return->expr Entry.Kind.REGULAR_FILE;
+									};
+
+									this.entry = new Entry{
+										name = new std.fs.PathRef(
+											new [CWChar:*](
+												std.bitCast<{CWChar*}>(&target_info.FileName),
+												(target_info.FileNameLength as USize / 2)
+											)
+										),
+										kind = move kind,
+									};
+
+									this.buffer_offset += target_info.NextEntryOffset as USize;
+									this.need_to_syscall = target_info.NextEntryOffset == 0;
+								}
+							}
+
+						}
+					}
+				}
+
+				func get = (this) #rt -> Entry* {
+					std.debug.assert(this.atEnd() == false, "Already at end");
+					return &this.entry.?;
+				}
+
+				func atEnd = (this) #rt -> Bool {
+					return copy this.at_end;
+				}
+
+
+				impl std.IIteratorRT {
+					next  = next,
+					get   = get,
+					atEnd = atEnd,
+				}
+
+
+
+				///////////////////////////////////
+				// private
+
+				func make_syscall = (this mut, is_first_time: Bool) #rt -> Void {
+					when switch(@config.platform){
+						case(std.Platform.FREESTANDING){
+							@comptimeError("Should have been checked that this was allowed already");
+
+						}case(std.Platform.LINUX){
+							if(is_first_time){
+								_ = try std.platform.linux.lseek(
+									this.iterator.dir.internalHandle(), 0, std.platform.linux.Seek.SET
+								) else <_> { unreachable("`std.fs.Directory` iteration - cannot iterate"); };
+							}
+
+							this.num_bytes_written = try std.platform.linux.getdents64(
+								this.iterator.dir.internalHandle(), this.iterator.buffer
+							) else<e: std.platform.linux.Errno> {
+								switch(e){
+									case(std.platform.linux.Errno.FAULT){
+										unreachable("`std.fs.Directory` iteration - cannot iterate");
+
+									}case(std.platform.linux.Errno.INVAL){
+										unreachable("`std.fs.Directory` iteration - buffer is too small");	
+
+									}case(std.platform.linux.Errno.NOENT, std.platform.linux.Errno.NOTDIR){
+										unreachable("`std.fs.Directory` iteration - invalid directory handle");
+
+									}else{
+										unreachable("`std.fs.Directory` iteration - cannot iterate");
+									}
+								}
+							};
+
+							if(this.num_bytes_written == 0){ this.at_end = true; }
+
+
+							const directory_entry: std.platform.linux.Dirent64* = {->expr:std.platform.linux.Dirent64*
+								unsafe{
+									return->expr std.bitCast<{std.platform.linux.Dirent64*}>(this.iterator.buffer[0]);
+								}
+							};
+
+							def OFFSET_OF_NAME: USize =
+								std.types.numOffsetBytes<{std.platform.linux.Dirent64, "name"}>();
+							const name_max_size: USize = directory_entry.reclen as USize - OFFSET_OF_NAME;
+
+							const name_size: USize = copy std.mem.findIndexOfValue(
+								new [Char:*](directory_entry.name.data(), copy name_max_size), '\0'
+							).?;
+
+							const kind: Entry.Kind #movable = {->expr:Entry.Kind
+								switch(directory_entry.\"type" as std.platform.linux.DT){
+									case(std.platform.linux.DT.UNKNOWN) { return->expr Entry.Kind.UNKNOWN; }
+									case(std.platform.linux.DT.FIFO)    { return->expr Entry.Kind.NAMED_PIPE; }
+									case(std.platform.linux.DT.CHR)     { return->expr Entry.Kind.CHARACTER_DEVICE; }
+									case(std.platform.linux.DT.DIR)     { return->expr Entry.Kind.DIRECTORY; }
+									case(std.platform.linux.DT.BLK)     { return->expr Entry.Kind.BLOCK_DEVICE; }
+									case(std.platform.linux.DT.REG)     { return->expr Entry.Kind.REGULAR_FILE; }
+									case(std.platform.linux.DT.LNK)     { return->expr Entry.Kind.SYM_LINK; }
+									case(std.platform.linux.DT.SOCK)    { return->expr Entry.Kind.NAMED_SOCKET; }
+									else                                { return->expr Entry.Kind.UNKNOWN; }
+								}
+							};
+
+							this.entry = new Entry{
+								name = new std.fs.PathRef(new [Char:*](directory_entry.name.data(), copy name_size)),
+								kind = move kind,
+							};
+
+							this.buffer_offset += directory_entry.reclen as USize;
+
+						}case(std.Platform.PANTHER_VM){
+							@comptimeError("Currently unimplemented");
+
+						}case(std.Platform.WINDOWS){
+							const has_more_files: Bool = try std.platform.windows.ntQueryDirectoryFile(
+								this.iterator.dir.internalHandle(),
+								this.iterator.buffer,
+								std.platform.windows.FileInformationClass.DIRECTORY_INFORMATION,
+								false,
+								is_first_time
+							) else <err: std.platform.windows.NTStatus?> {
+								if(err == null){ unreachable("`std.fs.Directory` iteration - buffer is too small"); }
+								unreachable("`std.fs.Directory` iteration - cannot iterate");
+							};
+
+							if(has_more_files == false){
+								this.at_end = true;
+								return;
+							}
+
+							unsafe{
+								def native = std.platform.windows.native;
+								
+								type FILE_DIRECTORY_INFORMATION =
+									alias std.platform.windows.native.FILE_DIRECTORY_INFORMATION;
+
+								var target_info: FILE_DIRECTORY_INFORMATION* =
+									std.bitCast<{FILE_DIRECTORY_INFORMATION*}>(this.iterator.buffer[0]);
+
+								const kind: Entry.Kind #movable = {->expr:Entry.Kind
+									if(std.hasFlag(target_info.FileAttributes, native.FileAttribute.REPARSE_POINT)){
+										return->expr Entry.Kind.SYM_LINK;
+									}
+									if(std.hasFlag(target_info.FileAttributes, native.FileAttribute.DIRECTORY)){
+										return->expr Entry.Kind.DIRECTORY;
+									}
+
+									return->expr Entry.Kind.REGULAR_FILE;
+								};
+
+								this.entry = new Entry{
+									name = new std.fs.PathRef(
+										new [CWChar:*](
+											std.bitCast<{CWChar*}>(&target_info.FileName),
+											(target_info.FileNameLength as USize / 2)
+										)
+									),
+									kind = move kind,
+								};
+
+								this.buffer_offset += target_info.NextEntryOffset as USize;
+								this.need_to_syscall = target_info.NextEntryOffset == 0;
+							}
+						}
+					}
+				}
+
+
+				var iterator          : Iterator* #private;
+				var entry             : Entry?    #private = null;
+
+				when(@config.platform == std.Platform.LINUX){
+					var num_bytes_written : USize #private = 0;
+				}
+
+				var buffer_offset : USize #private = 0;
+				var at_end        : Bool  #private = false;
+
+				when(@config.platform == std.Platform.WINDOWS){
+					var need_to_syscall: Bool #private = false;
+				}
+			}
+
+			func new = (dir: Directory*, buffer: [Byte:*mut]) -> (output: Iterator) {
+				output.dir = copy dir;
+				output.buffer = copy buffer;
+				return...;
+			}
+
+			
+			var dir: Directory*;
+			var buffer: [Byte:*mut];
+
+			impl std.IIterableRefRT{
+				createIterator = (this) #rt -> impl(Impl:std.IIteratorRT) {
+					return new impl(Impl:std.IIteratorRT)(&this);
+				},
+			}
+		}
+
+	}
+
+
+	
+
+
+
+	///////////////////////////////////
+	// private
+
+	func close_without_resetting_handle = (this mut) #rt #private -> Void {
+		std.debug.assert(this.isOpen(), "std.fs.Directory was already closed");
+
+		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				unreachable("`std.fs.Directory` is not supported in frestanding platform target");
+			}
+
+			case(std.Platform.LINUX){
+				try std.platform.linux.close(this.handle.?) else <errno: std.platform.linux.Errno> {
+					switch(errno){
+						case(std.platform.linux.Errno.BADF){
+							unreachable(
+								"std.fs.Directory failed to close - handle is invalid to std.platform.linux.close"
+							);
+						}else{
+							unreachable("std.fs.Directory failed to close - Unexpected Error");
+						}
+						
+					}
+				};
+			}
+
+			case(std.Platform.PANTHER_VM){
+				unreachable("`std.fs.Directory.close` is not supported in Panther platform target");
+			}
+
+			case(std.Platform.WINDOWS){
+				try std.platform.windows.ntClose(this.handle.?) else<nt_status: std.platform.windows.NTStatus> {
+					switch(nt_status){
+						case(std.platform.windows.NTStatus.INVALID_HANDLE){
+							unreachable("std.fs.Directory failed to close - NTStatus.INVALID_HANDLE");
+
+						}case(std.platform.windows.NTStatus.HANDLE_NOT_CLOSABLE){
+							unreachable("std.fs.Directory failed to close - NTStatus.HANDLE_NOT_CLOSABLE");
+
+						}else{
+							unreachable("std.fs.Directory failed to close - Unexpected Error");
+						}
+					}
+				};
+			}
+		}
+	}
+
+
+
+	var handle: Handle? #private;
+}
+
+

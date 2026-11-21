@@ -18,10 +18,28 @@ func write = (writer: std.Writer<{$$}> mut, str: [Char:*], format_info: [Char:*]
 	writer.write(str);
 }
 
+func write = (writer: std.Writer<{$$}> mut, str: [CWChar:*], format_info: [Char:*] = new [Char:*]()) -> Void {
+	// TODO(FUTURE): proper
+	unsafe{
+		writer.write(new [Char:*](std.bitCast<{Char*}>(str.data()), str.size() * 2));
+	}
+}
+
+
+
 func write = (writer: std.Writer<{$$}> mut, str: [Char:*;'\0'], format_info: [Char:*] = new [Char:*]()) -> Void {
 	std.debug.assert(format_info.size() == 0, "Invalid format info for this type ([Char:*])");
 	writer.write(str);
 }
+
+func write = (writer: std.Writer<{$$}> mut, str: [CWChar:*;'\0' as CWChar], format_info: [Char:*] = new [Char:*]())
+-> Void {
+	// TODO(FUTURE): proper
+	unsafe{
+		writer.write(new [Char:*](std.bitCast<{Char*}>(str.data()), str.size() * 2));
+	}
+}
+
 
 func write = (writer: std.Writer<{$$}> mut, str: [Char:$$;'\0']*, format_info: [Char:*] = new [Char:*]())
 -> Void { // string literals

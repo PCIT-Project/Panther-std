@@ -1,6 +1,20 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.78.0"></a>
+## v0.0.78.0
+- Added `fs.Directory`
+- Added `types.numOffsetBytes`
+- Added `types.getUnderlyingTypeID`
+- Added `mem.copyBufferNotEmpty`
+- Added `mem.moveBufferNotEmpty`
+- Added `mem.findIndexOfValue`
+- Added `mem.equals`
+- Added `bit.hasFlag`
+- Improved errors from `fs.File`
+
+
+<!---------------------------------->
 <a name="v0.0.77.0"></a>
 ## v0.0.77.0
 - Updated to reflect updates in [PCIT-CPP v0.0.431.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.431.0) and [PCIT-CPP v0.0.432.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.432.0)

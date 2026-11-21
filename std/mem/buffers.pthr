@@ -12,16 +12,10 @@
 def std #private = @import("std");
 
 
-func mem_copy = (dst: [Byte:*mut], src: [Byte:*]) #private -> Void {
-	// TODO(PERF): better than just naive approach
-
-	for(dst, src) [_; dst_value: Byte mut, src_value: Byte] {
-		dst_value = copy src_value;
-	}
-}
 
 
-
+///////////////////////////////////
+// copy
 
 func copyBuffer = (dst: [$T:*mut], src: [T:*])
 	#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>() == false)
@@ -31,10 +25,33 @@ func copyBuffer = (dst: [$T:*mut], src: [T:*])
 		"std.mem.copyBuffer requires that buffer element must be no-error copyable"
 	);
 	std.debug.assert(dst.size() == src.size(), "Sizes of buffers must be the same");
-	std.debug.assert(dst.size() != 0, "Cannot copy empty buffer");
 
 	if(dst.size() == 0){ return; }
+	
+	unsafe{
+		copy_buffer_impl(dst, src);
+	}
+}
 
+func copyBufferNotEmpty = (dst: [$T:*mut], src: [T:*])
+	#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>() == false)
+-> Void {
+	@comptimeAssert(
+		std.types.isNoErrorCopyable<{T}>(),
+		"std.mem.copyBuffer requires that buffer element must be no-error copyable"
+	);
+	std.debug.assert(dst.size() == src.size(), "Sizes of buffers must be the same");
+	std.debug.assert(dst.size() != 0, "Cannot copy empty buffer");
+
+	unsafe{
+		copy_buffer_impl(dst, src);
+	}
+}
+
+
+func copy_buffer_impl = (dst: [$T:*mut], src: [T:*])
+	#rt(std.types.isComptimeCopyable<{T}>() == false) #unsafe(std.types.isSafeCopyable<{T}>() == false) #private
+-> Void {
 	when(std.types.isTriviallyCopyable<{T}>()){
 		const buffer_size: USize = dst.size() * std.types.numBytes<{T}>();
 
@@ -52,9 +69,8 @@ func copyBuffer = (dst: [$T:*mut], src: [T:*])
 }
 
 
-
-
-
+///////////////////////////////////
+// move
 
 func moveBuffer = (dst: [$T:*mut], src: [T:*mut]) #rt(std.types.isComptimeMovable<{T}>() == false) #unsafe -> Void {
 	@comptimeAssert(
@@ -62,9 +78,32 @@ func moveBuffer = (dst: [$T:*mut], src: [T:*mut]) #rt(std.types.isComptimeMovabl
 		"std.mem.moveBuffer requires that buffer element must be no-error movable"
 	);
 	std.debug.assert(dst.size() == src.size(), "Sizes of buffers must be the same");
+
+	if(dst.size() == 0){ return; }
+
+	unsafe{
+		move_buffer_impl(dst, src);
+	}
+}
+
+
+func moveBufferNotEmpty = (dst: [$T:*mut], src: [T:*mut]) #rt(std.types.isComptimeMovable<{T}>() == false) #unsafe
+-> Void {
+	@comptimeAssert(
+		std.types.isNoErrorMovable<{T}>(),
+		"std.mem.moveBuffer requires that buffer element must be no-error movable"
+	);
+	std.debug.assert(dst.size() == src.size(), "Sizes of buffers must be the same");
 	std.debug.assert(dst.size() != 0, "Cannot move empty buffer");
 
+	move_buffer_impl(dst, src);
+}
 
+
+
+func move_buffer_impl = (dst: [$T:*mut], src: [T:*mut])
+	#rt(std.types.isComptimeMovable<{T}>() == false) #unsafe #private
+-> Void {
 	when(std.types.isTriviallyMovable<{T}>()){
 		const buffer_size: USize = dst.size() * std.types.numBytes<{T}>();
 
@@ -85,6 +124,23 @@ func moveBuffer = (dst: [$T:*mut], src: [T:*mut]) #rt(std.types.isComptimeMovabl
 
 
 
+
+///////////////////////////////////
+// make comptime buffer
+
 func makeComptimeBuffer = (buffer: [$T:*]) #ct -> [T:*] {
 	return @makeComptimeBuffer<{[T:*]}>(buffer);
+}
+
+
+
+///////////////////////////////////
+// misc private
+
+func mem_copy = (dst: [Byte:*mut], src: [Byte:*]) #private -> Void {
+	// TODO(PERF): better than just naive approach
+
+	for(dst, src) [_; dst_value: Byte mut, src_value: Byte] {
+		dst_value = copy src_value;
+	}
 }

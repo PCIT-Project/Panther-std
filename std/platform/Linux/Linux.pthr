@@ -23,6 +23,18 @@ type Offset = alias #distinct I64; // off_t
 type Mode = alias #distinct CInt;
 
 
+type INo64 = alias #distinct UI64;
+type LOff = alias #distinct UI64;
+
+type Dirent64 = struct #ordered {
+	var ino: INo64;
+	var off: LOff; // filesystem specific value, no meaning in userspace
+	var reclen: CUShort; // length of this dirent
+	var \"type": UI8; // File type
+	var name: [Char:1]; // actually an array of 
+}
+
+
 //////////////////////////////////////////////////////////////////////
 // enums / vars
 
@@ -32,6 +44,14 @@ def STDERR   = 2 as FileDescriptor;
 def AT_FDCWD = -100 as FileDescriptor;
 
 type Errno = alias native.Errno;
+
+type Seek = enum(CInt) {
+	SET  = 0,
+	CUR  = 1,
+	END  = 2,
+	DATA = 3,
+	HOLE = 4,
+}
 
 type ProtectionFlags = enum(CInt) {
 	NONE  = 0x0,
@@ -120,6 +140,19 @@ type Permissions = enum(CInt) {
 
 
 
+type DT = enum(CInt) {
+	UNKNOWN = 0,
+	FIFO    = 1,
+	CHR     = 2,
+	DIR     = 4,
+	BLK     = 6,
+	REG     = 8,
+	LNK     = 10,
+	SOCK    = 12,
+	WHT     = 14,
+}
+
+
 //////////////////////////////////////////////////////////////////////
 // functions
 
@@ -136,6 +169,45 @@ func close = (file_descriptor: FileDescriptor) #rt -> Void <Errno> {
 func exit = (exit_code: CInt) #rt #noReturn -> Void {
 	_ = native.syscall(native.SyscallCode.EXIT, exit_code as UI64);
 }
+
+
+func getdents64 = (file_descriptor: FileDescriptor, buffer: [Byte:*mut]) #rt -> USize <Errno> {
+	unsafe{
+		const res: UI64 = native.syscall(
+			native.SyscallCode.GETDENTS64,
+			file_descriptor as UI64,
+			std.bitCast<{UI64}>(buffer.data()),
+			buffer.size() as UI64
+		);
+
+		const e: Errno = native.calcErrno(res);
+		if(e == Errno.SUCCESS){ return res as USize; }
+		error copy e;	
+	}
+}
+
+
+
+func lseek = (file_descriptor: FileDescriptor, offset: Offset, whence: Seek) #rt -> Offset <Errno> {
+	const res: UI64 = native.syscall(native.SyscallCode.LSEEK, file_descriptor as UI64, offset as UI64, whence as UI64);
+
+	const e: Errno = native.calcErrno(res);
+	if(e == Errno.SUCCESS){ return res as Offset; }
+	error copy e;	
+}
+
+
+
+func mkdir = (path: [Char:*;'\0'], mode: Mode) #rt -> Void <Errno> {
+	unsafe{
+		const res: UI64 = native.syscall(native.SyscallCode.MKDIR, std.bitCast<{UI64}>(path.data()), mode as UI64);
+
+		const e: Errno = native.calcErrno(res);
+		if(e == Errno.SUCCESS){ return; }
+		error copy e;	
+	}
+}
+
 
 
 func mmap = (
@@ -176,17 +248,21 @@ func munmap = (addr: RawPtr, length: USize) #rt -> Void <Errno> {
 }
 
 
-func openat = (dirfd: FileDescriptor, path: [Char:*;'\0'], flags: O, mode: Mode) #rt -> FileDescriptor <Errno> {
-	std.debug.assert((flags as CInt & 0b11) != 0b11, "Flags must have one of RDONLY, WRONLY, or RDWR");
+func open = (path: [Char:*;'\0'], flags: O, mode: Mode) #rt -> FileDescriptor <Errno> {
+	unsafe{
+		std.debug.assert(
+			std.hasFlag(flags, std.bitCast<{O}>(0b11 as type(std.types.getUnderlyingTypeID<{O}>()))) == false,
+			"Flags must have one of RDONLY, WRONLY, or RDWR"
+		);
+	}
 	std.debug.assert(
-		mode != 0 as Mode || ((flags & O.CREAT) != O.CREAT && (flags & O.TMPFILE) != O.TMPFILE),
+		mode != 0 as Mode || std.hasFlag(flags, O.CREAT) || std.hasFlag(flags, O.TMPFILE),
 		"If flags has O.CREAT or O.TMPFILE, mode must be set"
 	);
 
 	unsafe{
 		const res: UI64 = native.syscall(
-			native.SyscallCode.OPENAT,
-			dirfd as UI64,
+			native.SyscallCode.OPEN,
 			std.bitCast<{UI64}>(path.data()),
 			flags as UI64,
 			mode as UI64

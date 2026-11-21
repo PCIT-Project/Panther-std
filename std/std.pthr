@@ -35,6 +35,7 @@ func countLZero = alias bit.countLZero;
 func countRZero = alias bit.countRZero;
 func countLOne  = alias bit.countLOne;
 func countROne  = alias bit.countROne;
+func hasFlag    = alias bit.hasFlag;
 func popCount   = alias bit.popCount;
 
 

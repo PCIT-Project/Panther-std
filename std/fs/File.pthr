@@ -18,21 +18,27 @@ type File = struct {
 	when switch(@config.platform){
 		case(std.Platform.FREESTANDING){
 			type Handle = delete("std.fs.File.Handle is not supported in frestanding platform target");
-		}
-
-		case(std.Platform.LINUX){
+			type NativeError = delete("std.fs.File.NativeError is not supported in frestanding platform target");
+			
+		}case(std.Platform.LINUX){
 			type Handle = alias std.platform.linux.FileDescriptor;
-		}
-
-		case(std.Platform.PANTHER_VM){
+			type NativeError = alias std.platform.linux.Errno;
+			
+		}case(std.Platform.PANTHER_VM){
 			type Handle = alias std.platform.pantherVM.FileHandle;
-		}
-
-		case(std.Platform.WINDOWS){
+			type NativeError = struct{}
+			
+		}case(std.Platform.WINDOWS){
 			type Handle = alias std.platform.windows.Handle;
+			type NativeError = alias std.platform.windows.NTStatus;
 		}
 	}
 
+
+	func new = () -> (output: This) {
+		output.handle = null;
+		return...;
+	}
 
 	func new = (handle: Handle in) -> (output: This) {
 		output.handle = forward handle;
@@ -41,7 +47,7 @@ type File = struct {
 
 
 	func delete = (this mut) #rt -> Void {
-		if(this.isOpen()){ this.close(); }
+		if(this.isOpen()){ this.close_without_resetting_handle(); }
 	}
 
 
@@ -68,70 +74,20 @@ type File = struct {
 
 
 
+	///////////////////////////////////
+	// open
 
 	type OpenError = enum {
-		ACCESS_DENIED,
-		ANTIVIRUS_INTERFERENCE,
-		CANCELLED,
-		DEVICE_BUSY,
-		FILE_BUSY,
-		FILE_NOT_FOUND,
-		FILE_TOO_BIG,
+		BUSY,
+		DENIED,
 		INVALID_PATH,
-		NETWORK_NOT_FOUND,
-		NO_DEVICE,
-		NO_MEMORY,
-		NO_SPACE,
-		NOT_A_DIRECTORY,
-		NOT_A_FILE,
-		PERMISSION_DENIED,
-		PIPE_BUSY,
-		PROCESS_FD_LIMIT_REACHED,
-		READ_ONLY_FILE_SYSTEM,
-		SYM_LINK_LOOP,
-		SYSTEM_FD_LIMIT_REACHED,
-		TEMP_FILES_NOT_SUPPORTED,
-
-		UNKNOWN,
-
-
-		type Simple = enum {
-			ACCESS_DENIED,
-			BUSY,
-			FILE_NOT_FOUND,
-			INVALID_PATH,
-			SYSTEM_ERROR,
-		}
-
-		func simplify = (this) -> Simple {
-			switch(this){
-				case(OpenError.ACCESS_DENIED)            { return Simple.ACCESS_DENIED;  }
-				case(OpenError.ANTIVIRUS_INTERFERENCE)   { return Simple.ACCESS_DENIED;  }
-				case(OpenError.CANCELLED)                { return Simple.SYSTEM_ERROR;   }
-				case(OpenError.DEVICE_BUSY)              { return Simple.SYSTEM_ERROR;   }
-				case(OpenError.FILE_BUSY)                { return Simple.BUSY;           }
-				case(OpenError.FILE_NOT_FOUND)           { return Simple.FILE_NOT_FOUND; }
-				case(OpenError.FILE_TOO_BIG)             { return Simple.ACCESS_DENIED;  }
-				case(OpenError.INVALID_PATH)             { return Simple.INVALID_PATH;   }
-				case(OpenError.NETWORK_NOT_FOUND)        { return Simple.INVALID_PATH;   }
-				case(OpenError.NOT_A_FILE)               { return Simple.INVALID_PATH;   }
-				case(OpenError.NO_DEVICE)                { return Simple.SYSTEM_ERROR;   }
-				case(OpenError.NO_MEMORY)                { return Simple.SYSTEM_ERROR;   }
-				case(OpenError.NO_SPACE)                 { return Simple.SYSTEM_ERROR;   }
-				case(OpenError.NOT_A_DIRECTORY)          { return Simple.INVALID_PATH;   }
-				case(OpenError.PERMISSION_DENIED)        { return Simple.ACCESS_DENIED;  }
-				case(OpenError.PIPE_BUSY)                { return Simple.BUSY;           }
-				case(OpenError.PROCESS_FD_LIMIT_REACHED) { return Simple.SYSTEM_ERROR;   }
-				case(OpenError.READ_ONLY_FILE_SYSTEM)    { return Simple.SYSTEM_ERROR;   }
-				case(OpenError.SYM_LINK_LOOP)            { return Simple.INVALID_PATH;   }
-				case(OpenError.SYSTEM_FD_LIMIT_REACHED)  { return Simple.SYSTEM_ERROR;   }
-				case(OpenError.TEMP_FILES_NOT_SUPPORTED) { return Simple.SYSTEM_ERROR;   }
-				case(OpenError.UNKNOWN)                  { return Simple.SYSTEM_ERROR;   }
-			}
-		}
+		PATH_NOT_FILE,
+		PATH_NOT_FOUND,
+		OTHER,
 	}
 
-	func open = (path: std.fs.PathRef, may_create: Bool) #rt -> This <OpenError> {
+
+	func open = (path: std.fs.PathRef) #rt -> This <err: OpenError, native_err: NativeError> {
 		std.debug.assert(path.isAbsolute(), "`std.fs.File.open` - file path must be absolute");
 
 		when switch(@config.platform){
@@ -143,58 +99,36 @@ type File = struct {
 			case(std.Platform.LINUX){
 				def linux = std.platform.linux;
 
-				const flags: linux.O = uninit;
-				const openat_mode: linux.Mode = uninit;
+				var file_descriptor: Handle = try linux.open(
+					path.str,
+					linux.O.RDWR | linux.O.CLOEXEC,
+					(linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode
+				) else<errno: linux.Errno> {
+					native_err = copy errno;
 
-
-				if(may_create){
-					flags = linux.O.RDWR | linux.O.CREAT;
-					openat_mode = (linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode;
-				}else{
-					flags = linux.O.RDWR;
-					openat_mode = (linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode;
-				}
-
-
-				var file_descriptor: Handle = try linux.openat(linux.AT_FDCWD, path.str, flags, openat_mode)
-					else<errno: linux.Errno>
-				{
 					switch(errno){
-						case(linux.Errno.ACCES)       { error OpenError.ACCESS_DENIED;            }
+						case(linux.Errno.ACCES)       { err = OpenError.DENIED;            }
 						case(linux.Errno.BADF)        {
-							unreachable("`std.fs.File` - handle is invalid to std.platform.linux.openat");
+							unreachable("`std.fs.File` - handle is invalid to std.platform.linux.open");
 						}
-						case(linux.Errno.BUSY)        { error OpenError.DEVICE_BUSY;              }
-						case(linux.Errno.FAULT)       { error OpenError.INVALID_PATH;             }
-						case(linux.Errno.FBIG)        { error OpenError.FILE_TOO_BIG;             }
-						case(linux.Errno.INVAL)       { error OpenError.INVALID_PATH;             }
-						case(linux.Errno.ISDIR)       { error OpenError.NOT_A_FILE;               }
-						case(linux.Errno.LOOP)        { error OpenError.SYM_LINK_LOOP;            }
-						case(linux.Errno.MFILE)       { error OpenError.PROCESS_FD_LIMIT_REACHED; }
-						case(linux.Errno.NAMETOOLONG) { error OpenError.INVALID_PATH;             }
-						case(linux.Errno.NFILE)       { error OpenError.SYSTEM_FD_LIMIT_REACHED;  }
-						case(linux.Errno.NODEV)       { error OpenError.NO_DEVICE;                }
-						case(linux.Errno.NOENT)       { error OpenError.FILE_NOT_FOUND;           }
-						case(linux.Errno.NOMEM)       { error OpenError.NO_MEMORY;                }
-						case(linux.Errno.NOSPC)       { error OpenError.NO_SPACE;                 }
-						case(linux.Errno.NOTDIR)      { error OpenError.NOT_A_DIRECTORY;          }
-						case(linux.Errno.NXIO)        { error OpenError.NO_DEVICE;                }
-						case(linux.Errno.OPNOTSUPP)   { error OpenError.TEMP_FILES_NOT_SUPPORTED; }
-						case(linux.Errno.OVERFLOW)    { error OpenError.FILE_TOO_BIG;             }
-						case(linux.Errno.PERM)        { error OpenError.PERMISSION_DENIED;        }
-						case(linux.Errno.ROFS)        { error OpenError.READ_ONLY_FILE_SYSTEM;    }
-						case(linux.Errno.SRCH)        { error OpenError.FILE_NOT_FOUND;           }
-						case(linux.Errno.TXTBSY)      { error OpenError.FILE_BUSY;                }
-						else {
-							when(@config.mode == std.Mode.DEBUG){
-								unreachable(
-									"std.fs.File - unknown error when calling std.platform.linux.openat"
-								);
-							}else{
-								error CreateError.UNKNOWN;
-							}
+						case(linux.Errno.BUSY)        { err = OpenError.BUSY;              }
+						case(linux.Errno.FAULT)       { err = OpenError.DENIED;            }
+						case(linux.Errno.INTR){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							err = OpenError.OTHER;
 						}
+						case(linux.Errno.INVAL)       { err = OpenError.INVALID_PATH;      }
+						case(linux.Errno.ISDIR)       { err = OpenError.PATH_NOT_FILE; }
+						case(linux.Errno.NAMETOOLONG) { err = OpenError.INVALID_PATH;      }
+						case(linux.Errno.NOENT)       { err = OpenError.PATH_NOT_FOUND;    }
+						case(linux.Errno.NOTDIR)      { err = OpenError.PATH_NOT_FOUND;    }
+						case(linux.Errno.PERM)        { err = OpenError.DENIED;            }
+						case(linux.Errno.ROFS)        { err = OpenError.DENIED;            }
+						case(linux.Errno.TXTBSY)      { err = OpenError.BUSY;              }
+						else                          { err = OpenError.OTHER;             }
 					}
+
+					error...;
 				};
 
 				return new File(move file_descriptor);
@@ -223,38 +157,31 @@ type File = struct {
 
 				def windows = std.platform.windows;
 
-				const disposition: windows.FileCreateDisposition = {->expr:windows.FileCreateDisposition
-					if(may_create){
-						return->expr windows.FileCreateDisposition.OVERWRITE_IF;
-					}else{
-						return->expr windows.FileCreateDisposition.OVERWRITE;
-					}
-				};
-
 				var file_handle: std.platform.windows.Handle = try std.platform.windows.ntCreateFile(
 					path.str,
 					null,
 					windows.FileAccess.GENERIC_WRITE,
 					windows.FileAttribute.NORMAL,
 					windows.FileShareAccess.READ | windows.FileShareAccess.WRITE | windows.FileShareAccess.DELETE,
-					disposition,
+					windows.FileCreateDisposition.OVERWRITE,
 					windows.FileCreateOptions.RANDOM_ACCESS
 						| windows.FileCreateOptions.SYNCHRONOUS_IO_NONALERT
 						| windows.FileCreateOptions.NON_DIRECTORY_FILE
 				) else<nt_status: windows.NTStatus> {
+					native_err = copy nt_status;
+
 					switch(nt_status){
-						case(windows.NTStatus.ACCESS_DENIED)    { error OpenError.ACCESS_DENIED;     }
-						case(windows.NTStatus.BAD_NETWORK_PATH) { error OpenError.NETWORK_NOT_FOUND; }
-						case(windows.NTStatus.BAD_NETWORK_NAME) { error OpenError.NETWORK_NOT_FOUND; }
+						case(windows.NTStatus.ACCESS_DENIED)    { err = OpenError.DENIED;         }
+						case(windows.NTStatus.BAD_NETWORK_PATH) { err = OpenError.PATH_NOT_FOUND; }
+						case(windows.NTStatus.BAD_NETWORK_NAME) { err = OpenError.PATH_NOT_FOUND; }
 
 						case(windows.NTStatus.CANCELLED){
 							// TODO(FUTURE): when calling from scheduler thread, 
-							error OpenError.CANCELLED;
+							err = OpenError.OTHER;
 						}
 
-						case(windows.NTStatus.DELETE_PENDING)      { error OpenError.FILE_BUSY;  }
-						case(windows.NTStatus.DISK_FULL)           { error OpenError.NO_SPACE;   }
-						case(windows.NTStatus.FILE_IS_A_DIRECTORY) { error OpenError.NOT_A_FILE; }
+						case(windows.NTStatus.DELETE_PENDING)      { err = OpenError.BUSY;  }
+						case(windows.NTStatus.FILE_IS_A_DIRECTORY) { err = OpenError.PATH_NOT_FILE; }
 
 						case(windows.NTStatus.INVALID_HANDLE){
 							unreachable("std.fs.File - invalid handle to std.platform.windows.ntCreateFile");
@@ -263,28 +190,146 @@ type File = struct {
 							unreachable("std.fs.File - Invalid parameter to std.platform.windows.ntCreateFile");
 						}
 
-						case(windows.NTStatus.NO_MEDIA_IN_DEVICE)     { error OpenError.NO_DEVICE;              }
-						case(windows.NTStatus.NOT_A_DIRECTORY)        { error OpenError.NOT_A_DIRECTORY;        }
-						case(windows.NTStatus.OBJECT_NAME_INVALID)    { error OpenError.INVALID_PATH;           }
-						case(windows.NTStatus.OBJECT_NAME_NOT_FOUND)  { error OpenError.FILE_NOT_FOUND;         }
-						case(windows.NTStatus.OBJECT_PATH_NOT_FOUND)  { error OpenError.FILE_NOT_FOUND;         }
-						case(windows.NTStatus.OBJECT_PATH_SYNTAX_BAD) { error OpenError.INVALID_PATH;           }
-						case(windows.NTStatus.PIPE_BUSY)              { error OpenError.PIPE_BUSY;              }
-						case(windows.NTStatus.PIPE_NOT_AVAILABLE)     { error OpenError.NO_DEVICE;              }
-						case(windows.NTStatus.SHARING_VIOLATION)      { error OpenError.FILE_BUSY;              }
-						case(windows.NTStatus.USER_MAPPED_FILE)       { error OpenError.ACCESS_DENIED;          }
-						case(windows.NTStatus.VIRUS_INFECTED)         { error OpenError.ANTIVIRUS_INTERFERENCE; }
-						case(windows.NTStatus.VIRUS_DELETED)          { error OpenError.ANTIVIRUS_INTERFERENCE; }
-						else {
-							when(@config.mode == std.Mode.DEBUG){
-								unreachable(
-									"std.fs.File - unknown error when calling std.platform.windows.ntCreateFile"
-								);
-							}else{
-								error OpenError.UNKNOWN;
-							}
-						}
+						case(windows.NTStatus.OBJECT_NAME_INVALID)    { err = OpenError.INVALID_PATH;   }
+						case(windows.NTStatus.OBJECT_NAME_NOT_FOUND)  { err = OpenError.PATH_NOT_FOUND; }
+						case(windows.NTStatus.OBJECT_PATH_NOT_FOUND)  { err = OpenError.PATH_NOT_FOUND; }
+						case(windows.NTStatus.OBJECT_PATH_SYNTAX_BAD) { err = OpenError.INVALID_PATH;   }
+						case(windows.NTStatus.PIPE_BUSY)              { err = OpenError.BUSY;           }
+						case(windows.NTStatus.SHARING_VIOLATION)      { err = OpenError.BUSY;           }
+						case(windows.NTStatus.USER_MAPPED_FILE)       { err = OpenError.DENIED;         }
+						case(windows.NTStatus.VIRUS_INFECTED)         { err = OpenError.DENIED;         }
+						case(windows.NTStatus.VIRUS_DELETED)          { err = OpenError.DENIED;         }
+						else                                          { err = OpenError.OTHER;          }
 					}
+
+					error...;
+				};
+
+				return new File(move file_handle);
+			}
+		}
+	}
+
+
+	///////////////////////////////////
+	// createOrOpen
+
+	func createOrOpen = (path: std.fs.PathRef, may_create: Bool) #rt -> This <err: OpenError, native_err: NativeError> {
+		std.debug.assert(path.isAbsolute(), "`std.fs.File.open` - file path must be absolute");
+
+		when switch(@config.platform){
+			case(std.Platform.FREESTANDING){
+				unreachable("`std.fs.File.open` is not supported in frestanding platform target");
+			}
+
+
+			case(std.Platform.LINUX){
+				def linux = std.platform.linux;
+
+				var file_descriptor: Handle = try linux.open(
+					path.str,
+					linux.O.RDWR | linux.O.CREAT | linux.O.CLOEXEC,
+					(linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode
+				) else<errno: linux.Errno> {
+					native_err = copy errno;
+
+					switch(errno){
+						case(linux.Errno.ACCES)       { err = OpenError.DENIED;            }
+						case(linux.Errno.BADF)        {
+							unreachable("`std.fs.File` - handle is invalid to std.platform.linux.open");
+						}
+						case(linux.Errno.BUSY)        { err = OpenError.BUSY;              }
+						case(linux.Errno.FAULT)       { err = OpenError.DENIED;            }
+						case(linux.Errno.INTR){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							err = OpenError.OTHER;
+						}
+						case(linux.Errno.INVAL)       { err = OpenError.INVALID_PATH;      }
+						case(linux.Errno.ISDIR)       { err = OpenError.PATH_NOT_FILE;     }
+						case(linux.Errno.NAMETOOLONG) { err = OpenError.INVALID_PATH;      }
+						case(linux.Errno.NOENT)       { err = OpenError.PATH_NOT_FOUND;    }
+						case(linux.Errno.NOTDIR)      { err = OpenError.PATH_NOT_FOUND;    }
+						case(linux.Errno.PERM)        { err = OpenError.DENIED;            }
+						case(linux.Errno.ROFS)        { err = OpenError.DENIED;            }
+						case(linux.Errno.TXTBSY)      { err = OpenError.BUSY;              }
+						else                          { err = OpenError.OTHER;             }
+					}
+
+					error...;
+				};
+
+				return new File(move file_descriptor);
+			}
+
+			case(std.Platform.PANTHER_VM){
+				unreachable("`std.fs.File.open` is not supported in Panther platform target");
+			}
+
+			case(std.Platform.WINDOWS){
+				when(@config.mode == std.Mode.DEBUG){
+					std.debug.assert(
+						path.isUNC(),
+						"`std.fs.File.open` - on windows, path must be UNC (Universal Naming Convention), "
+							++ "such as having prefix `\\??\\`"
+					);
+					
+					for(path.str) [_; character: CWChar] {
+						std.debug.assert(
+							character != '/' as CWChar,
+							"`std.fs.File.open` - path must have platform preferred separators"
+						);
+					}
+				}
+
+
+				def windows = std.platform.windows;
+
+				var file_handle: std.platform.windows.Handle = try std.platform.windows.ntCreateFile(
+					path.str,
+					null,
+					windows.FileAccess.GENERIC_WRITE,
+					windows.FileAttribute.NORMAL,
+					windows.FileShareAccess.READ | windows.FileShareAccess.WRITE | windows.FileShareAccess.DELETE,
+					windows.FileCreateDisposition.OVERWRITE,
+					windows.FileCreateOptions.RANDOM_ACCESS
+						| windows.FileCreateOptions.SYNCHRONOUS_IO_NONALERT
+						| windows.FileCreateOptions.NON_DIRECTORY_FILE
+				) else<nt_status: windows.NTStatus> {
+					native_err = copy nt_status;
+
+					switch(nt_status){
+						case(windows.NTStatus.ACCESS_DENIED)    { err = OpenError.DENIED;         }
+						case(windows.NTStatus.BAD_NETWORK_PATH) { err = OpenError.PATH_NOT_FOUND; }
+						case(windows.NTStatus.BAD_NETWORK_NAME) { err = OpenError.PATH_NOT_FOUND; }
+
+						case(windows.NTStatus.CANCELLED){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							err = OpenError.OTHER;
+						}
+
+						case(windows.NTStatus.DELETE_PENDING)      { err = OpenError.BUSY;  }
+						case(windows.NTStatus.FILE_IS_A_DIRECTORY) { err = OpenError.PATH_NOT_FILE; }
+
+						case(windows.NTStatus.INVALID_HANDLE){
+							unreachable("std.fs.File - invalid handle to std.platform.windows.ntCreateFile");
+						}
+						case(windows.NTStatus.INVALID_PARAMETER){
+							unreachable("std.fs.File - Invalid parameter to std.platform.windows.ntCreateFile");
+						}
+
+						case(windows.NTStatus.OBJECT_NAME_INVALID)    { err = OpenError.INVALID_PATH;   }
+						case(windows.NTStatus.OBJECT_NAME_NOT_FOUND)  { err = OpenError.PATH_NOT_FOUND; }
+						case(windows.NTStatus.OBJECT_PATH_NOT_FOUND)  { err = OpenError.PATH_NOT_FOUND; }
+						case(windows.NTStatus.OBJECT_PATH_SYNTAX_BAD) { err = OpenError.INVALID_PATH;   }
+						case(windows.NTStatus.PIPE_BUSY)              { err = OpenError.BUSY;           }
+						case(windows.NTStatus.SHARING_VIOLATION)      { err = OpenError.BUSY;           }
+						case(windows.NTStatus.USER_MAPPED_FILE)       { err = OpenError.DENIED;         }
+						case(windows.NTStatus.VIRUS_INFECTED)         { err = OpenError.DENIED;         }
+						case(windows.NTStatus.VIRUS_DELETED)          { err = OpenError.DENIED;         }
+						else                                          { err = OpenError.OTHER;          }
+					}
+
+					error...;
 				};
 
 				return new File(move file_handle);
@@ -294,65 +339,19 @@ type File = struct {
 
 
 
+	///////////////////////////////////
+	// create
+
+
 	type CreateError = enum {
-		ACCESS_DENIED,
-		ANTIVIRUS_INTERFERENCE,
-		CANCELLED,
-		DEVICE_BUSY,
-		FILE_TOO_BIG,
+		DENIED,
 		INVALID_PATH,
-		NETWORK_NOT_FOUND,
-		NO_DEVICE,
-		NO_MEMORY,
-		NO_SPACE,
-		NOT_A_DIRECTORY,
 		PATH_ALREADY_EXISTS,
-		PERMISSION_DENIED,
-		PIPE_BUSY,
-		PROCESS_FD_LIMIT_REACHED,
-		READ_ONLY_FILE_SYSTEM,
-		SYM_LINK_LOOP,
-		SYSTEM_FD_LIMIT_REACHED,
-		TEMP_FILES_NOT_SUPPORTED,
-
-		UNKNOWN,
-
-
-		type Simple = enum {
-			ACCESS_DENIED,
-			INVALID_PATH,
-			PATH_ALREADY_EXISTS,
-			SYSTEM_ERROR,
-		}
-
-
-		func simplify = (this) -> Simple {
-			switch(this){
-				case(CreateError.ACCESS_DENIED)            { return Simple.ACCESS_DENIED;       }
-				case(CreateError.ANTIVIRUS_INTERFERENCE)   { return Simple.ACCESS_DENIED;       }
-				case(CreateError.DEVICE_BUSY)              { return Simple.SYSTEM_ERROR;        }
-				case(CreateError.CANCELLED)                { return Simple.SYSTEM_ERROR;        }
-				case(CreateError.FILE_TOO_BIG)             { return Simple.ACCESS_DENIED;       }
-				case(CreateError.INVALID_PATH)             { return Simple.INVALID_PATH;        }
-				case(CreateError.NETWORK_NOT_FOUND)        { return Simple.INVALID_PATH;        }
-				case(CreateError.NO_DEVICE)                { return Simple.SYSTEM_ERROR;        }
-				case(CreateError.NO_MEMORY)                { return Simple.SYSTEM_ERROR;        }
-				case(CreateError.NO_SPACE)                 { return Simple.SYSTEM_ERROR;        }
-				case(CreateError.NOT_A_DIRECTORY)          { return Simple.INVALID_PATH;        }
-				case(CreateError.PATH_ALREADY_EXISTS)      { return Simple.PATH_ALREADY_EXISTS; }
-				case(CreateError.PERMISSION_DENIED)        { return Simple.ACCESS_DENIED;       }
-				case(CreateError.PIPE_BUSY)                { return Simple.ACCESS_DENIED;       }
-				case(CreateError.PROCESS_FD_LIMIT_REACHED) { return Simple.SYSTEM_ERROR;        }
-				case(CreateError.READ_ONLY_FILE_SYSTEM)    { return Simple.SYSTEM_ERROR;        }
-				case(CreateError.SYM_LINK_LOOP)            { return Simple.INVALID_PATH;        }
-				case(CreateError.SYSTEM_FD_LIMIT_REACHED)  { return Simple.SYSTEM_ERROR;        }
-				case(CreateError.TEMP_FILES_NOT_SUPPORTED) { return Simple.SYSTEM_ERROR;        }
-				case(CreateError.UNKNOWN)                  { return Simple.SYSTEM_ERROR;        }
-			}
-		}
+		OTHER,
 	}
 
-	func create = (path: std.fs.PathRef) #rt -> This <CreateError> {
+
+	func create = (path: std.fs.PathRef) #rt -> This <err: CreateError, native_err: NativeError> {
 		std.debug.assert(path.isAbsolute(), "`std.fs.File.create` - file path must be absolute");
 
 		when switch(@config.platform){
@@ -364,48 +363,34 @@ type File = struct {
 			case(std.Platform.LINUX){
 				def linux = std.platform.linux;
 
-				var file_descriptor: Handle = try linux.openat(
-					linux.AT_FDCWD,
+				var file_descriptor: Handle = try linux.open(
 					path.str,
-					linux.O.RDWR | linux.O.CREAT | linux.O.EXCL,
+					linux.O.RDWR | linux.O.CREAT | linux.O.EXCL | linux.O.CLOEXEC,
 					(linux.Permissions.IRUSR | linux.Permissions.IWUSR) as linux.Mode
 				) else<errno: linux.Errno> {
-					switch(errno){
-						case(linux.Errno.ACCES)       { error CreateError.ACCESS_DENIED;            }
-						case(linux.Errno.BADF)        {
-							unreachable("std.fs.File - invalid handle to std.platform.linux.openat");
-						}
-						case(linux.Errno.BUSY)        { error CreateError.DEVICE_BUSY;              }
-						case(linux.Errno.EXIST)       { error CreateError.PATH_ALREADY_EXISTS;      }
-						case(linux.Errno.FAULT)       { error CreateError.INVALID_PATH;             }
-						case(linux.Errno.FBIG)        { error CreateError.FILE_TOO_BIG;             }
-						case(linux.Errno.INVAL)       { error CreateError.INVALID_PATH;             }
-						case(linux.Errno.LOOP)        { error CreateError.SYM_LINK_LOOP;            }
-						case(linux.Errno.MFILE)       { error CreateError.PROCESS_FD_LIMIT_REACHED; }
-						case(linux.Errno.NAMETOOLONG) { error CreateError.INVALID_PATH;             }
-						case(linux.Errno.NFILE)       { error CreateError.SYSTEM_FD_LIMIT_REACHED;  }
-						case(linux.Errno.NODEV)       { error CreateError.NO_DEVICE;                }
-						case(linux.Errno.NOENT)       { error CreateError.INVALID_PATH;             }
-						case(linux.Errno.NOMEM)       { error CreateError.NO_MEMORY;                }
-						case(linux.Errno.NOSPC)       { error CreateError.NO_SPACE;                 }
-						case(linux.Errno.NOTDIR)      { error CreateError.NOT_A_DIRECTORY;          }
-						case(linux.Errno.NXIO)        { error CreateError.NO_DEVICE;                }
-						case(linux.Errno.OPNOTSUPP)   { error CreateError.TEMP_FILES_NOT_SUPPORTED; }
-						case(linux.Errno.OVERFLOW)    { error CreateError.FILE_TOO_BIG;             }
-						case(linux.Errno.PERM)        { error CreateError.PERMISSION_DENIED;        }
-						case(linux.Errno.ROFS)        { error CreateError.READ_ONLY_FILE_SYSTEM;    }
-						case(linux.Errno.SRCH)        { error CreateError.INVALID_PATH;             }
-						else {
-							when(@config.mode == std.Mode.DEBUG){
-								unreachable(
-									"std.fs.File - unknown error when calling std.platform.linux.openat"
-								);
-							}else{
-								error CreateError.UNKNOWN;
-							}
-						}
+					native_err = copy errno;
 
+					switch(errno){
+						case(linux.Errno.ACCES)       { err = CreateError.DENIED;              }
+						case(linux.Errno.BADF)        {
+							unreachable("std.fs.File - invalid handle to std.platform.linux.open");
+						}
+						case(linux.Errno.EXIST)       { err = CreateError.PATH_ALREADY_EXISTS; }
+						case(linux.Errno.FAULT)       { err = CreateError.INVALID_PATH;        }
+						case(linux.Errno.INTR){
+							// TODO(FUTURE): when calling from scheduler thread, 
+							err = CreateError.OTHER;
+						}
+						case(linux.Errno.INVAL)       { err = CreateError.INVALID_PATH;        }
+						case(linux.Errno.NAMETOOLONG) { err = CreateError.INVALID_PATH;        }
+						case(linux.Errno.NOENT)       { err = CreateError.INVALID_PATH;        }
+						case(linux.Errno.NOTDIR)      { err = CreateError.INVALID_PATH;        }
+						case(linux.Errno.PERM)        { err = CreateError.DENIED;              }
+						case(linux.Errno.ROFS)        { err = CreateError.DENIED;              }
+						else                          { err = CreateError.OTHER;               }
 					}
+
+					error...;
 				};
 
 				return new File(move file_descriptor);
@@ -444,18 +429,19 @@ type File = struct {
 						| windows.FileCreateOptions.SYNCHRONOUS_IO_NONALERT
 						| windows.FileCreateOptions.NON_DIRECTORY_FILE
 				) else<nt_status: windows.NTStatus> {
+					native_err = copy nt_status;
+
 					switch(nt_status){
-						case(windows.NTStatus.ACCESS_DENIED)    { error CreateError.ACCESS_DENIED;     }
-						case(windows.NTStatus.BAD_NETWORK_PATH) { error CreateError.NETWORK_NOT_FOUND; }
-						case(windows.NTStatus.BAD_NETWORK_NAME) { error CreateError.NETWORK_NOT_FOUND; }
+						case(windows.NTStatus.ACCESS_DENIED)    { err = CreateError.DENIED;       }
+						case(windows.NTStatus.BAD_NETWORK_PATH) { err = CreateError.INVALID_PATH; }
+						case(windows.NTStatus.BAD_NETWORK_NAME) { err = CreateError.INVALID_PATH; }
 
 						case(windows.NTStatus.CANCELLED){
 							// TODO(FUTURE): when calling from scheduler thread, 
-							error CreateError.CANCELLED;
+							err = CreateError.OTHER;
 						}
 
-						case(windows.NTStatus.DISK_FULL)           { error CreateError.NO_SPACE;            }
-						case(windows.NTStatus.FILE_IS_A_DIRECTORY) { error CreateError.PATH_ALREADY_EXISTS; }
+						case(windows.NTStatus.FILE_IS_A_DIRECTORY) { err = CreateError.PATH_ALREADY_EXISTS; }
 
 						case(windows.NTStatus.INVALID_HANDLE){
 							unreachable("std.fs.File - invalid handle to std.platform.windows.ntCreateFile");
@@ -464,27 +450,17 @@ type File = struct {
 							unreachable("std.fs.File - invalid parameter to std.platform.windows.ntCreateFile");
 						}
 
-						case(windows.NTStatus.NO_MEDIA_IN_DEVICE)     { error CreateError.NO_DEVICE;              }
-						case(windows.NTStatus.NOT_A_DIRECTORY)        { error CreateError.NOT_A_DIRECTORY;        }
-						case(windows.NTStatus.OBJECT_NAME_COLLISION)  { error CreateError.PATH_ALREADY_EXISTS;    }
-						case(windows.NTStatus.OBJECT_NAME_INVALID)    { error CreateError.INVALID_PATH;           }
-						case(windows.NTStatus.OBJECT_NAME_NOT_FOUND)  { error CreateError.INVALID_PATH;           }
-						case(windows.NTStatus.OBJECT_PATH_SYNTAX_BAD) { error CreateError.INVALID_PATH;           }
-						case(windows.NTStatus.PIPE_BUSY)              { error CreateError.PIPE_BUSY;              }
-						case(windows.NTStatus.PIPE_NOT_AVAILABLE)     { error CreateError.NO_DEVICE;              }
-						case(windows.NTStatus.USER_MAPPED_FILE)       { error CreateError.ACCESS_DENIED;          }
-						case(windows.NTStatus.VIRUS_INFECTED)         { error CreateError.ANTIVIRUS_INTERFERENCE; }
-						case(windows.NTStatus.VIRUS_DELETED)          { error CreateError.ANTIVIRUS_INTERFERENCE; }
-						else{
-							when(@config.mode == std.Mode.DEBUG){
-								unreachable(
-									"std.fs.File - unknown error when calling std.platform.windows.ntCreateFile"
-								);
-							}else{
-								error CreateError.UNKNOWN;
-							}
-						}
+						case(windows.NTStatus.OBJECT_NAME_COLLISION)  { err = CreateError.PATH_ALREADY_EXISTS; }
+						case(windows.NTStatus.OBJECT_NAME_INVALID)    { err = CreateError.INVALID_PATH;        }
+						case(windows.NTStatus.OBJECT_NAME_NOT_FOUND)  { err = CreateError.INVALID_PATH;        }
+						case(windows.NTStatus.OBJECT_PATH_SYNTAX_BAD) { err = CreateError.INVALID_PATH;        }
+						case(windows.NTStatus.USER_MAPPED_FILE)       { err = CreateError.DENIED;              }
+						case(windows.NTStatus.VIRUS_INFECTED)         { err = CreateError.DENIED;              }
+						case(windows.NTStatus.VIRUS_DELETED)          { err = CreateError.DENIED;              }
+						else                                          { err = CreateError.OTHER;               }
 					}
+
+					error...;
 				};
 
 				return new File(move file_handle);
@@ -494,6 +470,8 @@ type File = struct {
 
 
 
+	///////////////////////////////////
+	// methods
 
 	func write = (this mut, str: [Char:*]) #rt -> Void {
 		std.debug.assert(this.isOpen(), "std.fs.File cannot write as it is closed");
@@ -537,6 +515,38 @@ type File = struct {
 
 
 	func close = (this mut) #rt -> Void {
+		this.close_without_resetting_handle();
+		this.handle = null;
+	}
+
+
+	func isOpen = (this) -> Bool { return this.handle != null; }
+
+	func internalHandle = (this) -> Handle {
+		std.debug.assert(this.isOpen(), "std.fs.File isn't open");
+		return copy this.handle.?;
+	}
+
+
+
+
+	impl std.IWriter {
+		write = (this mut, str: [Char:*]) #rtDiff -> Void {
+			when(@isComptime()){
+				unreachable("`std.fs.File` cannot write at comptime");
+			}else{
+				this.write(str);
+			}
+		},
+
+		flush = (this mut) -> Void {},
+	}
+
+
+	///////////////////////////////////
+	// private
+
+	func close_without_resetting_handle = (this mut) #rt #private -> Void {
 		std.debug.assert(this.isOpen(), "std.fs.File was already closed");
 
 		when switch(@config.platform){
@@ -575,54 +585,12 @@ type File = struct {
 						}
 					}
 				};
-
-				this.handle = null;
 			}
 		}
 	}
 
-
-	func isOpen = (this) -> Bool { return this.handle != null; }
-
-	func internalHandle = (this) -> Handle {
-		std.debug.assert(this.isOpen(), "std.fs.File isn't open");
-		return copy this.handle.?;
-	}
-
-
-
-
-	impl std.IWriter {
-		write = (this mut, str: [Char:*]) #rtDiff -> Void {
-			when(@isComptime()){
-				unreachable("`std.fs.File` cannot write at comptime");
-			}else{
-				this.write(str);
-			}
-		},
-
-		flush = (this mut) -> Void {},
-	}
-
-
-	///////////////////////////////////
-	// private
 
 	var handle: Handle? #private;
 }
 
 
-
-when(@config.platform == std.Platform.WINDOWS){
-	
-	func make_wpath = (path: [Char:*], target_buffer: [CWChar:*mut]) #private -> [CWChar:*mut;'\0' as CWChar] {
-		for(path) [i: USize; char: Char] {
-			target_buffer[i].* = char as CWChar;
-		}
-
-		target_buffer[path.size()].* = '\0' as CWChar;
-
-		return new [CWChar:*mut;'\0' as CWChar](copy target_buffer.data().?, path.size());
-	}
-
-}
