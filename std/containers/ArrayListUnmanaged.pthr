@@ -116,12 +116,12 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 	func [] = (this, index: USize) -> T* {
 		std.debug.assert(index < this.size(), "Index is out-of-bounds");
 
-		unsafe{ return this.buffer[index].get(); }
+		return unsafe{this.buffer[index].get()};
 	}
 	func [] = (this mut, index: USize) -> T*mut {
 		std.debug.assert(index < this.size(), "Index is out-of-bounds");
 
-		unsafe{ return this.buffer[index].get(); }
+		return unsafe{this.buffer[index].get()};
 	}
 
 	func first = (this) -> T* {
@@ -306,7 +306,7 @@ type ArrayListUnmanaged = struct <{T: Type}> {
 
 						const new_buffer_ref = new [T:*mut](std.bitCast<{T*mut}>(new_buffer.data()), this.size());
 
-						unsafe{ std.mem.copyBuffer(new_buffer_ref, this as [T:*mut]); }
+						std.mem.copyBuffer(new_buffer_ref, this as [T:*mut]);
 
 						allocator.dealloc(this.buffer);
 						this.buffer = move new_buffer;

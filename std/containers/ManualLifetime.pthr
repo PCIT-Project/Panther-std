@@ -13,9 +13,9 @@ def std #private = @import("std");
 
 
 type ManualLifetime = struct <{T: Type}> {
-	func get       = (this)     #unsafe -> T*       { unsafe{ return std.bitCast<{T*}>(&this.data.value);       } }
-	func get       = (this mut) #unsafe -> T*mut    { unsafe{ return std.bitCast<{T*mut}>(&this.data.value);    } }
-	func getUninit = (this mut) #unsafe -> T*uninit { unsafe{ return std.bitCast<{T*uninit}>(&this.data.value); } }
+	func get       = (this)     #unsafe -> T*       { return unsafe{std.bitCast<{T*}>(&this.data.value)};       }
+	func get       = (this mut) #unsafe -> T*mut    { return unsafe{std.bitCast<{T*mut}>(&this.data.value)};    }
+	func getUninit = (this mut) #unsafe -> T*uninit { return unsafe{std.bitCast<{T*uninit}>(&this.data.value)}; }
 	
 
 	///////////////////////////////////

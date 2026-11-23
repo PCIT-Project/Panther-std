@@ -634,13 +634,11 @@ type Errno = enum(CInt) {
 
 
 func calcErrno = (return_code: UI64) -> Errno {
-	unsafe{
-		const signed_ret_code: I64 = std.bitCast<{I64}>(return_code);
+	const signed_ret_code: I64 = unsafe{std.bitCast<{I64}>(return_code)};
 
-		if(signed_ret_code > -4096 && signed_ret_code < 0){
-			return std.bitCast<{Errno}>(-signed_ret_code as CInt);
-		}else{
-			return Errno.SUCCESS;
-		}
+	if(signed_ret_code > -4096 && signed_ret_code < 0){
+		return unsafe{std.bitCast<{Errno}>(-signed_ret_code as CInt)};
+	}else{
+		return Errno.SUCCESS;
 	}
 }

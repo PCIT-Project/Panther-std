@@ -506,12 +506,10 @@ type Directory = struct {
 
 						}case(std.Platform.LINUX){
 							if(this.buffer_offset < this.num_bytes_written){
-								const directory_entry: std.platform.linux.Dirent64* = {->expr:std.platform.linux.Dirent64*
-									unsafe{
-										return->expr std.bitCast<{std.platform.linux.Dirent64*}>(
-											this.iterator.buffer[this.buffer_offset]
-										);
-									}
+								const directory_entry: std.platform.linux.Dirent64* = unsafe{
+									std.bitCast<{std.platform.linux.Dirent64*}>(
+										this.iterator.buffer[this.buffer_offset]
+									)
 								};
 
 								def OFFSET_OF_NAME: USize =
@@ -562,40 +560,39 @@ type Directory = struct {
 								this.make_syscall(false);
 								
 							}else{
-								unsafe{
-									type FILE_DIRECTORY_INFORMATION = alias
-										std.platform.windows.native.FILE_DIRECTORY_INFORMATION;
+								type FILE_DIRECTORY_INFORMATION = alias
+									std.platform.windows.native.FILE_DIRECTORY_INFORMATION;
 
-									var target_info: FILE_DIRECTORY_INFORMATION* =
-										std.bitCast<{FILE_DIRECTORY_INFORMATION*}>(
+								var target_info: FILE_DIRECTORY_INFORMATION* = unsafe{
+									std.bitCast<{FILE_DIRECTORY_INFORMATION*}>(
 										this.iterator.buffer[this.buffer_offset]
-										);
+									)
+								};
 
 
-									const kind: Entry.Kind #movable = {->expr:Entry.Kind
-										if(std.hasFlag(target_info.FileAttributes, native.FileAttribute.REPARSE_POINT)){
-											return->expr Entry.Kind.SYM_LINK;
-										}
-										if(std.hasFlag(target_info.FileAttributes, native.FileAttribute.DIRECTORY)){
-											return->expr Entry.Kind.DIRECTORY;
-										}
+								const kind: Entry.Kind #movable = {->expr:Entry.Kind
+									if(std.hasFlag(target_info.FileAttributes, native.FileAttribute.REPARSE_POINT)){
+										return->expr Entry.Kind.SYM_LINK;
+									}
+									if(std.hasFlag(target_info.FileAttributes, native.FileAttribute.DIRECTORY)){
+										return->expr Entry.Kind.DIRECTORY;
+									}
 
-										return->expr Entry.Kind.REGULAR_FILE;
-									};
+									return->expr Entry.Kind.REGULAR_FILE;
+								};
 
-									this.entry = new Entry{
-										name = new std.fs.PathRef(
-											new [CWChar:*](
-												std.bitCast<{CWChar*}>(&target_info.FileName),
-												(target_info.FileNameLength as USize / 2)
-											)
-										),
-										kind = move kind,
-									};
+								this.entry = new Entry{
+									name = new std.fs.PathRef(
+										new [CWChar:*](
+											unsafe{std.bitCast<{CWChar*}>(&target_info.FileName)},
+											(target_info.FileNameLength as USize / 2)
+										)
+									),
+									kind = move kind,
+								};
 
-									this.buffer_offset += target_info.NextEntryOffset as USize;
-									this.need_to_syscall = target_info.NextEntryOffset == 0;
-								}
+								this.buffer_offset += target_info.NextEntryOffset as USize;
+								this.need_to_syscall = target_info.NextEntryOffset == 0;
 							}
 
 						}
@@ -657,10 +654,8 @@ type Directory = struct {
 							if(this.num_bytes_written == 0){ this.at_end = true; }
 
 
-							const directory_entry: std.platform.linux.Dirent64* = {->expr:std.platform.linux.Dirent64*
-								unsafe{
-									return->expr std.bitCast<{std.platform.linux.Dirent64*}>(this.iterator.buffer[0]);
-								}
+							const directory_entry: std.platform.linux.Dirent64* = unsafe{
+								std.bitCast<{std.platform.linux.Dirent64*}>(this.iterator.buffer[0])
 							};
 
 							def OFFSET_OF_NAME: USize =

@@ -65,9 +65,7 @@ type Allocator = struct <{TargetAllocatorType: Type}> {
 	func dealloc = (this mut, buffer: [$T:*mut]) -> Void {
 		when(std.types.isTriviallyDeletable<{T}>() == false){
 			for(buffer) [_; item: T mut] {
-				unsafe{
-					delete item;
-				}
+				unsafe{ delete item; }
 			}
 		}
 
