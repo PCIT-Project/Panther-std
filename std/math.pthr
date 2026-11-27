@@ -81,8 +81,6 @@ func abs = (num: $Num)  -> Num {
 }
 
 func min = (lhs: $Num, rhs: Num)  -> Num {
-	@comptimeAssert(std.types.isIntegral<{Num}>() || std.types.isFloatingPoint<{Num}>(), "Invalid type");
-
 	if(lhs < rhs){
 		return copy lhs;
 	}else{
@@ -91,11 +89,75 @@ func min = (lhs: $Num, rhs: Num)  -> Num {
 }
 
 func max = (lhs: $Num, rhs: Num)  -> Num {
-	@comptimeAssert(std.types.isIntegral<{Num}>() || std.types.isFloatingPoint<{Num}>(), "Invalid type");
-
 	if(lhs > rhs){
 		return copy lhs;
 	}else{
 		return copy rhs;
 	}
+}
+
+
+
+func infinity = <{T: Type}> () -> T {
+	@comptimeAssert(std.types.isFloatingPoint<{T}>(), "`std.math.infinity` only accepts floating-point types");
+	when switch(std.types.numBits<{T, false}>()){
+		case(16){  return makeF16FromInt(0x7C00);                                  }
+		case(32){  return makeF32FromInt(0x7F800000);                              }
+		case(64){  return makeF64FromInt(0x7FF0000000000000);                      }
+		case(80){  return makeF80FromInt(0x7FFF, 0x800000000000);                  }
+		case(128){ return makeF128FromInt(0x7FFF000000000000, 0x0000000000000000); }
+		else{ unreachable; }
+	}
+}
+
+func defaultNaN = <{T: Type}> () -> T {
+	@comptimeAssert(std.types.isFloatingPoint<{T}>(), "`std.math.defaultNaN` only accepts floating-point types");
+	return quietNaN<{T}>();
+}
+
+func signalingNaN = <{T: Type}> () -> T {
+	@comptimeAssert(std.types.isFloatingPoint<{T}>(), "`std.math.signalingNaN` only accepts floating-point types");
+	when switch(std.types.numBits<{T, false}>()){
+		case(16){  return makeF16FromInt(0x7D00);                                  }
+		case(32){  return makeF32FromInt(0x7FA00000);                              }
+		case(64){  return makeF64FromInt(0x7FF4000000000000);                      }
+		case(80){  return makeF80FromInt(0x7FFF, 0xA00000000000);                  }
+		case(128){ return makeF128FromInt(0x7FFF400000000000, 0x0000000000000000); }
+		else{ unreachable; }
+	}
+}
+
+func quietNaN = <{T: Type}> () -> T {
+	@comptimeAssert(std.types.isFloatingPoint<{T}>(), "`std.math.quietNaN` only accepts floating-point types");
+	when switch(std.types.numBits<{T, false}>()){
+		case(16){  return makeF16FromInt(0x7E00);                                  }
+		case(32){  return makeF32FromInt(0x7FC00000);                              }
+		case(64){  return makeF64FromInt(0x7FF8000000000000);                      }
+		case(80){  return makeF80FromInt(0x7FFF, 0xC00000000000);                  }
+		case(128){ return makeF128FromInt(0x7FFF800000000000, 0x0000000000000000); }
+		else{ unreachable; }
+	}
+}
+
+
+
+
+func makeF16FromInt = (num: UI16) #ct -> F16 {
+	return unsafe{std.bitCast<{F16}>(num)};
+}
+
+func makeF32FromInt = (num: UI32) #ct -> F32 {
+	return unsafe{std.bitCast<{F32}>(num)};
+}
+
+func makeF64FromInt = (num: UI64) #ct -> F64 {
+	return unsafe{std.bitCast<{F64}>(num)};
+}
+
+func makeF80FromInt = (upper: UI16, lower: UI64) #ct -> F80 {
+	return unsafe{std.bitCast<{F80}>(upper as UI80 << 64 | lower as UI80)};
+}
+
+func makeF128FromInt = (upper: UI64, lower: UI64) #ct -> F128 {
+	return unsafe{std.bitCast<{F128}>(upper as UI128 << 64 | lower as UI128)};
 }

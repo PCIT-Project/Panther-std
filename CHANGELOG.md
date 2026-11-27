@@ -1,6 +1,28 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.80.0"></a>
+## v0.0.80.0
+- Added methods to types
+	- `min`
+	- `max`
+	- `floatExponentBits`
+	- `floatMantissaBits`
+	- `floatFractionalBits`
+	- `floatMinExponent`
+	- `floatMaxExponent`
+	- Expanded `numDigits` to include floats
+- Added float methods to math
+	- `infinity`
+	- `defaultNaN`
+	- `signalingNaN`
+	- `quietNaN`
+- Added `bit.rotl` and `bit.rotr`
+- Added `debug.assert` message with fmt
+- Added `compiler_rt._fltused`
+
+
+<!---------------------------------->
 <a name="v0.0.79.0"></a>
 ## v0.0.79.0
 - Updated to reflect updates in [PCIT-CPP v0.0.436.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.436.0)

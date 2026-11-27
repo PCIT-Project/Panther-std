@@ -32,6 +32,141 @@ func numBits = <{T: Type, INCLUDE_PADDING: Bool = true}> () -> USize {
 	return @_numBits<{T, INCLUDE_PADDING}>();
 }
 
+func numDigits = <{T: Type}> () -> USize {
+	when(isUnsignedIntegral<{T}>()){
+		return numBits<{T}>();
+
+	}else when(isSignedIntegral<{T}>()){
+		return numBits<{T}>() - 1;
+
+	}else when(isFloatingPoint<{T}>()){
+		when switch(numBits<{T, false}>()){
+			case(16){  return 11;  }
+			case(32){  return 24;  }
+			case(64){  return 53;  }
+			case(80){  return 64;  }
+			case(128){ return 113; }
+			else{ unreachable; }
+		}
+	}else{
+		@comptimeError("Invalid type for `std.types.numDigits`");
+	}
+}
+
+
+
+
+
+func min = <{T: Type}> () -> T {
+	when(isUnsignedIntegral<{T}>()){
+		return 0;
+		
+	}else when(isSignedIntegral<{T}>()){
+		return 1 as T << (numBits<{T, false}>() - 1) as type(getShiftValueTypeID<{T}>());
+		
+	}else when(isFloatingPoint<{T}>()){
+		when switch(numBits<{T, false}>()){
+			case(16){  return std.math.makeF16FromInt(0x0400);                                  }
+			case(32){  return std.math.makeF32FromInt(0x00800000);                              }
+			case(64){  return std.math.makeF64FromInt(0x0010000000000000);                      }
+			case(80){  return std.math.makeF80FromInt(0x0001, 0x8000000000000000);              }
+			case(128){ return std.math.makeF128FromInt(0x0001000000000000, 0x0000000000000000); }
+			else{ unreachable; }
+		}
+	}else{
+		@comptimeError("Invalid type for `std.types.numDigits`");
+	}
+}
+
+
+func max = <{T: Type}> () -> T {
+	when(isUnsignedIntegral<{T}>()){
+		return ~(0 as T);
+		
+	}else when(isSignedIntegral<{T}>()){
+		return (1 as T << (numBits<{T, false}>() - 1) as type(getShiftValueTypeID<{T}>())) -% 1;
+		
+	}else when(isFloatingPoint<{T}>()){
+		when switch(numBits<{T, false}>()){
+		case(16){  return std.math.makeF16FromInt(0x7BFF);                                  }
+		case(32){  return std.math.makeF32FromInt(0x7F7FFFFF);                              }
+		case(64){  return std.math.makeF64FromInt(0x7FEFFFFFFFFFFFFF);                      }
+		case(80){  return std.math.makeF80FromInt(0x7FFE, 0xFFFFFFFFFFFFFFFF);              }
+		case(128){ return std.math.makeF128FromInt(0x7FFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF); }
+		else{ unreachable; }
+	}
+	}else{
+		@comptimeError("Invalid type for `std.types.numDigits`");
+	}
+}
+
+
+
+
+func floatExponentBits = <{T: Type}> () -> USize {
+	@comptimeAssert(isFloatingPoint<{T}>(), "`std.types.floatExponentBits` only accepts floating-point types");
+	when switch(numBits<{T, false}>()){
+		case(16){  return 5;  }
+		case(32){  return 8;  }
+		case(64){  return 11; }
+		case(80){  return 15; }
+		case(128){ return 15; }
+		else{ unreachable; }
+	}
+}
+
+func floatMantissaBits = <{T: Type}> () -> USize {
+	@comptimeAssert(isFloatingPoint<{T}>(), "`std.types.floatMantissaBits` only accepts floating-point types");
+	when switch(numBits<{T, false}>()){
+		case(16){  return 10;  }
+		case(32){  return 23;  }
+		case(64){  return 52;  }
+		case(80){  return 64;  } // F80 explicitly has the leading mantissa bit
+		case(128){ return 112; }
+		else{ unreachable; }
+	}
+}
+
+func floatFractionalBits = <{T: Type}> () -> USize {
+	@comptimeAssert(isFloatingPoint<{T}>(), "`std.types.floatFractionalBits` only accepts floating-point types");
+	when switch(numBits<{T, false}>()){
+		case(16){  return 10;  }
+		case(32){  return 23;  }
+		case(64){  return 52;  }
+		case(80){  return 63;  } // F80 explicitly has the leading mantissa bit
+		case(128){ return 112; }
+		else{ unreachable; }
+	}
+}
+
+func floatMinExponent = <{T: Type}> () -> Int {
+	@comptimeAssert(isFloatingPoint<{T}>(), "`std.types.floatMinExponent` only accepts floating-point types");
+	when switch(numBits<{T, false}>()){
+		case(16){  return -14;    }
+		case(32){  return -126;   }
+		case(64){  return -1022;  }
+		case(80){  return -16382; }
+		case(128){ return -16382; }
+		else{ unreachable; }
+	}
+}
+
+func floatMaxExponent = <{T: Type}> () -> Int {
+	@comptimeAssert(isFloatingPoint<{T}>(), "`std.types.floatMaxExponent` only accepts floating-point types");
+	when switch(numBits<{T, false}>()){
+		case(16){  return 15;    }
+		case(32){  return 127;   }
+		case(64){  return 1023;  }
+		case(80){  return 16383; }
+		case(128){ return 16383; }
+		else{ unreachable; }
+	}
+}
+
+
+
+
+
 
 func getIntegerTypeID = (width: UI32, is_unsigned: Bool) #ct -> TypeID {
 	return @_ctGetIntegerTypeID(width, is_unsigned);

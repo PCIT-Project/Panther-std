@@ -1,0 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////////
+//                                                                                //
+// Part of Panther-STD, under the BSD 1-Clause License with PCIT Exceptions.      //
+// You may not use this file except in compliance with the License.               //
+// See `https://github.com/PCIT-Project/Panther-std/blob/main/LICENSE`for info.   //
+//                                                                                //
+////////////////////////////////////////////////////////////////////////////////////
+
+@setModuleName("std.compiler_rt");
+
+def std #private = @import("std");
+
+when(@config.platform == std.Platform.WINDOWS && @config.compilerMode != std.CompilerMode.SCRIPT){
+	
+	// https://github.com/ziglang/zig/issues/24148
+	const _fltused: CInt #export = 0;
+
+}

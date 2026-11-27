@@ -11,22 +11,6 @@
 
 def std #private = @import("std");
 
-func assert = (cond: Bool, message: [Char:*]) -> Void {
-	if(cond == false){
-		when(@config.mode == std.Mode.DEBUG){
-			when(std.platform.SUPPORTS_CMD){
-				print("\e[37m\e[41mPCIT Panther Language - `std.debug.assert`: \"");
-				print(message);
-				print("\"\e[0m\n");
-			}
-
-			@breakpoint();
-
-		}else{
-			unreachable("Failed assert");
-		}
-	}
-}
 
 
 func assert = (cond: Bool) -> Void {
@@ -44,6 +28,39 @@ func assert = (cond: Bool) -> Void {
 	}
 }
 
+func assert = (cond: Bool, message: [Char:*]) -> Void {
+	if(cond == false){
+		when(@config.mode == std.Mode.DEBUG){
+			when(std.platform.SUPPORTS_CMD){
+				print("\e[37m\e[41mPCIT Panther Language - `std.debug.assert`: \"");
+				print(message);
+				print("\"\e[0m\n");
+			}
+
+			@breakpoint();
+
+		}else{
+			unreachable("Failed assert");
+		}
+	}
+}
+
+func assert = (cond: Bool, fmt: std.fmt.FmtString, args: $$...) -> Void {
+	if(cond == false){
+		when(@config.mode == std.Mode.DEBUG){
+			when(std.platform.SUPPORTS_CMD){
+				print("\e[37m\e[41mPCIT Panther Language - `std.debug.assert`: \"");
+				print(fmt, args...);
+				print("\"\e[0m\n");
+			}
+
+			@breakpoint();
+
+		}else{
+			unreachable("Failed assert");
+		}
+	}
+}
 
 
 

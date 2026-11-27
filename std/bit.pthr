@@ -84,6 +84,50 @@ func countROne = (num: $Integral) -> Integral {
 	return @_cttz<{Integral}>(~num);
 }
 
+
+
+func rotl = (num: $Integral, ammount: Int) -> Integral {
+	def NUM_DIGITS: USize = std.types.numDigits<{Integral}>();
+	type ShiftType = alias type(std.types.getShiftValueTypeID<{Integral}>());
+
+	const ammount_normalized: Int = (ammount as USize % NUM_DIGITS) as Int;
+
+	if(ammount_normalized > 0){
+		return (num << ammount_normalized as ShiftType)
+			| (num >> (NUM_DIGITS as Int - ammount_normalized) as ShiftType);
+
+	}else if(ammount_normalized == 0){
+		return copy num;
+
+	}else{
+		// rotr
+		return (num >> ammount_normalized as ShiftType)
+			| (num << (NUM_DIGITS as Int - ammount_normalized) as ShiftType);
+	}
+}
+
+func rotr = (num: $Integral, ammount: Int) -> Integral {
+	def NUM_DIGITS: USize = std.types.numDigits<{Integral}>();
+	type ShiftType = alias type(std.types.getShiftValueTypeID<{Integral}>());
+
+	const ammount_normalized: Int = (ammount as USize % NUM_DIGITS) as Int;
+
+	if(ammount_normalized > 0){
+		return (num >> ammount_normalized as ShiftType)
+			| (num << (NUM_DIGITS as Int - ammount_normalized) as ShiftType);
+
+	}else if(ammount_normalized == 0){
+		return copy num;
+
+	}else{
+		// rotl
+		return (num << ammount_normalized as ShiftType)
+			| (num >> (NUM_DIGITS as Int - ammount_normalized) as ShiftType);
+	}
+}
+
+
+
 func hasFlag = (value: $T, flag: T) -> Bool {
 	unsafe{
 		return value & flag != std.bitCast<{T}>(0 as type(std.types.getUnderlyingTypeID<{T}>()));
