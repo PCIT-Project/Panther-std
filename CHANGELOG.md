@@ -1,6 +1,12 @@
 # Change Log
 
 <!---------------------------------->
+<a name="v0.0.82.0"></a>
+## v0.0.82.0
+- Added `types.implementsInterface`
+
+
+<!---------------------------------->
 <a name="v0.0.81.0"></a>
 ## v0.0.81.0
 - Updated to reflect updates in [PCIT-CPP v0.0.440.0](https://github.com/PCIT-Project/PCIT-CPP/blob/main/CHANGELOG.md#v0.0.440.0)

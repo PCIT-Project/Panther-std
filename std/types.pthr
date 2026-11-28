@@ -188,6 +188,10 @@ func getUnderlyingTypeID = <{T: Type}> () -> TypeID {
 }
 
 
+func implementsInterface = <{T: Type, I: Type}> () -> Bool {
+	return @_implementsInterface<{T, I}>();
+}
+
 
 func isDefaultInitializable          = <{T: Type}> () -> Bool { return @_isDefaultInitializable<{T}>();          }
 func isTriviallyDefaultInitializable = <{T: Type}> () -> Bool { return @_isTriviallyDefaultInitializable<{T}>(); }
