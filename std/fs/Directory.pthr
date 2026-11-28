@@ -476,19 +476,8 @@ type Directory = struct {
 		type Iterator = struct {
 			type Impl = struct {
 				func new = (iterator: Iterator*) #rt -> (output: Impl) {
-					output.iterator          = copy iterator;
-					output.entry             = null;
-
-					when(@config.platform == std.Platform.LINUX){
-						output.num_bytes_written = 0;
-					}
-
-					output.buffer_offset     = 0;
-					output.at_end            = false;
-
-					when(@config.platform == std.Platform.WINDOWS){
-						output.need_to_syscall = true;
-					}
+					output.iterator = copy iterator;
+					@completeInit();
 
 					output.make_syscall(true);
 					output.next(); // skip ".""
